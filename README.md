@@ -1,4 +1,4 @@
-<img src="./gedge-platform/images/gedge-platform-logo-only.jpg">
+<img src="./gedge-platform/gedge-platform-logo-only.jpg">
 
 ### GEdge-Platform
 
