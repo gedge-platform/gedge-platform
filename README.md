@@ -1,9 +1,14 @@
 ### GEdge-Platform
 
-GEdge-Platform is an cloud edge computing platform for supporting ultra low-latency service experiences by rapidly processing data at the edge of the network.
+GEdge-Platform is a cloud edge computing platform for 5G network and AI
+
+It supports ultra low-latency service experiences rapidly by processing data at the edge of the network without delays in processing and transmission to central cloud.
 
 
 
+
+
+data is processed at a location close to the terminal, and response speed sensitive service** is supported based on distributed collaboration* between central cloud-edge-terminals. Intelligent cloud edge SW platform
 
 5G and AI. By virtualization it can shield heterogeneous characteristics and gives a unified access of cloud edge, mobile edge and private edge. For AI it provides low-latency, high-reliability and cost-optimal computing support at the edge through the cluster management and intelligent scheduling of multi-tier clusters. And at the same time OTE-Stack makes device-edge-cloud collaborative computing possible.
 
