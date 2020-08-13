@@ -1,4 +1,9 @@
-### GEdge-Platform 👋
+### GEdge-Platform
+
+OTE-Stack is an edge computing platform for 5G and AI. By virtualization it can shield heterogeneous characteristics and gives a unified access of cloud edge, mobile edge and private edge. For AI it provides low-latency, high-reliability and cost-optimal computing support at the edge through the cluster management and intelligent scheduling of multi-tier clusters. And at the same time OTE-Stack makes device-edge-cloud collaborative computing possible.
+
+Note: OTE-Stack is a heavy work in progress.
+
 
 <!--
 **gedge-platform/gedge-platform** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
