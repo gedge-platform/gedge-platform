@@ -1,5 +1,3 @@
-<img src="gedge-platform-logo-only.jpg" width="100">
-
 ### GEdge-Platform
 
 GEdge-Platform is a cloud edge computing platform for ultra low-latency services at the edge of the network.
