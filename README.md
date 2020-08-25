@@ -47,5 +47,5 @@ If you're interested in being a contributor and want to get involved in developi
 We have a project site for the GEdge Platform. If you're interested in being a contributor and want to get involved in developing the Cloud Edge Platform code, please visit [GEdge Plaform](https://gedge-platform.github.io) Project site
 
 ## License
-GEdge Platform is under the Apache 2.0 license. See the LICENSE(./LICENSE) file for details.
+GEdge Platform is under the Apache 2.0 license. See the [LICENSE](./LICENSE) file for details.
 
