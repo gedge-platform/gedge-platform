@@ -8,16 +8,44 @@ For the Edge AI service, it provides real-time, distribued, high-reliability and
 
 ## Contents
 - [About](#about)
-- [Features](#features)
-- [Examples](#examples)
-- [Installation](#installation)
-- [Customising](#customising)
-- [Configuration](#configuration)
-  - [Gem dependency settings](#gem-dependency-settings)
-  - [Site settings](#site-settings)
-  - [Site performance settings](#site-performance-settings)
-  - [Site navigation](#site-navigation)
-- [Using includes](#using-includes)
-- [Page layouts](#page-layouts)
-- [Page and Post options](#page-and-post-options)
-- [Credits](#credits)
+- [Advantages](#advantages)
+- [Architecture](#architecture)
+- [Components](#components)
+- [Current Features](#current-features)
+- [Getting Started](#getting-started)
+- [TODO](#todo)
+- [Contributing](#contributing)
+- [Community](#commnunity)
+- [License](#license)
+
+## About
+
+**GEdge-Platform is a cloud edge computing platform for ultra low-latency services at the edge of the network.**
+
+## Advantages
+- TBD
+
+## Architecture
+- TBD
+
+## Components
+- TBD
+
+## Current Features
+- TBD
+
+## Getting Started
+- TBD
+
+## TODO
+- TBD
+
+## Contributing
+If you're interested in being a contributor and want to get involved in developing the GEdge Platform code, please see DOCUMENTATIONs for details on submitting patches and the contribution workflow.
+
+## Community
+We have a project site for the GEdge Platform. If you're interested in being a contributor and want to get involved in developing the Cloud Edge Platform code, please visit [GEdge Plaform](https://gedge-platform.github.io) Project site
+
+## License
+GEdge Platform is under the Apache 2.0 license. See the LICENSE(./LICENSE) file for details.
+
