@@ -26,11 +26,7 @@ For the Edge AI service, it provides real-time, distribued, high-reliability and
 - TBD
 
 ## Architecture
-<<<<<<< HEAD
-[![architecture](./docs/architecture.png)](./docs/architecture.png)
-=======
 [![architecture](https://github.com/gedge-platform/gedge-platform/blob/master/docs/architecture.png)]
->>>>>>> 8f0b7e030aa082bb80ea0472993f9a368729902b
 
 ## Components
 - TBD
