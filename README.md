@@ -1,5 +1,5 @@
 ### GEdge-Platform
-
+***
 GEdge-Platform is a cloud edge computing platform for ultra low-latency services at the edge of the network.
 
 It can supports ultra-responsive service experiences by rapidly processing massive data at the edge without delays in processing and transmission to central cloud.
