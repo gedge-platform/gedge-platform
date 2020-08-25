@@ -26,7 +26,7 @@ For the Edge AI service, it provides real-time, distribued, high-reliability and
 - TBD
 
 ## Architecture
-[![architecture](./docs/images/architecture.png)](./docs/images/architecture.png)
+[![architecture](./docs/architecture.png)](./docs/architecture.png)
 
 ## Components
 - TBD
