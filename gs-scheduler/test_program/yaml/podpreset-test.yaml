@@ -1,0 +1,16 @@
+apiVersion: settings.k8s.io/v1alpha1
+kind: PodPreset
+metadata:
+  name: ge-podpreset-global-01
+spec:
+  selector:
+    matchLabels:
+      ge-scheduler: global-01
+  env:
+  - name: gschConfig
+    value: '{ "type" : "local", 
+              "priority" : "low-latency",
+              "sourceNode" : "GEdge01-master"
+            }' 
+  - name: test
+    value: "1234"

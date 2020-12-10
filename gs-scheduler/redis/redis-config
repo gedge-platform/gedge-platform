@@ -1,0 +1,4 @@
+maxmemory 2mb
+maxmemory-policy allkeys-lru
+bind 0.0.0.0
+protected-mode no
