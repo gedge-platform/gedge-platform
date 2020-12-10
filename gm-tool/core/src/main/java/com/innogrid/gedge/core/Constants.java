@@ -1,0 +1,94 @@
+package com.innogrid.gedge.core;
+
+/**
+ * @author kkm
+ * @date 2019.5.30
+ * @brief 환경 값 관리
+ */
+
+public class Constants {
+
+    public enum ACTION_RESULT {
+        SUCCESS, PROGRESSING, FAILED
+    }
+
+    // HISTORY
+    public enum HISTORY_TYPE {
+        AWS, AZURE, OPENSTACK, VMWARE, IAM, CONFIG, CREDENTIAL
+    }
+
+    public enum ACTION_CODE {
+        SERVER_CREATE,
+        SERVER_DELETE,
+        SERVER_START,
+        SERVER_SHUTDOWN,
+        SERVER_FORCE_SHUTDOWN,
+        SERVER_REBOOT,
+        SERVER_REBOOT_SOFT,
+        SERVER_REBOOT_HARD,
+        SERVER_FORCE_REBOOT,
+        SERVER_RESET_PASSWORD,
+        SERVER_MONITORING_ENABLED,
+        SERVER_MONITORING_DISABLED,
+        SERVER_PAUSE,
+        SERVER_SUSPEND,
+        SERVER_STOP,
+        SERVER_RESUME,
+        SERVER_UNPAUSE,
+        SERVER_LOCK,
+        SERVER_UNLOCK,
+        SERVER_RESCUE,
+        SERVER_UNRESCUE,
+        SERVER_SHELVE,
+        SERVER_SHELVE_OFFLOAD,
+        SERVER_UNSHELVE,
+
+        SNAPSHOT_CREATE,
+
+        VOLUME_ATTACH,
+        VOLUME_DETACH,
+
+        INTERFACE_ATTACH,
+        INTERFACE_DETACH,
+        FLOATING_IP_ADD,
+        FLOATING_IP_REMOVE,
+
+        CREDENTIAL_CREATE,
+        CREDENTIAL_UPDATE,
+        CREDENTIAL_DELETE,
+
+        ROLE_CREATE,
+        ROLE_UPDATE,
+        ROLE_DELETE,
+        ROLE_PERMISSION_CREATE,
+        ROLE_PERMISSION_DELETE,
+        ROLE_USER_ADD,
+        ROLE_USER_DELETE,
+        ROLE_CHANGE_NAME,
+        ROLE_CHANGE_PROTECTION,
+        ROLE_CHANGE_DESCRIPTION,
+
+        PERMISSION_CREATE,
+        PERMISSION_DELETE,
+
+        GROUP_CREATE,
+        GROUP_UPDATE,
+        GROUP_DELETE,
+        GROUP_USER_ADD,
+
+        USER_CREATE,
+        USER_UPDATE,
+        USER_DELETE,
+        USER_CHANGE_NAME,
+        USER_CHANGE_PROTECTION,
+        USER_CHANGE_DESCRIPTION,
+        USER_CHANGE_ENABLED,
+        USER_CHANGE_PASSWORD,
+        USER_MODIFY,
+        USER_LOGIN_COUNT_INCREASE,
+        LOGIN,
+        LOGOUT,
+
+        CONFIG_CHANGE
+    }
+}
