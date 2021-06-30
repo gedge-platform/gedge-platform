@@ -1,10 +1,11 @@
 # GEdge-Platform
+[![Generic badge](https://img.shields.io/badge/release-1.0-green.svg)](https://github.com/gedge-platform/gedge-platform/releases/tag/1.0)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ***
 GEdge-Platform is a cloud edge computing platform for ultra low-latency services at the edge of the network.
 
 It can supports ultra-responsive service experiences by rapidly processing massive data at the edge without delays in processing and transmission to central cloud.
 For the Edge AI service, it provides real-time, distribued, high-reliability and cost-optimal AI computing support at the edge through the cloud edge collaboration, cluster management and intelligent scheduling of multi-tier clusters.
-
 
 ## Contents
 - [About](#about)
@@ -22,6 +23,11 @@ For the Edge AI service, it provides real-time, distribued, high-reliability and
 
 **GEdge-Platform is a cloud edge computing platform for ultra low-latency services at the edge of the network.**
 
+- System Name
+    - GEdge Platform (Ultra low-latency Intelligent Cloud Edge Platform)
+- System Goal
+    - Development of intelligent cloud edge platform technology that supports ultra-low-latency data processing based on collaboration between core cloud-cloud edge-terminal for response speed-sensitive service
+
 ## Advantages
 - TBD
 
@@ -29,7 +35,13 @@ For the Edge AI service, it provides real-time, distribued, high-reliability and
 ![architecture](https://github.com/gedge-platform/gedge-platform/blob/master/docs/architecture.png)
 
 ## Components
-- TBD
+- GS : GEdge Service platform (Ultra low-latency Cloud Edge Service Platform)
+    - GS-Engine : Ultra low-latency Data Processing Framework ([https://github.com/gedge-platform/gs-engine](https://github.com/gedge-platform/gs-engine))
+    - GS-Link : Service Collaboration Framework ([https://github.com/gedge-platform/gs-linkhq](https://github.com/gedge-platform/gs-linkhq))
+    - GS-AI : Intelligent Service Operation Framework ([https://github.com/gedge-platform/gs-aiflow](https://github.com/gedge-platform/gs-aiflow))
+- GM : GEdge Management platform (Multi-Cloud Edge Management Platform)
+    - GM-Center : Platform Management Framework ([https://github.com/gedge-platform/gm-center](https://github.com/gedge-platform/gm-center))
+    - GM-Tool : Platform Management Tool Framework ([https://github.com/gedge-platform/gm-tool](https://github.com/gedge-platform/gm-tool))    
 
 ## Current Features
 - TBD
