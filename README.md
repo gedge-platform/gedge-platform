@@ -29,7 +29,7 @@ For the Edge AI service, it provides real-time, distribued, high-reliability and
     - Development of intelligent cloud edge platform technology that supports ultra-low-latency data processing based on collaboration between core cloud-cloud edge-terminal for response speed-sensitive service
 
 ## Advantages
-- 
+- TBD
 
 ## Architecture
 ![architecture](https://github.com/gedge-platform/gedge-platform/blob/master/docs/architecture.png)
