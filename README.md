@@ -29,22 +29,31 @@ For the Edge AI service, it provides real-time, distribued, high-reliability and
     - Development of intelligent cloud edge platform technology that supports ultra-low-latency data processing based on collaboration between core cloud-cloud edge-terminal for response speed-sensitive service
 
 ## Advantages
-- TBD
+- 
 
 ## Architecture
 ![architecture](https://github.com/gedge-platform/gedge-platform/blob/master/docs/architecture.png)
 
 ## Components
 - GS : GEdge Service platform (Ultra low-latency Cloud Edge Service Platform)
-    - GS-Engine : Ultra low-latency Data Processing Framework ([https://github.com/gedge-platform/gs-engine](https://github.com/gedge-platform/gs-engine))
-    - GS-Link : Service Collaboration Framework ([https://github.com/gedge-platform/gs-linkhq](https://github.com/gedge-platform/gs-linkhq))
-    - GS-AI : Intelligent Service Operation Framework ([https://github.com/gedge-platform/gs-aiflow](https://github.com/gedge-platform/gs-aiflow))
+    - [GS-Engine](https://github.com/gedge-platform/gs-engine) : Ultra low-latency Data Processing Framework
+    - [GS-Link](https://github.com/gedge-platform/gs-linkhq) : Service Collaboration Framework
+    - [GS-AI](https://github.com/gedge-platform/gs-aiflow) : Intelligent Service Operation Framework
 - GM : GEdge Management platform (Multi-Cloud Edge Management Platform)
-    - GM-Center : Platform Management Framework ([https://github.com/gedge-platform/gm-center](https://github.com/gedge-platform/gm-center))
-    - GM-Tool : Platform Management Tool Framework ([https://github.com/gedge-platform/gm-tool](https://github.com/gedge-platform/gm-tool))    
+    - [GM-Center](https://github.com/gedge-platform/gm-center) : Platform Management Framework
+    - [GM-Tool](https://github.com/gedge-platform/gm-tool) : Platform Management Tool Framework
 
 ## Current Features
-- TBD
+
+> *GEdge Platform is currently under development.*
+> *Please note that the functionalities of GEdge Platform are not stable and secure yet.*
+> *It is not recommended to use the current release in production.*
+> *If you have any difficulties in using GEdge Platform, please let us know.* 
+
+- [ ] low-latency data processing of large-scale data
+- [ ] service collaboration between core-edge and edge-to-edge
+- [ ] intelligent edge service optimization
+- [ ] autonomous configuration and integrated management of cloud edge platform
 
 ## Getting Started
 - TBD
