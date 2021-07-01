@@ -45,9 +45,9 @@ For the Edge AI service, it provides real-time, distribued, high-reliability and
 
 ## Current Features
 
-> *GEdge Platform is currently under development.*
-> *Please note that the functionalities of GEdge Platform are not stable and secure yet.*
-> *It is not recommended to use the current release in production.*
+> *GEdge Platform is currently under development.*  
+> *Please note that the functionalities of GEdge Platform are not stable and secure yet.*  
+> *It is not recommended to use the current release in production.*  
 > *If you have any difficulties in using GEdge Platform, please let us know.* 
 
 - [ ] low-latency data processing of large-scale data
