@@ -220,7 +220,8 @@ def get():
                 "avg": avg_,
                 "min": min_,
                 "max": max_,
-                "cur": cur_
+                "cur": cur_,
+                "replica_count": obj['status']['currentReplicas']
             }
             # <<< to be updated
 

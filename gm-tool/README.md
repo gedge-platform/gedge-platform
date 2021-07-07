@@ -1,39 +1,56 @@
-# gm-tool
+# GM-Tool
 
-Gedge Management Tool
+코어 클라우드 및 클라우드 엣지 클러스터 서비스 이용을 위한 웹 서비스 포탈
 
-## 사전 환경
+> *GM-Tool: Gedge 서비스 포탈*
 
-* spring boot  설치 필요
+[![PkgDev](https://img.shields.io/badge/spring-reference-green)](https://spring.io/) [![License](https://camo.githubusercontent.com/2a2157c971b7ae1deb8eb095799440551c33dcf61ea3d965d86b496a5a65df55/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4c6963656e73652d417061636865253230322e302d626c75652e737667)](https://opensource.org/licenses/Apache-2.0) [![Generic badge](https://camo.githubusercontent.com/80b42f4ff3d27b79821c9807e31a3807d7ff886a6aab5c1740d811af75740cf4/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f72656c656173652d76312e302d626c756576696f6c65742e737667)](https://github.com/gedge-platform/gm-tool)
 
-  * 언어: java8+
-  * 빌드 도구 : maven (https://maven.apache.org/download.cgi)
-  * IDE :Intelij
 
-  ### spring project setting 
 
-  * spring boot project 생성
-  * http://start.spring.io/ 에서 생성 또는 Intelij 내 프로젝트 생성
-  * import Project
-    * maven 플러그인 설치 되어 있어야 함 
+## 목차
 
-  ### maven plugin 추가 설치가 필요한 경우
+- [GM-Tool 구조 및 기능](https://github.com/gedge-platform/gm-center/blob/develop/README.md)
 
-  *  Maven dependency를 추가를 위해 pom.xml 에 해당 Library를 추가하여 설치 가능
-  *  프로젝트 생성 시 Maven > importing 에서 Import Maven projects automatically 체크를 통한 자동 update 하도록 설정 가능 
 
-  ### Generate sources and update folder for all projects
-  * code update 후 maven update 
-  * maven update 
-    root 선택후 clean -> complie -> install 순으로 update( 권장 )
 
-  ### start project 
-  #### application 실행 
-    * ApiEdgeApplication
-    * ServiceRegistryApplication
-    * GatewayApplication 
-    * ClientApplication 프로젝트 실행
-    
-    ->  ClientApplication port를 통해 웹페이지에서 확인 가능 
+## GM-Center 구조 및 기능
 
-  
+
+- 웹 기반 서비스 포탈
+  - Platform Admin
+    - 대상 : Gedge 플랫폼을 관리하는 관리자
+    - 주요 기능 : Cloud Edge, Core Cloud 등록 관리 및 사용자 관리 기능을 제공
+  - Service Admin
+    - 대상 : Gedge 서비스를 이용하는 일반 사용자 및 개발자
+    - 주요 기능 : 필요한 자원 요청, 서비스 배포 및 운영, 모니터링 기능을 제공
+  - 공통 기능
+    - 시스템 대시보드 및 서비스 이용 관리, 모니터링 기능 제공
+- Cloud Edge 관리 프레임워크
+  - GM-Center
+
+
+
+#### GM-Tool 서비스 포탈
+
+GM-Tool 서비스 포탈은 초저지연 클라우드 엣지 관리 플랫폼의 구성 및 관리를 위한 Platform Admin 기능과 Gedge 시스템을 이용하여 서비스를 배포하고 관리하는 Service Admin을 위한 웹 기반 대시보드 기능을 제공한다. 
+
+- 구조
+
+![GM-Tool-architecture](https://github.com/gedge-platform/gm-tool/blob/master/docs/01_architecture.png)
+
+
+
+- 구성요소
+  - Platform Admin
+    - Gedge 서비스 사용자 계정 관리
+    - Cloud Edge 및 Core Cloud 관리
+    - 서비스 어플리케이션 템플릿 관리
+    - 시스템 저장소 관리
+  - Service Admin
+    - 사용자 서비스 배포 관리
+    - 사용자 워크스페이스 관리
+    - 서비스 워크로드 관리
+    - 사용자 네임스페이스 관리
+  - Observability
+    - 시스템 및 서비스 모니터링, 로깅, 이벤트 감지 및 추적 기능

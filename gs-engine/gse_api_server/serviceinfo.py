@@ -28,7 +28,7 @@ links: list(required=True)
 nodes: list(required=True)
 """)
 
-db_path = "data/serviceinfo.db"
+db_path = "./data/serviceinfo.db"
 mydb.init(db_path)
 
 

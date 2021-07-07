@@ -29,3 +29,10 @@ app.register_blueprint(namespace, url_prefix='/gse/namespace')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8888)
+
+'''      
+실행방법
+gunicorn app:app --bind=0.0.0.0:8888 --daemon --reload
+--daemon: 데몬 프로세스로 실행
+--reload: 소스 변경시 재구동
+'''

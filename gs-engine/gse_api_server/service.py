@@ -22,9 +22,8 @@ logger.setLevel(app_conf.Log.log_level)
 # temp
 logger.addHandler(logging.StreamHandler())
 
-db_path = "data/service.db"
-db_schedulehint_path = "data/schedulehint.db"
-
+db_path = "./data/service.db"
+db_schedulehint_path = "./data/schedulehint.db"
 mydb.init(db_path)
 
 
@@ -365,3 +364,51 @@ def status():
         msg['err'] = str(e)
 
     return jsonify(msg)
+
+
+# @service.route('/spec', methods=['get'])
+# def info():
+#     msg = {
+#         'err': None,
+#         'res': None
+#     }
+#
+#     try:
+#         name = request.args.get('name')
+#         namespace = request.args.get('namespace')
+#
+#         # deployment
+#         cmd = f'kubectl get svc {name} -n {namespace} -o json'
+#         st, res = subprocess.getstatusoutput(cmd)
+#         if st != 0:
+#             logger.error(res)
+#             msg['err'] = res
+#         else:
+#             obj = json.loads(res)
+#             msg['res'] = obj['spec']
+#
+#     except Exception as e:
+#         logger.error(str(e))
+#         msg['err'] = str(e)
+#
+#     return jsonify(msg)
+
+
+# @service.route('/stop', methods=['get'])
+# def stop():
+#     msg = {
+#         'err': None,
+#         'res': None
+#     }
+#
+#     return jsonify(msg)
+#
+#
+# @service.route('/start', methods=['get'])
+# def start():
+#     msg = {
+#         'err': None,
+#         'res': None
+#     }
+#
+#     return jsonify(msg)
