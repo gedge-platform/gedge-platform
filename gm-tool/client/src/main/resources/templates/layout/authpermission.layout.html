@@ -1,0 +1,18 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layout/view.layout">
+
+
+<div class="cont_wrap" layout:fragment="content" >
+    <div class="cont_inner">
+        <div class="content <!--detail_on-->">
+            <div class="cont_body cont_list" layout:fragment="content.center"></div>
+            <div class="cont_body cont_detail" layout:fragment="content.right">
+
+            </div>
+        </div><!-- //content -->
+    </div><!-- //cont_inner -->
+</div><!-- //cont_wrap -->
+</html>

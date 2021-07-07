@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	  layout:decorator="layout/main.layout">
+
+<h2 layout:fragment="leftSide_top_img">
+	<img th:src="@{/images/layout/h2_management.png/}" alt="Management" />
+</h2>
+
+<div layout:fragment="top.location" class="cont_header">
+	<div class="cont_header_tit" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public') or #httpServletRequest.getRequestURI().startsWith('/private')? 'common_clearfix':''}">
+		<h1 th:if="${#httpServletRequest.getRequestURI().startsWith('/environments')}">ENVIRONMENTS</h1>
+		<h1 th:if="${#httpServletRequest.getRequestURI().startsWith('/public')}">EDGE SERVER</h1>
+		<h1 th:if="${#httpServletRequest.getRequestURI().startsWith('/private')}">EDGE SERVER</h1>
+		<h1 th:if="${#httpServletRequest.getRequestURI().startsWith('/service')}">SERVICE</h1>
+		<h1 th:if="${#httpServletRequest.getRequestURI().startsWith('/auth')}">AUTH&amp;PERMISSION</h1>
+		<h1 th:if="${#httpServletRequest.getRequestURI().startsWith('/management')}">MANAGEMENT</h1>
+		<h2 th:if="${name}" th:text="${name}" class="current">Openstack 1</h2>
+		<h2 th:unless="${name}" class="current">DashBoard</h2>
+	</div><!-- //cont_header_tit -->
+</div><!-- //cont_header -->
+
+<nav layout:fragment="leftside.menu">
+	<ul class="header_nav">
+		<li class="haveChild" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/dashboard') ? 'on open':''}"><a href="#">Dashboard</a>
+			<ul>
+				<li th:classappend="${#httpServletRequest.getRequestURI() == '/dashboard' || #httpServletRequest.getRequestURI() == '/dashboard/servicedashboard' ? 'on':''}"><a th:href="@{/dashboard/servicedashboard}">Service Dashboard</a></li>
+				<!--				<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/dashboard/servicedashboard') ? 'on':''}"><a th:href="@{/public/dashboard}">DashBoard</a></li>-->
+			</ul>
+		</li>
+		<!--		<li sec:authorize="hasAnyAuthority('ROLE_CREDENTIAL_READ', 'ROLE_CREDENTIAL_WRITE')" class="haveChild" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/environments') ? 'on open':''}"><a href="#">Environments</a>-->
+		<!--			<ul>-->
+		<!--				<li sec:authorize="hasAnyAuthority('ROLE_CREDENTIAL_READ', 'ROLE_CREDENTIAL_WRITE')" th:classappend="${#httpServletRequest.getRequestURI() == '/environments' || #httpServletRequest.getRequestURI() == '/environments/credential' ? 'on':''}"><a th:href="@{/environments/credential}">Credentials</a></li>-->
+		<!--			</ul>-->
+		<!--		</li>-->
+
+		<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" class="haveChild" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private') ? 'on open':''}"><a href="#">EDGE SERVER</a>
+			<ul>
+				<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" class="haveChild"><a href="#">gedge</a>
+					<ul>
+						<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/compute')}"><a th:href="@{/private/openstack/compute}" >Node</a></li>
+						<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/volume')}"><a th:href="@{/private/openstack/volume}" >Pod</a></li>
+						<!--								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/network') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/network(type=${cloud.type}, id=${cloud.id})}" >Network</a></li>-->
+						<!--								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/management') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/management(type=${cloud.type}, id=${cloud.id})}" >Management</a></li>-->
+						<!--								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/meter') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/meter(type=${cloud.type}, id=${cloud.id})}" >Metering</a></li>-->
+					</ul>
+				</li>
+				<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" class="haveChild"><a href="#">kubetest</a>
+					<ul>
+						<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/compute')}"><a th:href="@{/private/openstack/compute}" >Node</a></li>
+						<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/volume')}"><a th:href="@{/private/openstack/volume}" >Pod</a></li>
+						<!--								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/network') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/network(type=${cloud.type}, id=${cloud.id})}" >Network</a></li>-->
+						<!--								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/management') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/management(type=${cloud.type}, id=${cloud.id})}" >Management</a></li>-->
+						<!--								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/meter') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/meter(type=${cloud.type}, id=${cloud.id})}" >Metering</a></li>-->
+					</ul>
+				</li>
+				<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" class="haveChild"><a href="#">pilot-poc-1</a>
+					<ul>
+						<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/compute')}"><a th:href="@{/private/openstack/compute}" >Node</a></li>
+						<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/volume')}"><a th:href="@{/private/openstack/volume}" >Pod</a></li>
+						<!--								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/network') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/network(type=${cloud.type}, id=${cloud.id})}" >Network</a></li>-->
+						<!--								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/management') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/management(type=${cloud.type}, id=${cloud.id})}" >Management</a></li>-->
+						<!--								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/meter') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/meter(type=${cloud.type}, id=${cloud.id})}" >Metering</a></li>-->
+					</ul>
+				</li>
+				<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" class="haveChild"><a href="#">pilot-poc-2</a>
+					<ul>
+						<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/compute')}"><a th:href="@{/private/openstack/compute}" >Node</a></li>
+						<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/volume')}"><a th:href="@{/private/openstack/volume}" >Pod</a></li>
+						<!--								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/network') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/network(type=${cloud.type}, id=${cloud.id})}" >Network</a></li>-->
+						<!--								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/management') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/management(type=${cloud.type}, id=${cloud.id})}" >Management</a></li>-->
+						<!--								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/meter') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/meter(type=${cloud.type}, id=${cloud.id})}" >Metering</a></li>-->
+					</ul>
+				</li>
+				<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" class="haveChild"><a href="#">pilot-poc-3</a>
+					<ul>
+						<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/compute')}"><a th:href="@{/private/openstack/compute}" >Node</a></li>
+						<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/volume')}"><a th:href="@{/private/openstack/volume}" >Pod</a></li>
+						<!--								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/network') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/network(type=${cloud.type}, id=${cloud.id})}" >Network</a></li>-->
+						<!--								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/management') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/management(type=${cloud.type}, id=${cloud.id})}" >Management</a></li>-->
+						<!--								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/openstack/meter') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/meter(type=${cloud.type}, id=${cloud.id})}" >Metering</a></li>-->
+					</ul>
+				</li>
+				<!--				<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/dashboard') ? 'on':''}"><a th:href="@{/private/dashboard}">DashBoard</a></li>-->
+				<!--					<th:block th:if="${cloud.type eq 'vmware'}">-->
+				<!--						<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" class="haveChild" th:classappend="${cloud.id eq id? 'on open':''}"><a href="#" th:text="${cloud.name}">VMware</a>-->
+				<!--							<ul>-->
+				<!--								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/vmware/compute') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/compute(type=${cloud.type}, id=${cloud.id})}" >Compute</a></li>-->
+				<!--								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/vmware/datastore') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/datastore(type=${cloud.type}, id=${cloud.id})}" >Datastore</a></li>-->
+				<!--								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/vmware/network') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/network(type=${cloud.type}, id=${cloud.id})}" >Network</a></li>-->
+				<!--								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/private/vmware/meter') and cloud.id eq id ? 'on':''}"><a th:href="@{/private/{type}/meter(type=${cloud.type}, id=${cloud.id})}" >Metering</a></li>-->
+				<!--							</ul>-->
+				<!--						</li>-->
+				<!--					</th:block>-->
+				</th:block>
+			</ul>
+		</li>
+		<!--		<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" class="haveChild" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public') ? 'on open':''}"><a href="#">Edge Server</a>-->
+		<!--			<ul>-->
+		<!--				<th:block th:each="cloud, index : ${session.clouds}">-->
+		<!--					<th:block th:if="${cloud.type eq 'aws'}">-->
+		<!--						<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" class="haveChild" th:classappend="${cloud.id eq id? 'on open':''}"><a href="#" th:text="${cloud.name}">AWS EC2</a>-->
+		<!--							<ul>-->
+		<!--								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public/aws/compute') and cloud.id eq id ? 'on':''}"><a th:href="@{/public/{type}/compute(type=${cloud.type}, id=${cloud.id})}" >Compute</a></li>-->
+		<!--&lt;!&ndash;								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public/aws/volume') and cloud.id eq id ? 'on':''}"><a th:href="@{/public/{type}/volume(type=${cloud.type}, id=${cloud.id})}" >Volume</a></li>&ndash;&gt;-->
+		<!--&lt;!&ndash;								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public/aws/network') and cloud.id eq id ? 'on':''}"><a th:href="@{/public/{type}/network(type=${cloud.type}, id=${cloud.id})}" >Network</a></li>&ndash;&gt;-->
+		<!--&lt;!&ndash;								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public/aws/iam') and cloud.id eq id ? 'on':''}"><a th:href="@{/public/{type}/iam(type=${cloud.type}, id=${cloud.id})}" >IAM</a></li>&ndash;&gt;-->
+		<!--&lt;!&ndash;								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public/aws/meter') and cloud.id eq id ? 'on':''}"><a th:href="@{/public/{type}/meter(type=${cloud.type}, id=${cloud.id})}" >Metering</a></li>&ndash;&gt;-->
+		<!--								&lt;!&ndash;<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/clouds/aws/management') ? 'on':''}"><a th:href="@{/clouds/{type}/management(type=${cloud.type}, id=${cloud.id})}" >Management</a></li>&ndash;&gt;-->
+		<!--							</ul>-->
+		<!--						</li>-->
+		<!--					</th:block>-->
+		<!--					<th:block th:if="${cloud.type eq 'azure'}">-->
+		<!--						<li sec:authorize="hasAnyAuthority('ROLE_CLOUD_READ', 'ROLE_CLOUD_WRITE')" class="haveChild" th:classappend="${cloud.id eq id? 'on open':''}"><a href="#" th:text="${cloud.name}">Azure</a>-->
+		<!--							<ul>-->
+		<!--								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public/azure/compute') and cloud.id eq id ? 'on':''}"><a th:href="@{/public/{type}/compute(type=${cloud.type}, id=${cloud.id})}" >Compute</a></li>-->
+		<!--&lt;!&ndash;								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public/azure/disk') and cloud.id eq id ? 'on':''}"><a th:href="@{/public/{type}/disk(type=${cloud.type}, id=${cloud.id})}" >Disk</a></li>&ndash;&gt;-->
+		<!--&lt;!&ndash;								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public/azure/network') and cloud.id eq id ? 'on':''}"><a th:href="@{/public/{type}/network(type=${cloud.type}, id=${cloud.id})}" >Network</a></li>&ndash;&gt;-->
+		<!--&lt;!&ndash;								<li th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public/azure/management') and cloud.id eq id ? 'on':''}"><a th:href="@{/public/{type}/management(type=${cloud.type}, id=${cloud.id})}" >Management</a></li>&ndash;&gt;-->
+		<!--&lt;!&ndash;								<li sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/public/azure/meter') and cloud.id eq id ? 'on':''}"><a th:href="@{/public/{type}/meter(type=${cloud.type}, id=${cloud.id})}" >Metering</a></li>&ndash;&gt;-->
+		<!--							</ul>-->
+		<!--						</li>-->
+		<!--					</th:block>-->
+		<!--				</th:block>-->
+		<!--			</ul>-->
+		<!--		</li>-->
+		<!--<li class="haveChild" sec:authorize="hasAnyAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/service') ? 'on open':''}"><a href="#">Service</a>
+			<ul>
+				<li sec:authorize="hasAnyAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI() == '/service' || #httpServletRequest.getRequestURI() == '/service/dashboard' ? 'on':''}"><a href="#">DashBoard</a></li>
+			</ul>
+		</li>-->
+		<!--		<li class="haveChild" sec:authorize="hasAnyAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/auth') ? 'on open':''}"><a href="#">Auth&permission</a>-->
+		<!--			<ul>-->
+		<!--				<li th:classappend="${#httpServletRequest.getRequestURI() == '/auth' || #httpServletRequest.getRequestURI() == '/auth/dashboard' ? 'on':''}"><a th:href="@{/auth/dashboard}">DashBoard</a></li>-->
+		<!--				<li sec:authorize="hasAnyAuthority('ROLE_GROUP_READ', 'ROLE_GROUP_WRITE')" th:classappend="${#httpServletRequest.getRequestURI() == '/auth/group' ? 'on':''}"><a th:href="@{/auth/group}">Group</a></li>-->
+		<!--				<li sec:authorize="hasAnyAuthority('ROLE_USER_READ', 'ROLE_USER_WRITE')" th:classappend="${#httpServletRequest.getRequestURI() == '/auth/user' ? 'on':''}"><a th:href="@{/auth/user}">User</a></li>-->
+		<!--				<li sec:authorize="hasAnyAuthority('ROLE_ROLE_READ', 'ROLE_ROLE_WRITE')" th:classappend="${#httpServletRequest.getRequestURI() == '/auth/role' ? 'on':''}"><a th:href="@{/auth/role}">Role</a></li>-->
+		<!--			</ul>-->
+		<!--		</li>-->
+		<!--		<li class="haveChild" sec:authorize="hasAuthority('ROLE_ADMIN')" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/management') ? 'on open':''}"><a href="#">Management</a>-->
+		<!--			<ul>-->
+		<!--				<li th:classappend="${#httpServletRequest.getRequestURI() == '/management' || #httpServletRequest.getRequestURI() == '/management/setting' ? 'on':''}"><a th:href="@{/management/setting}">Setting</a></li>-->
+		<!--&lt;!&ndash;				<li th:classappend="${#httpServletRequest.getRequestURI() == '/management/system' ? 'on':''}"><a th:href="@{/management/system}">System</a></li>&ndash;&gt;-->
+		<!--			</ul>-->
+		<!--		</li>-->
+	</ul>
+</nav>
+
+<div layout:fragment="layout.embedded.script" th:remove="tag">
+	<script type="text/javascript">
+		// $(function() {
+		// 	var path = window.location.pathname;
+		// 	switch (path) {
+		// 	case "":
+		// 	case "/main":
+		// 	case "/license":
+		// 		$(".snb_license").parent().parent().addClass('selected');
+		// 		break;
+		//     case "/user":
+		//         $(".snb_user").parent().parent().addClass('selected');
+		//         break;
+		//     case "/history":
+		//         $(".snb_action").parent().parent().addClass('selected');
+		//         break;
+		// 	}
+		// });
+	</script>
+</div>
+
+</html>

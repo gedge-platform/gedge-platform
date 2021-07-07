@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: micro-gpu
+  labels:
+    name: micro-gpu
+  namespace: gedge-default
+spec:
+  nodeName: etri-gpunode
+  containers:
+  - name: micro-gpu
+    image: 10.10.0.104:5000/trans-gpu
+    workingDir: /root
+    command: 
+    - /root/gpu.sh
+    resources:
+      limits:
+        cpu: "6"
+        memory: "4Gi"
+        nvidia.com/gpu: "1"

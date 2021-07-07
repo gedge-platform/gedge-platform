@@ -1,0 +1,14 @@
+"github.com/devopsfaith/krakend/proxy": {
+    "flatmap_filter": [
+        {
+            "type": "del",
+            "args": [
+            "items.*.metadata.generateName",
+            "items.*.metadata.managedFields",
+            "items.*.metadata.ownerReferences",
+            "metadata.managedFields",
+            "metadata.ownerReferences"
+            ]
+        }
+    ]
+}

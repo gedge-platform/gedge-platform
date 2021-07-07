@@ -23,7 +23,7 @@ logger.setLevel(app_conf.Log.log_level)
 # temp
 logger.addHandler(logging.StreamHandler())
 
-db_path = "data/schedulehint.db"
+db_path = "./data/schedulehint.db"
 mydb.init(db_path)
 
 schema_create = yamale.make_schema(content="""  

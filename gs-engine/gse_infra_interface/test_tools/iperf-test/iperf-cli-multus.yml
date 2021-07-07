@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: iperf-client-mul
+  labels:
+    name: iperf-client-mul
+  namespace: gedge-default
+  annotations:
+    k8s.v1.cni.cncf.io/networks: '[
+            { "name": "multus-static2",
+              "ips": [ "10.255.2.80/24" ]
+            }
+    ]'
+spec:
+  nodeName: etri-worker1
+  containers:
+  - name: iperf-client-mul
+    image: 10.10.0.104:5000/net_test
+    command: 
+    - /root/iperf-test.sh
+    args: ["10.255.2.50"]
