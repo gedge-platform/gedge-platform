@@ -32,7 +32,22 @@
     - golang 기반 API 서버로 변경
     - 쿠버네티스 API 연동 및 필터링 설정 추가
     - 모니터링 API 연동 업데이트
-  
+
+### GS-Broker
+기존 Gs-Broker에 이종 프로토콜(HTTP) 통신이 가능한 로직 추가 및 게이트웨이 내부 통신을 gRPC로 변경 구성
+
+- PB(Proto Buffer) 폴더 생성 및 업로드
+    - gs-gateway.proto
+        - Gedge 게이트웨이 내부와 gRPC 통신을 하기 위한 proto 정의 파일
+    - gs-gateway_pb2.py
+        - proto 함수를 python3에서 사용하기 위해 컴파일한 파일
+    - gs-gateway_pb2_grpc.py
+        - proto 함수를 python3에서 gRPC 통신에도 지원하기 위한 컴파일 파일
+    - pb와 관련된 gs-broker 코드 변경
+        - 기존 코드에 HTTP 프로토콜로 통신할 수 있는 로직 추가
+        - 게이트웨이 내부 통신을 gRPC로 변경하는 구성 추가
+
+
 ## v1.0 Release
 
 ### GS-Engine
@@ -65,3 +80,9 @@
 - gm-tool
     - 서비스 대시보드 프로토타입
     - 쿠버네티스 클러스터 모니터링 기능
+
+### GS-Broker
+- gedge-platform에서 활용할 수 있는 Gs-Broker 개념정의
+- gs-broker.py 릴리즈 : 메시지 브로커를 지원하는 (MQTT) 기능을 Gedge 게이트웨이와 연결하는 구조의 파일
+
+
