@@ -1,7 +1,0 @@
-configMapGenerator:
-- name: example-redis-config
-  namespace: gedge-system
-  files:
-  - redis-config
-resources:
-- redis-pod.yaml

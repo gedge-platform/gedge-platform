@@ -1,4 +1,0 @@
-Flask
-redis
-pythonping
-kubernetes
