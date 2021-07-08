@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: micro-com
+  labels:
+    name: micro-com
+  namespace: gedge-default
+spec:
+  nodeName: etri-worker1
+  containers:
+  - name: micro-com
+    image: 10.10.0.104:5000/trans
+    workingDir: /root
+    command:
+    - /root/com.sh
+    resources:
+      limits:
+        cpu: "6"
+        memory: "4Gi"
+

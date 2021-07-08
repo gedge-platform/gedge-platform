@@ -1,0 +1,8 @@
+BASE_URL = '/api/v1'
+NODE_INFO = BASE_URL + '/node'
+POD_MANAGE = BASE_URL + '/pod'
+NETWORK_MANAGE = BASE_URL + '/network'
+NIC_MANAGE = NETWORK_MANAGE + '/nic'
+CILIUM_PLCY_MANAGER = NETWORK_MANAGE + '/ciliumplcy'
+KUBE_INIT_MANAGE = BASE_URL + '/kubeinit'
+RESPONSE_ANALYSIS_MANAGER = BASE_URL + '/responseanalysismanager'
