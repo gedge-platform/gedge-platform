@@ -1,5 +1,8 @@
 # Changelog
 
+- __[v1.5 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v15-release)__
+- __[v1.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v10-release)__
+
 ## v1.5 Release
 
 ### GS-Engine
