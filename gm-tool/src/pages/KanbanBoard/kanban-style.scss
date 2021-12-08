@@ -1,0 +1,13 @@
+@import "../../theme.scss";
+
+.borad-width {
+    min-width: 300px;
+}
+@media (max-width: 1024px) {
+    .borad-width {
+        min-width: 270px;
+    }
+}
+.khFUIq{
+    background-color: $card-bg!important;
+}

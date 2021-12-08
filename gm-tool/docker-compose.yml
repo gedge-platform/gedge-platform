@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  gm-tool:
+    image: gm-tool:0.0.1
+    container_name: gm-tool
+    command: yarn start
+    restart: unless-stopped
+    stdin_open: true
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"

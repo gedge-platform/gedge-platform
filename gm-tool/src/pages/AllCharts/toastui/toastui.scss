@@ -1,0 +1,10 @@
+@import "../../../assets/scss/theme.scss";
+
+.tui-chart text{
+    fill: $text-muted;
+    font-family: $font-family-base !important;
+    filter: none;
+}
+.tui-chart svg path:not([class]){
+    stroke: $text-muted;
+}
