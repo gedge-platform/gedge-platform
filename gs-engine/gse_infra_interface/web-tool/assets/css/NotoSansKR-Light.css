@@ -1,0 +1,8 @@
+@font-face {
+	font-family: 'NotoSansKR-Light';
+	src: url(../../assets/fonts/NotoSansKR-Light.woff2) format('woff2'),
+	url(../../assets/fonts/NotoSansKR-Light.woff) format('woff'),
+	url(../../assets/fonts/NotoSansKR-Light.otf) format('otf');
+	font-weight: 300;
+	font-style: normal;
+}

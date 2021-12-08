@@ -1,5 +1,5 @@
 # GEdge-Platform
-[![Generic badge](https://img.shields.io/badge/release-1.5-green.svg)](https://github.com/gedge-platform/gedge-platform/releases/tag/1.0)
+[![Generic badge](https://img.shields.io/badge/release-2.0-green.svg)](https://github.com/gedge-platform/gedge-platform/releases/tag/1.0)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ***
 GEdge-Platform is a cloud edge computing platform for ultra low-latency services at the edge of the network.

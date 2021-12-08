@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/NotoSansKR-Black.css">
+    <link rel="stylesheet" href="assets/css/NotoSansKR-BoldR.css">
+    <link rel="stylesheet" href="assets/css/NotoSansKR-Light.css">
+    <link rel="stylesheet" href="assets/css/NotoSansKR-Medium.css">
+    <link rel="stylesheet" href="assets/css/NotoSansKR-Regula.css">
+    <link rel="stylesheet" href="assets/css/NotoSansKR-Thin.css">
+    <link rel="stylesheet" href="assets/css/common_base.css">
+    <link rel="stylesheet" href="assets/css/create_pod.css">
+    <title>클라우드 엣지 SW 플랫폼 시험환경</title>
+</head>
+
+<body>
+    <div id="background_top"></div>
+    <div id="contents">
+        <div id="header"><span id="header_title">클라우드 엣지 SW 플랫폼 시험환경</span>
+            <div id="header_button_div"><button class="btn header_button header_button_active" type="button" onclick="location.href=&quot;create_pod.html&quot;">POD 생성</button><button class="btn header_button header_button_disactive" type="button" onclick="location.href=&quot;response_analysis.html&quot;">응답분석</button><button class="btn header_button header_button_disactive"
+                    type="button" style="margin-right: 15px;" onclick="location.href=&quot;init_kube.html&quot;">설정</button></div>
+        </div>
+        <div id="contents_contents">
+            <form id="create_pod_form" style="min-height: 900px;">
+                <div id="node" class="input_field" value="node_nm"><img class="icobulgreen" src="assets/img/ico-bul-green/ico-bul-green.png" srcset="assets/img/ico-bul-green/ico-bul-green@2x.png 2x,assets/img/ico-bul-green/ico-bul-green@3x.png 3x"><span class="input_field_title">노드 선택</span>
+                    <div class="dropdown" value="node_nm"><button class="btn dropdown-toggle" data-toggle="dropdown" aria-expanded="false" type="button"></button>
+                        <div class="dropdown-menu" role="menu"></div>
+                    </div><input class="form-control" type="hidden" id="node_nm" name="node_nm" value="node-1"></div>
+                <div id="image" class="input_field"><img class="icobulgreen" src="assets/img/ico-bul-green/ico-bul-green.png" srcset="assets/img/ico-bul-green/ico-bul-green@2x.png 2x,assets/img/ico-bul-green/ico-bul-green@3x.png 3x"><span class="input_field_title">이미지명</span><input class="form-control input_text" type="text" id="img_nm" name="img_nm" placeholder="이미지명을 입력해주세요."
+                        onchange="img_check(this)"></div>
+                <div id="pod" class="input_field"><img class="icobulgreen" src="assets/img/ico-bul-green/ico-bul-green.png" srcset="assets/img/ico-bul-green/ico-bul-green@2x.png 2x,assets/img/ico-bul-green/ico-bul-green@3x.png 3x"><span class="input_field_title">Pod명</span><input class="form-control input_text" type="text" id="pod_nm" name="pod_nm" placeholder="Pod명을 입력해주세요."></div>
+                <div
+                    id="resource" class="input_field">
+                    <div class="input_field_large_title"><img class="icobulgreen" src="assets/img/ico-bul-green/ico-bul-green.png" srcset="assets/img/ico-bul-green/ico-bul-green@2x.png 2x,assets/img/ico-bul-green/ico-bul-green@3x.png 3x"><span class="input_field_title">컴퓨팅 자원</span></div>
+                    <div id="resource_div" class="input_field_large_border">
+                        <div class="resource_input_div"><span class="resource_input_title">CPU 수</span>
+                            <hr class="resource_input_hr">
+                            <div class="resource_input_div_input"><span class="resource_input_div_input_title">Limit</span><input class="form-control resource_input_div_input_field" type="number" id="cpu_lmt" name="cpu_lmt" value="0" onchange="lmt_check(this, &quot;cpu&quot;)"><span id="alctb_cpu_limit" class="resource_input_div_input_max">최대&nbsp;</span></div>
+                            <div
+                                class="resource_input_div_input"><span class="resource_input_div_input_title">Request</span><input class="form-control resource_input_div_input_field" type="number" id="cpu_req" name="cpu_req" value="0" onchange="req_check(this,&quot;cpu_lmt&quot;)"><span id="alctb_cpu_request" class="resource_input_div_input_max">최대&nbsp;</span></div>
+                    </div>
+                    <div class="resource_input_div"><span class="resource_input_title">Memory용량(GB)</span>
+                        <hr class="resource_input_hr">
+                        <div class="resource_input_div_input"><span class="resource_input_div_input_title">Limit</span><input class="form-control resource_input_div_input_field" type="number" id="mem_lmt" name="" value="0" onchange="lmt_check(this, &quot;mem&quot;)"><span id="alctb_mem_limit" class="resource_input_div_input_max">최대&nbsp;</span></div>
+                        <div
+                            class="resource_input_div_input"><span class="resource_input_div_input_title">Request</span><input class="form-control resource_input_div_input_field" type="number" id="mem_req" name="" value="0" onchange="req_check(this,&quot;mem_lmt&quot;)"><span id="alctb_mem_request" class="resource_input_div_input_max">최대&nbsp;</span></div>
+        </div>
+        <div class="resource_input_div"><span class="resource_input_title">GPU 수</span>
+            <hr class="resource_input_hr">
+            <div class="resource_input_div_input"><span class="resource_input_div_input_title">Limit</span><input class="form-control resource_input_div_input_field" type="number" id="gpu_lmt" name="gpu_lmt" value="0" onclick="lmt_check(this, &quot;gpu&quot;)"><span id="alctb_gpu_limit" class="resource_input_div_input_max">최대&nbsp;</span></div>
+            <div
+                class="resource_input_div_input"><input class="form-control resource_input_div_input_field" type="number" style="visibility: hidden;">
+                <div></div>
+        </div>
+    </div>
+    </div>
+    </div>
+    <div id="network" class="input_field">
+        <div class="input_field_large_title"><img class="icobulgreen" src="assets/img/ico-bul-green/ico-bul-green.png" srcset="assets/img/ico-bul-green/ico-bul-green@2x.png 2x,assets/img/ico-bul-green/ico-bul-green@3x.png 3x"><span class="input_field_title">네트워크 플러그인</span></div>
+        <div class="input_field_large_border"><span class="resource_input_title" style="margin-right: 10px;">SR_IOV</span><span class="resource_input_div_input_title">(<span id="select_sriov_cnt">0</span>/<span id="alctb_sriov"></span>)<br></span>
+            <div id="nic_list">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="table_cell_left_radius" style="width: 60px;"></th>
+                            <th style="width: 95px;">플러그인</th>
+                            <th style="width: 205px;">NIC 명</th>
+                            <th style="width: 95px;">Type</th>
+                            <th style="width: 177.5px;">Subnet</th>
+                            <th class="table_cell_right_radius" style="width: 197.5px;">IP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nic_list_tbody"></tbody>
+                </table>
+            </div>
+        </div><input class="form-control" type="hidden" id="sriov_cnt" name="sriov_cnt" value="0"></div>
+    <div id="storage" class="input_field">
+        <div class="input_field_large_title"><img class="icobulgreen" src="assets/img/ico-bul-green/ico-bul-green.png" srcset="assets/img/ico-bul-green/ico-bul-green@2x.png 2x,assets/img/ico-bul-green/ico-bul-green@3x.png 3x"><span class="input_field_title">스토리지</span></div>
+        <div class="input_field_large_border">
+            <div class="input_field"><span class="resource_input_div_input_title">마운트 위치</span><input class="form-control input_text" type="text" id="pvc_mnt_loc" name="pvc_mnt_loc" placeholder="마운트 위치를 입력해주세요."></div>
+        </div>
+    </div>
+    </form><button class="btn" id="create_pod_button" type="button" onclick="create_pod()">생성하기</button></div>
+    </div>
+    <div id="spinner_div"><span class="spinner-border" role="status" style="width: 100px;height: 100px;color: blue;border: 10px solid currentColor;border-right-color: transparent;border-radius: 50%;display: block;position: fixed;z-index: 1031;top: 50%;right: 50%;"></span></div>
+    <script
+        src="assets/js/jquery.min.js"></script>
+        <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+        <script src="assets/js/ajax_manager.js"></script>
+        <script src="assets/js/common_base.js"></script>
+        <script src="assets/js/create_pod.js"></script>
+        <script src="server_conf/server_urls.js"></script>
+        <script src="assets/js/utils.js"></script>
+</body>
+
+</html>

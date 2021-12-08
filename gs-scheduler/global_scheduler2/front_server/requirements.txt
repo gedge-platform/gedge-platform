@@ -1,0 +1,5 @@
+Flask
+redis
+kafka-python
+kubernetes
+pymongo
