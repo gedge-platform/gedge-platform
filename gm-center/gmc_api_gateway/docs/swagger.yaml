@@ -1,0 +1,109 @@
+basePath: /gmcapi/v1
+definitions:
+  model.App:
+    properties:
+      appCategory:
+        type: string
+      appDescription:
+        type: string
+      appInstalled:
+        type: integer
+      appName:
+        type: string
+      appNum:
+        type: integer
+      created_at:
+        type: string
+    type: object
+host: 192.168.150.197:8009
+info:
+  contact:
+    name: GM-Center
+    url: https://gedge-platform.github.io/gm-center/
+  description: This is a Gedge GM-Center Swagger API.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Gedge GM-Center Swagger API
+  version: "1.0"
+paths:
+  /apps:
+    get:
+      consumes:
+      - application/json
+      description: get App Lists
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/model.App'
+      summary: Show all apps
+    post:
+      consumes:
+      - application/json
+      description: create App
+      parameters:
+      - description: App Name
+        in: path
+        name: appName
+        required: true
+        type: string
+      - description: App Category
+        in: path
+        name: appCategory
+        required: true
+        type: string
+      - description: App Description
+        in: path
+        name: appDescription
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/model.App'
+      summary: Create App
+  /apps/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get App
+      parameters:
+      - description: App Name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/model.App'
+      summary: Show App
+schemes:
+- http
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

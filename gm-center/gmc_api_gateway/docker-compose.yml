@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  gm-center:
+    image: gm-center:0.0.1
+    container_name: gm-center
+    command: ./main
+    restart: unless-stopped
+    stdin_open: true
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8010:8010"
