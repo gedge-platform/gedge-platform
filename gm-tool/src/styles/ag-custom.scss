@@ -1,0 +1,287 @@
+.grid-height_5 {
+  height: 239px;
+}
+.grid-height_10 {
+  height: 404px;
+}
+.grid-height {
+  height: 734px;
+}
+
+.grid-height2 {
+  height: 100% !important;
+}
+
+.grid-wrapper {
+  width: 100%;
+  height: calc(100% - 37px);
+}
+
+.paging-wrap {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 37px;
+  padding: 0 8px;
+  // border-top: 1px solid #141a30;
+  background-color: #2f3855;
+  color: rgba(255, 255, 255, 0.7);
+  //&::after {
+  //  content: '';
+  //  position: absolute;
+  //  bottom: -1px;
+  //  left: -1px;
+  //  right: -1px;
+  //  border-bottom: 1px solid #858f9c;
+  //}
+  select {
+    min-width: 95px;
+    height: 24px;
+    line-height: 22px;
+    margin-right: 8px;
+    background-image: url(../images/bullet/select_arr_g.png);
+    // background-color: #5c6478;
+    // color: rgba(255, 255, 255, 0.7);
+    // border-radius: 3px;
+    // border: 1px solid #212a43;
+  }
+  .btn_comm {
+    width: 24px;
+    height: 24px;
+  }
+  .btnLabel_icon {
+    background-image: url(../images/bullet/page_arr.png);
+    &.prev {
+      transform: scaleX(-1);
+    }
+  }
+  .page-num {
+    padding: 0 15px;
+  }
+}
+
+.ag-theme-alpine {
+  font: inherit;
+  .ag-root-wrapper {
+    border: 0 hidden;
+  }
+  .ag-header {
+    border-bottom-color: #03112c;
+  }
+  .ag-header-viewport {
+    border-bottom: 1px solid #03112c;
+    border-right: 1px solid #03112c;
+    background: #2f3855;
+  }
+  .ag-header-row {
+    height: 36px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    font-weight: 700;
+    background: #2f3855;
+    box-shadow: inset 0 1px 0 #071e3f;
+  }
+  .ag-header-cell {
+    color: rgba(255, 255, 255, 0.7);
+    border-left: 1px solid #03112c;
+    border-right: 1px solid #03112c;
+    box-shadow: inset 0 -1px 0 #03112c;
+    padding-left: 14px;
+    padding-right: 12px;
+    &:last-child {
+      border-right: 0;
+      .ag-header-cell-resize::after {
+        display: none;
+      }
+    }
+  }
+  .ag-header-cell-resize::after {
+    top: 0;
+    height: 100%;
+    background-color: #2f3855;
+  }
+
+  .ag-row {
+    height: 33px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    border-color: #03112c;
+    background-color: #25304b;
+    // border-bottom-style: none;
+    border-top-style: solid;
+    &.ag-row-first {
+      border-top-color: #03112c;
+    }
+    &.ag-row-odd {
+      background-color: #222c45;
+    }
+    &.ag-row-hover {
+      border-color: #dfebf9;
+      color: black;
+      font-weight: 700;
+      background-color: #e9f3ff;
+      & + .ag-row {
+        border-top-color: #dfebf9;
+      }
+    }
+    &.ag-row-focus,
+    &.ag-row-selected {
+      border-color: #d2e4f9 !important;
+      background-color: #dbecff !important;
+      color: black;
+      font-weight: 700;
+      & + .ag-row {
+        border-top-color: #d2e4f9 !important;
+      }
+    }
+  }
+  .ag-ltr {
+    .ag-cell {
+      border-right-color: #eff1f3;
+    }
+    .ag-row-hover .ag-cell {
+      border-right-color: #dbe7f4;
+    }
+    .ag-row-focus .ag-cell,
+    .ag-row-selected .ag-cell {
+      border-right-color: #cee1f5 !important;
+    }
+    .ag-has-focus .ag-cell-focus:not(.ag-cell-range-selected) {
+      border-color: #a0bff9;
+    }
+  }
+
+  .ag-cell {
+    line-height: 30px;
+    padding-left: 14px;
+    padding-right: 11px;
+  }
+  .ag-sort-ascending-icon,
+  .ag-sort-descending-icon {
+    margin-left: 15px;
+    .ag-icon {
+      width: 15px;
+      height: 14px;
+      border-radius: 2px;
+      background: #ccd0d7 url(../images/bullet/sort_arr.png) no-repeat center
+        center;
+      &::before {
+        display: none;
+      }
+      &.ag-icon-asc {
+        transform: scaleY(-1);
+      }
+      &:hover {
+        background-color: #007aff;
+      }
+    }
+  }
+  .ag-header-cell-menu-button {
+    opacity: 1;
+    width: 15px;
+    height: 15px;
+    background: url(../images/bullet/grid_hamburger.png) no-repeat center top;
+    &:hover {
+      background-position-y: -15px;
+    }
+    .ag-icon {
+      &::before {
+        display: none;
+      }
+    }
+  }
+  .ag-column-menu-visible .ag-header-cell-menu-button {
+    background-position-y: -15px;
+  }
+  .ag-menu {
+    border: 1px solid #071e3f;
+    border-radius: 3px;
+    background: #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  }
+  //.ag-filter-select { display: none }
+  input {
+    box-shadow: none !important;
+  }
+  .ag-simple-filter-body-wrapper {
+    padding: 0;
+    & > * {
+      margin-bottom: 0;
+    }
+  }
+  input[class^="ag-"][type="date"],
+  input[class^="ag-"][type="text"] {
+    border: 0;
+    height: 32px;
+    border-radius: 2px;
+    padding: 5px 10px;
+  }
+  .ag-checkbox-input-wrapper {
+    &::after,
+    &.ag-checked::after,
+    &ag-indeterminate::after {
+      display: none;
+    }
+    &:focus-within,
+    &:active {
+      box-shadow: none;
+    }
+
+    border-radius: 0;
+    border: 1px solid #e1e3e6;
+    background: #f7f9fc no-repeat center center;
+    &.ag-checked {
+      background-image: url(../images/bullet/input_checked.png);
+    }
+    &.ag-indeterminate {
+      background-image: url(../images/bullet/input_clear.png);
+    }
+  }
+  .ag-header-cell {
+    .ag-checkbox-input-wrapper {
+      margin-left: -1px;
+      border-color: #c6cbd1;
+      background-color: #edeef1;
+    }
+    .ag-checkbox {
+      margin-right: 12px;
+    }
+  }
+}
+
+.paper_detail .ag-theme-alpine {
+  .ag-header-viewport {
+    background: #fff;
+    border-top: 1px solid #c5cad0;
+  }
+  .ag-header-row {
+    height: 33px;
+    font-size: 12px;
+  }
+  .ag-header-cell {
+    border-right-color: #c5cad0;
+    box-shadow: none;
+    &:last-child {
+      border-right: 0;
+      .ag-header-cell-resize::after {
+        display: none;
+      }
+    }
+  }
+  .ag-cell:last-child {
+    border-right: 0;
+  }
+
+  .paging-wrap {
+    border-bottom: 1px solid #c5cad0;
+  }
+
+  //kwoo2
+  .ag-center-cols-viewport {
+    overflow-x: hidden !important;
+  }
+}
+.ag-center-cols-viewport {
+  overflow-x: hidden !important;
+}

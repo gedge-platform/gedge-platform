@@ -14,73 +14,40 @@
             "name": "Apache 2.0",
             "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
         },
-        "version": "1.0"
+        "version": "2.0"
     },
-    "host": "192.168.150.197:8009",
-    "basePath": "/gmcapi/v1",
+    "host": "192.168.160.230:8013",
+    "basePath": "/gmcapi/v2",
     "paths": {
-        "/apps": {
-            "get": {
-                "description": "get App Lists",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Show all apps",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.App"
-                        },
-                        "headers": {
-                            "Token": {
-                                "type": "string",
-                                "description": "qwerty"
-                            }
-                        }
-                    }
-                }
-            },
+        "/auth": {
             "post": {
-                "description": "create App",
+                "description": "get JWT token",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Create App",
+                "tags": [
+                    "Login"
+                ],
+                "summary": "Login",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "App Name",
-                        "name": "appName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "App Category",
-                        "name": "appCategory",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "App Description",
-                        "name": "appDescription",
-                        "in": "path",
-                        "required": true
+                        "description": "User Info Body",
+                        "name": "authBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.User"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.App"
+                            "$ref": "#/definitions/model.User"
                         },
                         "headers": {
                             "Token": {
@@ -92,22 +59,161 @@
                 }
             }
         },
-        "/apps/{name}": {
+        "/ceph/health": {
             "get": {
-                "description": "get App",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get Ceph volume Health info",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Show App",
+                "tags": [
+                    "Volume"
+                ],
+                "summary": "Show Ceph volume Health",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.CEPH"
+                        }
+                    }
+                }
+            }
+        },
+        "/clusters": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get cluster List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "Show List cluster",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.CLUSTER"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create Cluster",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "Create Cluster",
+                "parameters": [
+                    {
+                        "description": "Cluster Info Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Cluster"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Cluster"
+                        },
+                        "headers": {
+                            "Token": {
+                                "type": "string",
+                                "description": "qwerty"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/clusters/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get cluster Details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cluster"
+                ],
+                "summary": "Show detail cluster",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "App Name",
+                        "description": "name of the Cluster",
                         "name": "name",
                         "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/cronjob/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get cronjob Details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Kubernetes"
+                ],
+                "summary": "Show detail cronjob",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of the Cronjob",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster Name of the Cronjob",
+                        "name": "cluster",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -115,7 +221,891 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.App"
+                            "$ref": "#/definitions/model.CRONJOB"
+                        }
+                    }
+                }
+            }
+        },
+        "/cronjobs": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get cronjob List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Kubernetes"
+                ],
+                "summary": "Show List cronjob",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.CRONJOB"
+                        }
+                    }
+                }
+            }
+        },
+        "/job/:name": {
+            "get": {
+                "description": "get job Details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Show detail job",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.JOB"
+                        },
+                        "headers": {
+                            "Token": {
+                                "type": "string",
+                                "description": "qwerty"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/jobs": {
+            "get": {
+                "description": "get job List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Show List job",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.JOB"
+                        },
+                        "headers": {
+                            "Token": {
+                                "type": "string",
+                                "description": "qwerty"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/members": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get Member List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Show List Member",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Member"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create Member",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create Member",
+                "parameters": [
+                    {
+                        "description": "Cluster Info Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Member"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Member"
+                        },
+                        "headers": {
+                            "Token": {
+                                "type": "string",
+                                "description": "qwerty"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/members/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get Member Details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Show detail Member",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of the Member",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/pods": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get pods List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Show List pods",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "cluster Name of the pods",
+                        "name": "cluster",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "workspace Name of the pods",
+                        "name": "workspace",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.POD"
+                        }
+                    }
+                }
+            }
+        },
+        "/pods/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get pods Details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Show detail pods",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of the pods",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster Name of the pods",
+                        "name": "cluster",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "workspace Name of the pods",
+                        "name": "workspace",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.POD"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects": {
+            "post": {
+                "description": "Create userProject",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "Create userProject",
+                "parameters": [
+                    {
+                        "description": "UserProject Info Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.USERPROJECT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.USERPROJECT"
+                        },
+                        "headers": {
+                            "Token": {
+                                "type": "string",
+                                "description": "qwerty"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pvcs": {
+            "get": {
+                "description": "get pvc List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Show app PVCs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.PVC"
+                        },
+                        "headers": {
+                            "Token": {
+                                "type": "string",
+                                "description": "qwerty"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pvs": {
+            "get": {
+                "description": "get pv List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Show app PVs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.PV"
+                        },
+                        "headers": {
+                            "Token": {
+                                "type": "string",
+                                "description": "qwerty"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pvs/:name": {
+            "get": {
+                "responses": {}
+            }
+        },
+        "/services": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get Service List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Kubernetes"
+                ],
+                "summary": "Show List Service",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SERVICE"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create Service",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Kubernetes"
+                ],
+                "summary": "Create Service",
+                "parameters": [
+                    {
+                        "description": "Service Info Body",
+                        "name": "yaml",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster Name of the Service",
+                        "name": "cluster",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "project Name of the Service",
+                        "name": "project",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SERVICE"
+                        },
+                        "headers": {
+                            "Token": {
+                                "type": "string",
+                                "description": "qwerty"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/services/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get cronjob Service",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Kubernetes"
+                ],
+                "summary": "Show detail Service",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of the Service",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster Name of the Service",
+                        "name": "cluster",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SERVICE"
+                        }
+                    }
+                }
+            }
+        },
+        "/spider/cloudos": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get CloudOS",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VM"
+                ],
+                "summary": "Cloudos",
+                "responses": {}
+            }
+        },
+        "/spider/credentials": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get ALLCredential",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VM"
+                ],
+                "summary": "Credential",
+                "responses": {}
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get Credential",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VM"
+                ],
+                "summary": "Credential",
+                "parameters": [
+                    {
+                        "description": "Credential Info Body",
+                        "name": "CredentialBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/spider/credentials/{credentialName}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get Credential",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VM"
+                ],
+                "summary": "Credential",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the credentials",
+                        "name": "credentialName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get Credential",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VM"
+                ],
+                "summary": "Credential",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the credentials",
+                        "name": "credentialName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/systemProjects": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get systemProject List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "Show List systemProject",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User Name of the Project Owner",
+                        "name": "user",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SYSTEMPROJECT"
+                        }
+                    }
+                }
+            }
+        },
+        "/systemProjects/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get systemProject Details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "Show detail systemProject",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of the systemProject",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cluster Name of the systemProject",
+                        "name": "cluster",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/userProjects": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get userProject List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "Show List userProject",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User Name of the Project Owner",
+                        "name": "user",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.USERPROJECT"
+                        }
+                    }
+                }
+            }
+        },
+        "/userProjects/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get userProject Details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "Show detail userProject",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of the userProject",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "delete userProjects",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "delete userProjects",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of the userProjects",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/workspace/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get workspace Details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspace"
+                ],
+                "summary": "Show detail workspace",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of the workspace",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/workspaces": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get workspace List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspace"
+                ],
+                "summary": "Show List workspace",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user name of the workspace Owner",
+                        "name": "user",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Workspace"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspace"
+                ],
+                "summary": "Create workspace",
+                "parameters": [
+                    {
+                        "description": "workspace Info Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Workspace"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Workspace"
                         },
                         "headers": {
                             "Token": {
@@ -129,32 +1119,945 @@
         }
     },
     "definitions": {
-        "model.App": {
+        "model.Active": {
             "type": "object",
             "properties": {
-                "appCategory": {
+                "kind": {
                     "type": "string"
                 },
-                "appDescription": {
+                "name": {
                     "type": "string"
                 },
-                "appInstalled": {
+                "namespace": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CEPH": {
+            "type": "object",
+            "properties": {
+                "capacity": {
+                    "$ref": "#/definitions/model.Capacity"
+                },
+                "clientPerformance": {
+                    "$ref": "#/definitions/model.ClientPerformance"
+                },
+                "clusterStatus": {
+                    "type": "string"
+                },
+                "hostNum": {
                     "type": "integer"
                 },
-                "appName": {
+                "monitor": {
+                    "$ref": "#/definitions/model.Monitor"
+                },
+                "object": {
+                    "$ref": "#/definitions/model.Object"
+                },
+                "osd": {
+                    "$ref": "#/definitions/model.OSD"
+                },
+                "pgStatus": {},
+                "pgs_per_osd": {
+                    "type": "number"
+                },
+                "poolNum": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.CLUSTER": {
+            "type": "object",
+            "required": [
+                "clusterEndpoint",
+                "clusterName",
+                "clusterType",
+                "token"
+            ],
+            "properties": {
+                "address": {
                     "type": "string"
                 },
-                "appNum": {
-                    "type": "integer"
+                "clusterEndpoint": {
+                    "type": "string"
+                },
+                "clusterName": {
+                    "type": "string"
+                },
+                "clusterType": {
+                    "type": "string"
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "gpuCnt": {
+                    "description": "Status                  string                   `json:\"status\"`\nNetwork                 string                   `json:\"network\"`",
+                    "type": "integer"
+                },
+                "nodeCnt": {
+                    "type": "integer"
+                },
+                "point": {},
+                "resourceUsage": {
+                    "description": "Gpu           []map[string]interface{} `json:\"gpu,omitempty\"`"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CRONJOB": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Active"
+                    }
+                },
+                "annotations": {},
+                "cluster": {
+                    "type": "string"
+                },
+                "concurrencyPolicy": {
+                    "type": "string"
+                },
+                "containers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Containers"
+                    }
+                },
+                "creationTimestamp": {
+                    "type": "string"
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.EVENT"
+                    }
+                },
+                "failedJobsHistoryLimit": {
+                    "type": "integer"
+                },
+                "label": {},
+                "lastScheduleTime": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "project": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "successfulJobsHistoryLimit": {
+                    "type": "integer"
+                },
+                "user": {
+                    "type": "string"
+                },
+                "workspace": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Capacity": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "number"
+                },
+                "total": {
+                    "type": "number"
+                },
+                "used": {
+                    "type": "number"
+                }
+            }
+        },
+        "model.ClientPerformance": {
+            "type": "object",
+            "properties": {
+                "read_bytes_sec": {
+                    "type": "number"
+                },
+                "read_op_per_sec": {
+                    "type": "number"
+                },
+                "write_bytes_sec": {
+                    "type": "number"
+                },
+                "write_op_per_sec": {
+                    "type": "number"
+                }
+            }
+        },
+        "model.Cluster": {
+            "type": "object",
+            "required": [
+                "clusterEndpoint",
+                "clusterName",
+                "clusterType",
+                "token"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "clusterEndpoint": {
+                    "type": "string"
+                },
+                "clusterName": {
+                    "type": "string"
+                },
+                "clusterType": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "point": {},
+                "status": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.ConfigMapKeyRef": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.ContainerStatuses": {
+            "type": "object",
+            "properties": {
+                "containerID": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ready": {
+                    "type": "boolean"
+                },
+                "restartCount": {
+                    "type": "integer"
+                },
+                "started": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "model.Containers": {
+            "type": "object",
+            "properties": {
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.DBWorkspace": {
+            "type": "object",
+            "required": [
+                "memberName",
+                "workspaceDescription",
+                "workspaceName"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "memberName": {
+                    "type": "string"
+                },
+                "objectId": {
+                    "type": "string"
+                },
+                "selectCluster": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Cluster"
+                    }
+                },
+                "workspaceDescription": {
+                    "type": "string"
+                },
+                "workspaceName": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.ENV": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                },
+                "valueFrom": {
+                    "$ref": "#/definitions/model.ValueFrom"
+                }
+            }
+        },
+        "model.EVENT": {
+            "type": "object",
+            "properties": {
+                "cluster": {
+                    "type": "string"
+                },
+                "eventTime": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "namespace": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.FieldRef": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "type": "string"
+                },
+                "fieldPath": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.JOB": {
+            "type": "object",
+            "properties": {
+                "cluster": {
+                    "type": "string"
+                },
+                "completions": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "duration": {},
+                "name": {
+                    "type": "string"
+                },
+                "project": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                },
+                "workspace": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Member": {
+            "type": "object",
+            "required": [
+                "email",
+                "memberId",
+                "memberName",
+                "password"
+            ],
+            "properties": {
+                "contact": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "logined_at": {
+                    "type": "integer"
+                },
+                "memberId": {
+                    "type": "string"
+                },
+                "memberName": {
+                    "type": "string"
+                },
+                "memberRole": {
+                    "type": "string"
+                },
+                "objectId": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 10,
+                    "minLength": 0
+                }
+            }
+        },
+        "model.Monitor": {
+            "type": "object",
+            "properties": {
+                "quorum": {},
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.OSD": {
+            "type": "object",
+            "properties": {
+                "in": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "up": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Object": {
+            "type": "object",
+            "properties": {
+                "degraded": {
+                    "type": "number"
+                },
+                "healthy": {
+                    "type": "number"
+                },
+                "misplaced": {
+                    "type": "number"
+                },
+                "unfound": {
+                    "type": "number"
+                }
+            }
+        },
+        "model.OwnerReference": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.POD": {
+            "type": "object",
+            "properties": {
+                "Podcontainers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.PODCONTAINERS"
+                    }
+                },
+                "annotations": {},
+                "cluster": {
+                    "type": "string"
+                },
+                "containerStatuses": {
+                    "description": "VolumeMounts      []VolumeMounts      `json:\"volumemounts\"`",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ContainerStatuses"
+                    }
+                },
+                "creationTimestamp": {
+                    "type": "string"
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.EVENT"
+                    }
+                },
+                "hostIP": {
+                    "type": "string"
+                },
+                "label": {},
+                "name": {
+                    "type": "string"
+                },
+                "node_name": {
+                    "type": "string"
+                },
+                "ownerReferences": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.OwnerReference"
+                    }
+                },
+                "podIP": {
+                    "type": "string"
+                },
+                "podIPs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.PodIPs"
+                    }
+                },
+                "project": {
+                    "type": "string"
+                },
+                "qosClass": {
+                    "type": "string"
+                },
+                "restart": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "statusConditions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.StatusConditions"
+                    }
+                },
+                "user": {
+                    "type": "string"
+                },
+                "workspace": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.PODCONTAINERS": {
+            "type": "object",
+            "properties": {
+                "env": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ENV"
+                    }
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ports": {
+                    "description": "ReadinessProbe ReadinessProbe `json:\"readinessProbe\",omitempty`\nLivenessProbe  LivenessProbe  `json:\"livenessProbe\",omitempty`",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Ports"
+                    }
+                },
+                "volumemounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.VolumeMounts"
+                    }
+                }
+            }
+        },
+        "model.PROJECT_DETAIL": {
+            "type": "object",
+            "properties": {
+                "Name": {
+                    "type": "string"
+                },
+                "annotations": {},
+                "clusterName": {
+                    "description": "Project",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "labels": {},
+                "resource": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "resourceUsage": {},
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.PV": {
+            "type": "object",
+            "properties": {
+                "accessMode": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "annotations": {},
+                "capacity": {
+                    "type": "string"
+                },
+                "claim": {},
+                "cluster": {
+                    "type": "string"
+                },
+                "createAt": {
+                    "description": "Workspace string `json:\"workspace\"`",
+                    "type": "string"
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.EVENT"
+                    }
+                },
+                "label": {},
+                "name": {
+                    "type": "string"
+                },
+                "reclaimPolicy": {
+                    "type": "string"
+                },
+                "status": {},
+                "storageClass": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                },
+                "volumeMode": {
+                    "description": "Reason        []EVENT          `json:\"events\"`",
+                    "type": "string"
+                }
+            }
+        },
+        "model.PVC": {
+            "type": "object",
+            "properties": {
+                "accessMode": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "annotations": {},
+                "capacity": {
+                    "type": "string"
+                },
+                "clusterName": {
+                    "type": "string"
+                },
+                "createAt": {
+                    "type": "string"
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.EVENT"
+                    }
+                },
+                "finalizers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "label": {
+                    "description": "Reason        []EVENT          `json:\"events\"`"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "namespace": {
+                    "type": "string"
+                },
+                "status": {},
+                "storageClass": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                },
+                "volume": {},
+                "workspaceName": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.PodIPs": {
+            "type": "object",
+            "properties": {
+                "ip": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Ports": {
+            "type": "object",
+            "properties": {
+                "containerPort": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "protocol": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SERVICE": {
+            "type": "object",
+            "properties": {
+                "annotation": {},
+                "cluster": {
+                    "type": "string"
+                },
+                "clusterIp": {
+                    "type": "string"
+                },
+                "createAt": {
+                    "type": "string"
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.EVENT"
+                    }
+                },
+                "externalIp": {
+                    "type": "string"
+                },
+                "label": {},
+                "name": {
+                    "type": "string"
+                },
+                "port": {},
+                "project": {
+                    "type": "string"
+                },
+                "selector": {},
+                "sessionAffinity": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                },
+                "workspace": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SYSTEMPROJECT": {
+            "type": "object",
+            "properties": {
+                "DetailInfo": {
+                    "$ref": "#/definitions/model.PROJECT_DETAIL"
+                },
+                "clusterName": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "events": {},
+                "projectName": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.StatusConditions": {
+            "type": "object",
+            "properties": {
+                "lastTransitionTime": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.USERPROJECT": {
+            "type": "object",
+            "required": [
+                "memberName",
+                "projectDescription",
+                "projectName",
+                "projectType"
+            ],
+            "properties": {
+                "DetailInfo": {
+                    "description": "Status        string           `json:\"status,omitempty\"`",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.PROJECT_DETAIL"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "events": {},
+                "istioCheck": {
+                    "type": "string"
+                },
+                "memberName": {
+                    "description": "Owner         primitive.ObjectID `json:\"projectOwner,omitempty\" bson:\"projectOwner\"`\nCreator       primitive.ObjectID `json:\"projectCreator,omitempty\" bson:\"projectCreator\"`",
+                    "type": "string"
+                },
+                "objectId": {
+                    "type": "string"
+                },
+                "projectDescription": {
+                    "type": "string"
+                },
+                "projectName": {
+                    "type": "string"
+                },
+                "projectType": {
+                    "type": "string"
+                },
+                "selectCluster": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Cluster"
+                    }
+                },
+                "workspace": {
+                    "$ref": "#/definitions/model.DBWorkspace"
+                }
+            }
+        },
+        "model.User": {
+            "type": "object",
+            "properties": {
+                "Id": {
+                    "type": "string"
+                },
+                "Password": {
+                    "description": "Email    string `json:\"email\"`",
+                    "type": "string"
+                }
+            }
+        },
+        "model.ValueFrom": {
+            "type": "object",
+            "properties": {
+                "configMapKeyRef": {
+                    "$ref": "#/definitions/model.ConfigMapKeyRef"
+                },
+                "fieldRef": {
+                    "$ref": "#/definitions/model.FieldRef"
+                }
+            }
+        },
+        "model.VolumeMounts": {
+            "type": "object",
+            "properties": {
+                "mountpath": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "readonly": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "model.Workspace": {
+            "type": "object",
+            "required": [
+                "memberName",
+                "workspaceDescription",
+                "workspaceName"
+            ],
+            "properties": {
+                "clusterName": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "memberName": {
+                    "type": "string"
+                },
+                "selectCluster": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.WorkspaceClusters"
+                    }
+                },
+                "workspaceDescription": {
+                    "type": "string"
+                },
+                "workspaceName": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.WorkspaceClusters": {
+            "type": "object",
+            "properties": {
+                "cluster": {
                     "type": "string"
                 }
             }
         }
     },
     "securityDefinitions": {
-        "ApiKeyAuth": {
+        "Bearer": {
+            "description": "\"Type \\\"Bearer \\\" and then your API Token\"",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"

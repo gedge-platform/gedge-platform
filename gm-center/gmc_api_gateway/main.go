@@ -4,9 +4,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
-	"gmc_api_gateway/app/db"
+	db "gmc_api_gateway/app/database"
 	"gmc_api_gateway/app/routes"
 	"gmc_api_gateway/config"
 
@@ -18,7 +17,7 @@ import (
 )
 
 // @title Gedge GM-Center Swagger API
-// @version 1.0
+// @version 2.0
 // @description This is a Gedge GM-Center Swagger API.
 
 // @contact.name GM-Center
@@ -27,51 +26,41 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 192.168.150.197:8009
-// @BasePath /gmcapi/v1
+// @host 192.168.160.230:8013
+// @BasePath /gmcapi/v2
 // @schemes http
 // @query.collection.format multi
 
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
+// @securitydefinitions.apikey  Bearer
+// @in                          header
+// @name                        Authorization
+// @description "Type \"Bearer \" and then your API Token"
 func main() {
+	// docs.SwaggerInfo.BasePath = "/gmcapi/v2"
 	config.Init()
 	config := config.GetConfig()
 
-	app := &db.DB{}
-	app.Initialize(config)
+	db.ConnDB(config)
 
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
-	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
-		Skipper: func(c echo.Context) bool {
-			if strings.Contains(c.Path(), "swagger") { // Change "swagger" for your own path
-				return true
-			}
-			return false
-		},
-	}))
-
-	// e.Use(middleware.BasicAuth(func(id, password string, c echo.Context) (bool, error) {
-	// 	// Be careful to use constant time comparison to prevent timing attacks
-	// 	if subtle.ConstantTimeCompare([]byte(username), []byte("joe")) == 1 &&
-	// 		subtle.ConstantTimeCompare([]byte(password), []byte("secret")) == 1 {
-	// 		return true, nil
-	// 	}
-	// 	return false, nil
+	// e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+	// 	Skipper: func(c echo.Context) bool {
+	// 		if strings.Contains(c.Path(), "swagger") { // Change "swagger" for your own path
+	// 			return true
+	// 		}
+	// 		return false
+	// 	},
 	// }))
 
-	// e.Use(middleware.Secure())
-
-	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	// 	AllowOrigins: []string{config.COMMON.CorsOrigin},
-	// 	AllowHeaders: []string{"Authorization"},
-	// 	AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
-	// }))
-
+	// e.GET("/", func(c echo.Context) error {
+	// 	return c.HTML(http.StatusOK, `
+	// 			<h1>Welcome to GEdge API-Gateway!</h1>
+	// 			<h3>GEdge Platform :: GM-Center API Server :)</h3>
+	// 	`)
+	// })
 	e.GET("/", func(c echo.Context) error {
 		return c.HTML(http.StatusOK, `
 				<h1>Welcome to GEdge API-Gateway!</h1>
@@ -79,7 +68,7 @@ func main() {
 		`)
 	})
 
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	e.GET("/swagger/*any", echoSwagger.WrapHandler)
 
 	routes.GEdgeRoute(e)
 

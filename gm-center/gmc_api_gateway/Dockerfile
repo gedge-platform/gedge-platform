@@ -1,5 +1,5 @@
 # docker build -t gm-center:[version] .
-FROM golang:1.16-alpine
+FROM golang:1.18-alpine
 
 ENV CGO_ENABLED=0
 

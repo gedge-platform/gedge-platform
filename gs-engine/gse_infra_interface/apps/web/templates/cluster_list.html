@@ -1,0 +1,223 @@
+{% extends "common.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/cluster_list.css')}}">
+{% endblock %}
+{% block content %}
+        <main id="content">
+            <div id="content_header">
+                <img src="{{url_for('static', filename='assets/img/tab-cluster-list-ico/ico-cluster.png')}}">
+                <span id="content_title">Cluster Information</span>
+            </div>
+            <div class="content_div_line"></div>
+            
+            <div class="cluster_list">
+                {% if param.cluster_list | length > 0 %}
+                <div class="d-flex justify-content-end cluster_size">
+                    <span>{{ param.cluster_list | length }}</span>
+                    <span>items</span>
+                </div>
+                {% for cluster in param.cluster_list %}
+                <div class="cluster_list_element_background" onclick="on_click_expand_cluster_list_element_detail(event, this);">
+                    <div class="d-flex align-items-center cluster_list_element_top">
+                        <div class="d-flex align-items-center">
+                            {% if cluster.cluster_role == 'MASTER' %}
+                            <div class="d-flex align-items-center justify-content-center cluster_list_role master">
+                                <div class="cluster_list_master_role_point"></div>
+                                <span>Master</span>
+                            </div>
+                            {% elif cluster.cluster_role == "ERROR" %}
+                            <div class="d-flex align-items-center justify-content-center cluster_list_role error">
+                                <span>Error</span>
+                            </div>
+                            {% else %}
+                            <div class="d-flex align-items-center justify-content-center cluster_list_role slave">
+                                <span>Slave</span>
+                            </div>
+                            {% endif %}
+                            <div class="d-flex align-items-center justify-content-center cluster_list_type">
+                                <span id="cluster_list_text">
+                                    {% if cluster.cluster_type == 'K8S' %}
+                                    K8s
+                                    {% else %}
+                                    K3s
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <span class="cluster_list_name">
+                                {{ cluster.cluster_name }}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-end align-items-center">
+                            <div class="cluster_list_size_container">
+                                <span class="cluster_list_size_fixed_text">Nodes</span>
+                                <span id="cluster_list_node_size" class="cluster_list_size_data_text">{{ cluster.node_list | length }}</span>
+                            </div>
+                            <div class="cluster_list_size_div_bar"></div>
+                            <div class="cluster_list_size_container">
+                                <span class="cluster_list_size_fixed_text">OSDs</span>
+                                <span id="cluster_list_osd_size" class="cluster_list_size_data_text">{{ cluster.disk_size}}</span>
+                            </div>
+                            <img class="cluster_list_delete_ico" src="{{url_for('static', filename='assets/img/list-delete-ico/ico-table-delete.png')}}" value="{{ cluster.cluster_name }}" onclick="on_click_delete_cluster(event, this);">
+                        </div>
+                    </div>
+
+                    <div class="cluster_list_div_bar"></div>
+
+                    <div class="cluster_list_element_bottom">
+                        <div>
+                            <div class="d-flex align-items-center cluster_list_ip">
+                                <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                                <span class="cluster_list_info_text">External IPs</span>
+                                <div class="cluster_list_endpoint_ip_container">
+                                    <span>Storage Group Endpoint</span>
+                                    <span>{{ cluster.endpoint.storage_group.address }}</span>
+                                </div>
+                                <div class="cluster_list_endpoint_ip_container">
+                                    <span>uS Gateway Endpoint</span>
+                                    <span>{{ cluster.endpoint.ms_gateway.address }}</span>
+                                </div> 
+                            </div>
+                            <div class="d-none flex-column cluster_list_element_bottom_expand">
+                                <div class="d-flex align-items-start cluster_list_node_list">
+                                    <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                                    <span class="cluster_list_info_text">Node List</span>
+                                    <div class="d-flex flex-column">
+                                    {% for node in cluster.node_list %}
+                                        {% if node.node_role == 'MASTER' %}
+                                        <div class="d-flex align-items-center cluster_list_node_list_container master">
+                                            {% if node.node_status %}
+                                            <div class="cluster_node_status_point"></div>
+                                            {% else %}
+                                            <div class="cluster_node_status_point deactive"></div>
+                                            {% endif %}
+                                            <span class="cluster_list_node_list_element_type_text">Master</span>
+                                            <span class="cluster_list_node_list_element_name">{{ node.node_name }}</span>
+                                            <span class="cluster_list_node_list_element_ip">{{ node.address }}</span>
+                                            {% if node.gpu_yn %}
+                                            <div class="d-flex align-items-center justify-content-center cluster_list_node_list_element_feature_gpu">
+                                                <span>GPU</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% elif node.node_role == 'WORKER' %}
+                                        <div class="d-flex align-items-center cluster_list_node_list_container worker">
+                                            {% if node.node_status %}
+                                            <div class="cluster_node_status_point"></div>
+                                            {% else %}
+                                            <div class="cluster_node_status_point deactive"></div>
+                                            {% endif %}
+                                            <span class="cluster_list_node_list_element_type_text">Worker</span>
+                                            <span class="cluster_list_node_list_element_name">{{ node.node_name }}</span>
+                                            <span class="cluster_list_node_list_element_ip">{{ node.address }}</span>
+                                            {% if node.gpu_yn %}
+                                            <div class="d-flex align-items-center justify-content-center cluster_list_node_list_element_feature_gpu">
+                                                <span>GPU</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% else %}
+                                        <div class="d-flex align-items-center cluster_list_node_list_container agent">
+                                            <span></span>
+                                            {% if node.node_status %}
+                                            <div class="cluster_node_status_point"></div>
+                                            {% else %}
+                                            <div class="cluster_node_status_point deactive"></div>
+                                            {% endif %}
+                                            <span class="cluster_list_node_list_element_type_text">Agent</span>
+                                            <span class="cluster_list_node_list_element_name">{{ node.node_name }}</span>
+                                            <span class="cluster_list_node_list_element_ip">{{ node.address }}</span>
+                                            {% if node.gpu_yn %}
+                                            <div class="d-flex align-items-center justify-content-center cluster_list_node_list_element_feature_gpu">
+                                                <span>GPU</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    </div>
+                                </div>
+                                {% if cluster.node_list | length > 0 %}
+                                <div class="d-flex justify-content-end">
+                                    {% if cluster.endpoint.kiali_ip.address != "-.-.-.-" %}
+                                    <div class="d-flex justify-content-center align-items-center cluster_list_element_move_kiali_button" data_value="{{ cluster.endpoint.kiali_ip.address }}" onclick="on_click_move_kiali(event, this)">
+                                    {% else %}
+                                    <div class="d-flex justify-content-center align-items-center cluster_list_element_move_kiali_button" onclick="event.stopPropagation()" disabled>
+                                    {% endif %}
+                                        <span>uS Kiali 접속</span>
+                                        <img src="{{url_for('static', filename='assets/img/list-signin-ico/ico-table-signin.png')}}">
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="d-flex justify-content-center">
+                    <button class="btn d-flex justify-content-center align-items-center common_reset_button cluster_all_reset_button" id="cluster_all_reset_button" type="button" onclick="on_click_reset_all(event, this)">
+                        <span>Reset All</span>
+                        <img src="{{url_for('static', filename='assets/img/list-reset-ico/ico-table-reset.png')}}">
+                    </button>
+                </div>
+                {% else %}
+                <div class="d-flex flex-column align-items-center justify-content-center cluster_list_empty">
+                    <img src="{{url_for('static', filename='assets/img/list-empty-ico/ico-search-no-result.png')}}">
+                    <div>
+                        <span class="list_empty_main_text">조회 결과가 없습니다.</span>
+                    </div>
+                    <div>
+                        <span class="list_empty_sub_text">새로운 클러스터를 추가해주세요.</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+        <div id="reset_modal" class="modal fade" role="dialog" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal_container cluster_list_modal_container">
+                        <div class="d-flex align-items-center modal_header">
+                        </div>
+                        <div class="d-flex flex-column align-items-center modal_body">
+                            <img src="{{url_for('static', filename='assets/img/ico-table-reset-big/ico-table-reset-big.png')}}">
+                            <span class="cluster_list_modal_main_fixed_text">전체 클러스터를 초기화 합니다.</span>
+                            <span class="cluster_list_modal_sub_fixed_text">모든 작업과 데이터가 제거되고 복구가 불가능합니다.</span>
+                            <span class="cluster_list_modal_sub_fixed_text">초기화를 진행하시겠습니까?</span>
+                        </div>
+                        <div class="d-flex justify-content-center modal_footer">
+                            <button class="btn cluster_list_modal_cancel_button" type="button" onclick="modal_cancel_button_click_event('reset_modal')">Cancel</button>
+                            <button class="btn cluster_list_modal_reset_button" type="button" onclick="modal_confirm_button_click_event('reset_modal')">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="delete_modal" class="modal fade" role="dialog" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal_container cluster_list_modal_container">
+                        <div class="d-flex align-items-center modal_header">
+                        </div>
+                        <div class="d-flex flex-column align-items-center modal_body">
+                            <img src="{{url_for('static', filename='assets/img/ico-table-delete-big/ico-table-delete-big.png')}}">
+                            <div class="cluster_list_modal_main_text_container">
+                                <span class="cluster_list_modal_main_cluster_name_text">Cluster1</span>
+                                <span class="cluster_list_modal_main_fixed_text">클러스터를 삭제합니다.</span>
+                            </div>
+                            <span class="cluster_list_modal_sub_fixed_text">모든 작업과 데이터가 제거되고 복구가 불가능합니다.</span>
+                            <span class="cluster_list_modal_sub_fixed_text">삭제를 진행하시겠습니까?</span>
+                        </div>
+                        <div class="d-flex justify-content-center modal_footer">
+                            <button class="btn cluster_list_modal_cancel_button" type="button" onclick="modal_cancel_button_click_event('delete_modal')">Cancel</button>
+                            <button class="btn cluster_list_modal_delete_button" type="button" onclick="modal_confirm_button_click_event('delete_modal')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block script %}
+    <script src="{{url_for('static', filename='assets/js/cluster_list.js')}}"></script>
+{% endblock %}

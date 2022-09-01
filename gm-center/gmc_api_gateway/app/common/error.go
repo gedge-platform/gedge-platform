@@ -16,6 +16,9 @@ var (
 	ErrProjectInvalid    = errors.New("Project Empty")
 	ErrDetailNameInvalid = errors.New("Detail Name Empty")
 	ErrClusterInvalid    = errors.New("Required Cluster Name")
+	ErrDuplicated        = errors.New("Duplicated Data")
+	ErrDuplicatedCheckOK = errors.New("Duplicate check OK")
+	ErrTypeNotFound      = errors.New("Duplicate Type Empty")
 	// Account
 	ErrIdInvalid = errors.New("id is empty")
 	ErrBodyEmpty = errors.New("Body is empty")

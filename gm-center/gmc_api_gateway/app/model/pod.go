@@ -6,6 +6,7 @@ type POD struct {
 	Workspace         string             `json:"workspace,omitempty"`
 	Cluster           string             `json:"cluster"`
 	Name              string             `json:"name"`
+	UserName          string             `json:"user,omitempty"`
 	CreationTimestamp time.Time          `json:"creationTimestamp"`
 	Namespace         string             `json:"project"`
 	Status            string             `json:"status"`
@@ -19,9 +20,10 @@ type POD struct {
 	Podcontainers     []PODCONTAINERS    `json:"Podcontainers,omitempty"`
 	QosClass          string             `json:"qosClass,omitempty"`
 	StatusConditions  []StatusConditions `json:"statusConditions,omitempty"`
+	Restart           int                `json:"restart"`
 	// VolumeMounts      []VolumeMounts      `json:"volumemounts"`
 	ContainerStatuses []ContainerStatuses `json:"containerStatuses,omitempty"`
-	Events            []EVENT             `json:"events,omitempty"`
+	Events            []EVENT             `json:"events"`
 }
 
 type VolumeMounts struct {
@@ -111,22 +113,14 @@ type ConfigMapKeyRef struct {
 type PodIPs struct {
 	Ip string `json:"ip,omitempty"`
 }
-type DeployInfo struct {
-	Metadata struct {
-		Name              string           `json:"name,omitempty"`
-		Namespace         string           `json:"namespace,omitempty"`
-		CreationTimestamp time.Time        `json:"creationTimestamp,omitempty"`
-		OwnerReference    []OwnerReference `json:"ownerReferences,omitempty"`
-	} `json:"metadata"`
-	Status struct {
-		ReadyReplicas   int `json:"readyReplicas,omitempty"`
-		Replicas        int `json:"replicas,omitempty"`
-		UpdatedReplicas int `json:"updatedReplicas,omitempty"`
-	} `json:"status"`
+type WorkloadInfo struct {
+	Name        string `json:"name,omitempty"`
+	Kind        string `json:"kind,omitempty"`
+	ReplicaName string `json:"replicaName,omitempty"`
 }
 type ReferDataDeploy struct {
-	DeployInfo  []DeployInfo  `json:"deployList"`
-	ServiceInfo []ServiceInfo `json:"serviceList"`
+	WorkloadInfo interface{}   `json:"workloadList"`
+	ServiceInfo  []ServiceInfo `json:"serviceList"`
 }
 type ServiceInfo struct {
 	Metadata struct {

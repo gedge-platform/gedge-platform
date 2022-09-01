@@ -1,0 +1,5 @@
+Syslog Client Logging Framework for Erlang
+
+This software contains code derived from the sasl_syslog project developed
+and maintained by Travelping GmbH and contributors. The original software is
+available from https://github.com/travelping/sasl_syslog.

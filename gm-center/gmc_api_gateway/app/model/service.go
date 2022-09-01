@@ -9,6 +9,7 @@ type SERVICE struct {
 	Workspace       string      `json:"workspace,omitempty"`
 	Cluster         string      `json:"cluster"`
 	Project         string      `json:"project"`
+	User            string      `json:"user"`
 	Type            string      `json:"type"`
 	Ports           interface{} `json:"port"`
 	ClusterIp       string      `json:"clusterIp"`
@@ -19,12 +20,12 @@ type SERVICE struct {
 	SessionAffinity string      `json:"sessionAffinity,omitempty"`
 	Events          []EVENT     `json:"events,omitempty"`
 	CreateAt        time.Time   `json:"createAt"`
-	UpdateAt        time.Time   `json:"updateAt"`
+	// UpdateAt        time.Time   `json:"updateAt"`
 }
 
 type SERVICELISTS struct {
-	Pods        []SERVICEPOD      `json:"pods"`
-	Deployments SERVICEDEPLOYMENT `json:"deployments"`
+	Pods      []SERVICEPOD `json:"pods"`
+	Workloads interface{}  `json:"workloads"`
 }
 
 type SERVICEDEPLOYMENT struct {

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>gedge-web-server</title>
+    <link rel="icon" href="{{url_for('static', filename='assets/img/favicon.ico')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/bootstrap/css/bootstrap.min.css')}}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+KR&amp;display=swap">
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/NotoSansKR-Black.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/NotoSansKR-BoldR.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/NotoSansKR-Light.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/NotoSansKR-Medium.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/NotoSansKR-Regula.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/NotoSansKR-Thin.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/base.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/common.css')}}">
+    {% block head %}
+    {% endblock head %}
+</head>
+
+<body id="background_top">
+    <div id="background_header">
+        <header class="d-flex justify-content-center align-items-center" id="header">
+            <div class="d-flex justify-content-start align-items-center header_title_container">
+                <div class="d-flex align-items-center">
+                    <img id="ico_logo" src="{{url_for('static', filename='assets/img/ico-logo/ico-logo.png')}}">
+                    <span id="header_title">클라우드 엣지 SW 플랫폼 시험환경</span>
+                </div>
+                {% block bg_head %}
+                {% endblock bg_head %}
+            </div>
+        </header>
+    </div>
+    <div id="background_main">
+        {% block content %}
+        {% endblock content %}
+    </div>
+    <div id="spinner_div">
+        <span id="spinner_span" class="spinner-border" role="status"></span>
+    </div>
+
+    <script src="{{url_for('static', filename='assets/js/common/jquery.min.js')}}"></script>
+    <script src="{{url_for('static', filename='assets/bootstrap/js/bootstrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='assets/js/common/statics.js')}}"></script>
+    <script src="{{url_for('static', filename='assets/js/common/rest_client.js')}}"></script>
+    <script src="{{url_for('static', filename='assets/js/common/utils.js')}}"></script>
+    <script src="{{url_for('static', filename='assets/js/base.js')}}"></script>
+    {% block script %}
+    {% endblock script %}
+</body>
+
+</html>

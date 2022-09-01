@@ -1,0 +1,95 @@
+load("@rules_erlang//:xref.bzl", "xref")
+load("@rules_erlang//:dialyze.bzl", "dialyze", "plt")
+load("//:rabbitmq_home.bzl", "rabbitmq_home")
+load("//:rabbitmq_run.bzl", "rabbitmq_run")
+load(
+    "//:rabbitmq.bzl",
+    "APP_VERSION",
+    "RABBITMQ_DIALYZER_OPTS",
+    "assert_suites",
+    "rabbitmq_app",
+    "rabbitmq_integration_suite",
+    "rabbitmq_suite",
+)
+
+APP_NAME = "rabbitmq_web_dispatch"
+
+APP_DESCRIPTION = "RabbitMQ Web Dispatcher"
+
+APP_MODULE = "rabbit_web_dispatch_app"
+
+EXTRA_APPS = [
+    "inets",
+]
+
+BUILD_DEPS = [
+    "@lager//:erlang_app",
+]
+
+DEPS = [
+    "//deps/rabbit:erlang_app",
+    "//deps/rabbit_common:erlang_app",
+    "@cowboy//:erlang_app",
+]
+
+rabbitmq_app(
+    app_description = APP_DESCRIPTION,
+    app_module = APP_MODULE,
+    app_name = APP_NAME,
+    app_version = APP_VERSION,
+    build_deps = BUILD_DEPS,
+    extra_apps = EXTRA_APPS,
+    deps = DEPS,
+)
+
+xref(tags = ["xref"])
+
+plt(
+    name = "base_plt",
+    apps = EXTRA_APPS,
+    plt = "//:base_plt",
+    deps = DEPS,
+)
+
+dialyze(
+    dialyzer_opts = RABBITMQ_DIALYZER_OPTS,
+    plt = ":base_plt",
+    tags = ["dialyze"],
+    warnings_as_errors = False,
+)
+
+rabbitmq_home(
+    name = "broker-for-tests-home",
+    testonly = True,
+    plugins = [
+        "//deps/rabbit:erlang_app",
+        ":test_erlang_app",
+    ],
+)
+
+rabbitmq_run(
+    name = "rabbitmq-for-tests-run",
+    testonly = True,
+    home = ":broker-for-tests-home",
+)
+
+PACKAGE = "deps/rabbitmq_web_dispatch"
+
+suites = [
+    rabbitmq_integration_suite(
+        PACKAGE,
+        name = "rabbit_web_dispatch_SUITE",
+        data = [
+            "test/priv/www/index.html",
+        ],
+    ),
+    rabbitmq_suite(
+        name = "rabbit_web_dispatch_unit_SUITE",
+        size = "small",
+    ),
+]
+
+assert_suites(
+    suites,
+    glob(["test/**/*_SUITE.erl"]),
+)

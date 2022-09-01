@@ -1,0 +1,129 @@
+.\" vim:ft=nroff:
+.\" This Source Code Form is subject to the terms of the Mozilla Public
+.\" License, v. 2.0. If a copy of the MPL was not distributed with this
+.\" file, You can obtain one at https://mozilla.org/MPL/2.0/.
+.\"
+.\" Copyright (c) 2007-2021 VMware, Inc. or its affiliates.  All rights reserved.
+.\"
+.Dd June 19, 2021
+.Dt RABBITMQ-UPGRADE 8
+.Os "RabbitMQ Server"
+.Sh NAME
+.Nm rabbitmq-upgrade
+.Nd RabbitMQ installation upgrade tools
+.\" ------------------------------------------------------------------
+.Sh SYNOPSIS
+.\" ------------------------------------------------------------------
+.Nm
+.Op Fl q
+.Op Fl s
+.Op Fl l
+.Op Fl n Ar node
+.Op Fl t Ar timeout
+.Ar command
+.Op Ar command_options
+.\" ------------------------------------------------------------------
+.Sh DESCRIPTION
+.\" ------------------------------------------------------------------
+.Nm
+is a command line tool that provides commands used during the upgrade of RabbitMQ nodes.
+See the
+.Lk https://www.rabbitmq.com/upgrade.html "RabbitMQ upgrade guide"
+to learn more about RabbitMQ installation upgrades.
+.
+.\" ------------------------------------------------------------------
+.Sh OPTIONS
+.\" ------------------------------------------------------------------
+.Bl -tag -width Ds
+.It Fl n Ar node
+Default node is
+.Qq Pf keti@ Ar target-hostname ,
+where
+.Ar target-hostname
+is the local host.
+On a host named
+.Qq myserver.example.com ,
+the node name will usually be
+.Qq keti@myserver
+(unless
+.Ev RABBITMQ_NODENAME
+has been overridden).
+The output of
+.Qq hostname -s
+is usually the correct suffix to use after the
+.Qq @
+sign.
+See
+.Xr rabbitmq-server 8
+for details of configuring a RabbitMQ node.
+.It Fl q , -quiet
+Quiet output mode is selected.
+Informational messages are reduced when quiet mode is in effect.
+.It Fl s , -silent
+Silent output mode is selected.
+Informational messages are reduced and table headers are suppressed when silent mode is in effect.
+.It Fl t Ar timeout , Fl -timeout Ar timeout
+Operation timeout in seconds.
+Not all commands support timeouts.
+Default is
+.Cm infinity .
+.It Fl l , Fl -longnames
+Must be specified when the cluster is configured to use long (FQDN) node names.
+To learn more, see the
+.Lk https://www.rabbitmq.com/clustering.html "RabbitMQ Clustering guide"
+.It Fl -erlang-cookie Ar cookie
+Shared secret to use to authenticate to the target node.
+Prefer using a local file or the
+.Ev RABBITMQ_ERLANG_COOKIE
+environment variable instead of specifying this option on the command line.
+To learn more, see the
+.Lk https://www.rabbitmq.com/cli.html "RabbitMQ CLI Tools guide"
+.El
+.\" ------------------------------------------------------------------
+.Sh COMMANDS
+.\" ------------------------------------
+.Bl -tag -width Ds
+.\" ------------------------------------
+.It Cm help
+.Pp
+Displays general help and commands supported by
+.Nm .
+.\" ------------------------------------
+.It Cm post_upgrade
+.Pp
+Runs post-upgrade tasks. In the current version, it performs the rebalance of mirrored and quorum queues across all nodes in the cluster.
+.\" ------------------------------------
+.It Cm await_online_quorum_plus_one
+.Pp
+Waits for all quorum queues to have an above minimum online quorum.
+This makes sure that no queues would lose their quorum if the target node is shut down.
+.\" ------------------------------------
+.It Cm drain
+.Pp
+Puts the node in maintenance mode. Such nodes will not serve any
+client traffic or considered for hosting any queue leader replicas.
+.Pp
+To learn more, see the
+.Lk https://www.rabbitmq.com/upgrade.html#maintenance-mode "RabbitMQ Upgrade guide"
+.\" ------------------------------------
+.It Cm revive
+.Pp
+Puts the node out of maintenance and into regular operating mode.
+Such nodes will again serve client traffic and considered for queue leader replica placement.
+.Pp
+To learn more, see the
+.Lk https://www.rabbitmq.com/upgrade.html#maintenance-mode "RabbitMQ Upgrade guide"
+.\" ------------------------------------------------------------------
+.Sh SEE ALSO
+.\" ------------------------------------------------------------------
+.Xr rabbitmqctl 8 ,
+.Xr rabbitmq-diagnostics 8 ,
+.Xr rabbitmq-server 8 ,
+.Xr rabbitmq-queues 8 ,
+.Xr rabbitmq-service 8 ,
+.Xr rabbitmq-env.conf 5 ,
+.Xr rabbitmq-echopid 8
+.\" ------------------------------------------------------------------
+.Sh AUTHOR
+.\" ------------------------------------------------------------------
+.An The RabbitMQ Team Aq Mt info@rabbitmq.com

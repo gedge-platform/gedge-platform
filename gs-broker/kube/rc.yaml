@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+    name: message-broker
+    namespace: gedge-platform
+spec:
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                app: message-broker
+        spec:
+            containers:
+                - image: 10.0.0.255:5000/gedge-platform/message-broker:1.4 # add stomp plugin
+                  name: message-broker
+                  ports:
+                      - containerPort: 5672
+                        protocol: TCP
+                      - containerPort: 15672
+                        protocol: TCP
+                      - containerPort: 1883
+                        protocol: TCP
+                      - containerPort: 61613
+                        protocol: TCP
+                  imagePullPolicy: Always
+                  env:
+                      - name: TZ
+                        value: Asia/Seoul

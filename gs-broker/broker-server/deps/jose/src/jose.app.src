@@ -1,0 +1,13 @@
+{application,jose,
+             [{description,"JSON Object Signing and Encryption (JOSE) for Erlang and Elixir."},
+              {vsn,"1.11.1"},
+              {id,"git"},
+              {mod,{jose_app,[]}},
+              {registered,[]},
+              {applications,[kernel,stdlib,crypto,asn1,public_key]},
+              {modules,[]},
+              {maintainers,["Andrew Bennett"]},
+              {licenses,["MIT"]},
+              {links,[{"Github",
+                       "https://github.com/potatosalad/erlang-jose"}]},
+              {env,[{crypto_fallback,true}]}]}.

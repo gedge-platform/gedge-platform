@@ -6,8 +6,10 @@ type PARAMS struct {
 	Cluster   string `json:"cluster,omitempty"`
 	Workspace string `json:"workspace,omitempty"`
 	Project   string `json:"project,omitempty"`
+	User      string `json:"user,omitempty"`
 	Uid       string `json:"uid,omitempty"`
 	Compare   string `json:"compare,omitempty"`
 	Method    string `json:"reqMethod,omitempty"`
 	Body      string `json:"reqBody,omitempty"`
+	Action    string `json:"action,omitempty"`
 }

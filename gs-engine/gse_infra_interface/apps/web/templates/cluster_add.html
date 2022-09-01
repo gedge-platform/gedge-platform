@@ -1,0 +1,88 @@
+{% extends "common.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/cluster_add.css')}}">
+{% endblock %}
+{% block content %}
+        <main id="content">
+            <div id="content_header">
+                <img src="{{url_for('static', filename='assets/img/tab-cluster-add-ico/ico-addcluster.png')}}">
+                <span id="content_title">Add Cluster</span>
+            </div>
+            <div class="content_div_line"></div>
+
+            <div id="cluster_add" class="cluster_add">
+                <form id="cluster_add_form" class="form-group">
+                    <div class="d-flex align-items-center cluster_add_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>Cluster type</span>
+                        <div class="d-flex align-items-center common_radio_container cluster_add_cluster_type_data">
+                            <div class="form-check d-flex align-items-center">
+                                <input class="form-check-input d-none common_radio_input" type="radio" id="cluster_add_cluster_type_radio_k8s" checked="" value="k8s" name="clu_type">
+                                <label class="form-check-label common_radio_label" for="cluster_add_cluster_type_radio_k8s"></label>
+                            </div>
+                            <span>K8s</span>
+                            <div class="form-check d-flex align-items-center">
+                                <input class="form-check-input d-none common_radio_input" type="radio" id="cluster_add_cluster_type_radio_k3s" value="k3s" name="clu_type">
+                                <label class="form-check-label common_radio_label" for="cluster_add_cluster_type_radio_k3s"></label>
+                            </div>
+                            <span>K3s</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center cluster_add_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>Master Cluster</span>
+                        <div class="d-flex align-items-center">
+                            <div class="form-check d-flex common_checkbox_container cluster_add_master_yn_check_container">
+                                <input class="form-check-input d-none common_checkbox_input" type="checkbox" id="cluster_add_master_yn_check" value="true" name="master_yn">
+                                <label class="form-check-label common_checkbox_label" for="cluster_add_master_yn_check"></label>
+                            </div>
+                            <span class="cluster_add_fixed_text blue cluster_add_master_yn_check_fixed_text">* 멀티 클러스터 내 마스터는 한 개만 설정 가능</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center cluster_add_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>Cluster Name</span>
+                        <div>
+                            <input class="form-control common_text_input cluster_add_data_input" type="text" id="cluster_add_cluster_name_input" placeholder="클러스터 이름" name="clu_name">
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center cluster_add_content" >
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>Node Information</span>
+                        <div class="cluster_add_content_box cluster_add_node_info_data">
+                            <div>
+                                <span class="cluster_add_fixed_text blue">* 등록할 클러스터의 마스터 노드 정보를 입력</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="cluster_add_box_inner_fixed_text">IP Address</span>
+                                <input class="form-control common_text_input cluster_add_box_data_input" type="text" id="cluster_add_node_info_ip_input" placeholder="0.0.0.0" name="clu_ip">
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="cluster_add_box_inner_fixed_text">Account</span>
+                                <input class="form-control common_text_input cluster_add_box_data_input" type="text" id="cluster_add_node_info_account_input" placeholder="root" name="clu_id">
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="cluster_add_box_inner_fixed_text">API Key</span>
+                                <input class="form-control common_text_input cluster_add_box_data_input" type="text" id="cluster_add_node_info_apikey_input" placeholder="KEY" name="api_key">
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="cluster_add_box_inner_fixed_text">Password</span>
+                                <input class="form-control common_text_input cluster_add_box_data_input" type="password" id="cluster_add_node_info_password_input" placeholder="******" name="clu_pwd">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+        <div class="d-flex justify-content-center align-items-center">
+            <button class="btn justify-content-center align-items-center common_create_button cluster_add_confirm_button" id="cluster_add_confirm_button" type="button" onclick="cluster_add_btn_click_event()">
+                <span>Add Cluster</span>
+                <img src="{{url_for('static', filename='assets/img/list-add-ico/ico-table-add-item.png')}}">
+            </button>
+        </div>
+{% endblock %}
+
+{% block script %}
+    <script src="{{url_for('static', filename='assets/js/cluster_add.js')}}"></script>
+{% endblock %}

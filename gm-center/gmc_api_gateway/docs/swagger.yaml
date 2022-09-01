@@ -1,21 +1,641 @@
-basePath: /gmcapi/v1
+basePath: /gmcapi/v2
 definitions:
-  model.App:
+  model.Active:
     properties:
-      appCategory:
+      kind:
         type: string
-      appDescription:
+      name:
         type: string
-      appInstalled:
-        type: integer
-      appName:
-        type: string
-      appNum:
-        type: integer
-      created_at:
+      namespace:
         type: string
     type: object
-host: 192.168.150.197:8009
+  model.CEPH:
+    properties:
+      capacity:
+        $ref: '#/definitions/model.Capacity'
+      clientPerformance:
+        $ref: '#/definitions/model.ClientPerformance'
+      clusterStatus:
+        type: string
+      hostNum:
+        type: integer
+      monitor:
+        $ref: '#/definitions/model.Monitor'
+      object:
+        $ref: '#/definitions/model.Object'
+      osd:
+        $ref: '#/definitions/model.OSD'
+      pgStatus: {}
+      pgs_per_osd:
+        type: number
+      poolNum:
+        type: integer
+    type: object
+  model.CLUSTER:
+    properties:
+      address:
+        type: string
+      clusterEndpoint:
+        type: string
+      clusterName:
+        type: string
+      clusterType:
+        type: string
+      created_at:
+        type: string
+      gpuCnt:
+        description: |-
+          Status                  string                   `json:"status"`
+          Network                 string                   `json:"network"`
+        type: integer
+      nodeCnt:
+        type: integer
+      point: {}
+      resourceUsage:
+        description: Gpu           []map[string]interface{} `json:"gpu,omitempty"`
+      status:
+        type: string
+      token:
+        type: string
+    required:
+    - clusterEndpoint
+    - clusterName
+    - clusterType
+    - token
+    type: object
+  model.CRONJOB:
+    properties:
+      active:
+        items:
+          $ref: '#/definitions/model.Active'
+        type: array
+      annotations: {}
+      cluster:
+        type: string
+      concurrencyPolicy:
+        type: string
+      containers:
+        items:
+          $ref: '#/definitions/model.Containers'
+        type: array
+      creationTimestamp:
+        type: string
+      events:
+        items:
+          $ref: '#/definitions/model.EVENT'
+        type: array
+      failedJobsHistoryLimit:
+        type: integer
+      label: {}
+      lastScheduleTime:
+        type: string
+      name:
+        type: string
+      project:
+        type: string
+      schedule:
+        type: string
+      successfulJobsHistoryLimit:
+        type: integer
+      user:
+        type: string
+      workspace:
+        type: string
+    type: object
+  model.Capacity:
+    properties:
+      available:
+        type: number
+      total:
+        type: number
+      used:
+        type: number
+    type: object
+  model.ClientPerformance:
+    properties:
+      read_bytes_sec:
+        type: number
+      read_op_per_sec:
+        type: number
+      write_bytes_sec:
+        type: number
+      write_op_per_sec:
+        type: number
+    type: object
+  model.Cluster:
+    properties:
+      address:
+        type: string
+      clusterEndpoint:
+        type: string
+      clusterName:
+        type: string
+      clusterType:
+        type: string
+      created_at:
+        type: string
+      point: {}
+      status:
+        type: string
+      token:
+        type: string
+    required:
+    - clusterEndpoint
+    - clusterName
+    - clusterType
+    - token
+    type: object
+  model.ConfigMapKeyRef:
+    properties:
+      key:
+        type: string
+      name:
+        type: string
+    type: object
+  model.ContainerStatuses:
+    properties:
+      containerID:
+        type: string
+      image:
+        type: string
+      name:
+        type: string
+      ready:
+        type: boolean
+      restartCount:
+        type: integer
+      started:
+        type: boolean
+    type: object
+  model.Containers:
+    properties:
+      image:
+        type: string
+      name:
+        type: string
+    type: object
+  model.DBWorkspace:
+    properties:
+      created_at:
+        type: string
+      memberName:
+        type: string
+      objectId:
+        type: string
+      selectCluster:
+        items:
+          $ref: '#/definitions/model.Cluster'
+        type: array
+      workspaceDescription:
+        type: string
+      workspaceName:
+        type: string
+    required:
+    - memberName
+    - workspaceDescription
+    - workspaceName
+    type: object
+  model.ENV:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+      valueFrom:
+        $ref: '#/definitions/model.ValueFrom'
+    type: object
+  model.EVENT:
+    properties:
+      cluster:
+        type: string
+      eventTime:
+        type: string
+      kind:
+        type: string
+      message:
+        type: string
+      name:
+        type: string
+      namespace:
+        type: string
+      reason:
+        type: string
+      type:
+        type: string
+    type: object
+  model.FieldRef:
+    properties:
+      apiVersion:
+        type: string
+      fieldPath:
+        type: string
+    type: object
+  model.JOB:
+    properties:
+      cluster:
+        type: string
+      completions:
+        type: string
+      created_at:
+        type: string
+      duration: {}
+      name:
+        type: string
+      project:
+        type: string
+      user:
+        type: string
+      workspace:
+        type: string
+    type: object
+  model.Member:
+    properties:
+      contact:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      enabled:
+        type: boolean
+      logined_at:
+        type: integer
+      memberId:
+        type: string
+      memberName:
+        type: string
+      memberRole:
+        type: string
+      objectId:
+        type: string
+      password:
+        maxLength: 10
+        minLength: 0
+        type: string
+    required:
+    - email
+    - memberId
+    - memberName
+    - password
+    type: object
+  model.Monitor:
+    properties:
+      quorum: {}
+      total:
+        type: integer
+    type: object
+  model.OSD:
+    properties:
+      in:
+        type: integer
+      total:
+        type: integer
+      up:
+        type: integer
+    type: object
+  model.Object:
+    properties:
+      degraded:
+        type: number
+      healthy:
+        type: number
+      misplaced:
+        type: number
+      unfound:
+        type: number
+    type: object
+  model.OwnerReference:
+    properties:
+      apiVersion:
+        type: string
+      kind:
+        type: string
+      name:
+        type: string
+    type: object
+  model.POD:
+    properties:
+      Podcontainers:
+        items:
+          $ref: '#/definitions/model.PODCONTAINERS'
+        type: array
+      annotations: {}
+      cluster:
+        type: string
+      containerStatuses:
+        description: VolumeMounts      []VolumeMounts      `json:"volumemounts"`
+        items:
+          $ref: '#/definitions/model.ContainerStatuses'
+        type: array
+      creationTimestamp:
+        type: string
+      events:
+        items:
+          $ref: '#/definitions/model.EVENT'
+        type: array
+      hostIP:
+        type: string
+      label: {}
+      name:
+        type: string
+      node_name:
+        type: string
+      ownerReferences:
+        items:
+          $ref: '#/definitions/model.OwnerReference'
+        type: array
+      podIP:
+        type: string
+      podIPs:
+        items:
+          $ref: '#/definitions/model.PodIPs'
+        type: array
+      project:
+        type: string
+      qosClass:
+        type: string
+      restart:
+        type: integer
+      status:
+        type: string
+      statusConditions:
+        items:
+          $ref: '#/definitions/model.StatusConditions'
+        type: array
+      user:
+        type: string
+      workspace:
+        type: string
+    type: object
+  model.PODCONTAINERS:
+    properties:
+      env:
+        items:
+          $ref: '#/definitions/model.ENV'
+        type: array
+      image:
+        type: string
+      name:
+        type: string
+      ports:
+        description: |-
+          ReadinessProbe ReadinessProbe `json:"readinessProbe",omitempty`
+          LivenessProbe  LivenessProbe  `json:"livenessProbe",omitempty`
+        items:
+          $ref: '#/definitions/model.Ports'
+        type: array
+      volumemounts:
+        items:
+          $ref: '#/definitions/model.VolumeMounts'
+        type: array
+    type: object
+  model.PROJECT_DETAIL:
+    properties:
+      Name:
+        type: string
+      annotations: {}
+      clusterName:
+        description: Project
+        type: string
+      created_at:
+        type: string
+      labels: {}
+      resource:
+        additionalProperties: true
+        type: object
+      resourceUsage: {}
+      status:
+        type: string
+    type: object
+  model.PV:
+    properties:
+      accessMode:
+        items:
+          type: string
+        type: array
+      annotations: {}
+      capacity:
+        type: string
+      claim: {}
+      cluster:
+        type: string
+      createAt:
+        description: Workspace string `json:"workspace"`
+        type: string
+      events:
+        items:
+          $ref: '#/definitions/model.EVENT'
+        type: array
+      label: {}
+      name:
+        type: string
+      reclaimPolicy:
+        type: string
+      status: {}
+      storageClass:
+        type: string
+      user:
+        type: string
+      volumeMode:
+        description: Reason        []EVENT          `json:"events"`
+        type: string
+    type: object
+  model.PVC:
+    properties:
+      accessMode:
+        items:
+          type: string
+        type: array
+      annotations: {}
+      capacity:
+        type: string
+      clusterName:
+        type: string
+      createAt:
+        type: string
+      events:
+        items:
+          $ref: '#/definitions/model.EVENT'
+        type: array
+      finalizers:
+        items:
+          type: string
+        type: array
+      label:
+        description: Reason        []EVENT          `json:"events"`
+      name:
+        type: string
+      namespace:
+        type: string
+      status: {}
+      storageClass:
+        type: string
+      user:
+        type: string
+      volume: {}
+      workspaceName:
+        type: string
+    type: object
+  model.PodIPs:
+    properties:
+      ip:
+        type: string
+    type: object
+  model.Ports:
+    properties:
+      containerPort:
+        type: integer
+      name:
+        type: string
+      port:
+        type: integer
+      protocol:
+        type: string
+    type: object
+  model.SERVICE:
+    properties:
+      annotation: {}
+      cluster:
+        type: string
+      clusterIp:
+        type: string
+      createAt:
+        type: string
+      events:
+        items:
+          $ref: '#/definitions/model.EVENT'
+        type: array
+      externalIp:
+        type: string
+      label: {}
+      name:
+        type: string
+      port: {}
+      project:
+        type: string
+      selector: {}
+      sessionAffinity:
+        type: string
+      type:
+        type: string
+      user:
+        type: string
+      workspace:
+        type: string
+    type: object
+  model.SYSTEMPROJECT:
+    properties:
+      DetailInfo:
+        $ref: '#/definitions/model.PROJECT_DETAIL'
+      clusterName:
+        type: string
+      created_at:
+        type: string
+      events: {}
+      projectName:
+        type: string
+      status:
+        type: string
+    type: object
+  model.StatusConditions:
+    properties:
+      lastTransitionTime:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+    type: object
+  model.USERPROJECT:
+    properties:
+      DetailInfo:
+        description: Status        string           `json:"status,omitempty"`
+        items:
+          $ref: '#/definitions/model.PROJECT_DETAIL'
+        type: array
+      created_at:
+        type: string
+      events: {}
+      istioCheck:
+        type: string
+      memberName:
+        description: |-
+          Owner         primitive.ObjectID `json:"projectOwner,omitempty" bson:"projectOwner"`
+          Creator       primitive.ObjectID `json:"projectCreator,omitempty" bson:"projectCreator"`
+        type: string
+      objectId:
+        type: string
+      projectDescription:
+        type: string
+      projectName:
+        type: string
+      projectType:
+        type: string
+      selectCluster:
+        items:
+          $ref: '#/definitions/model.Cluster'
+        type: array
+      workspace:
+        $ref: '#/definitions/model.DBWorkspace'
+    required:
+    - memberName
+    - projectDescription
+    - projectName
+    - projectType
+    type: object
+  model.User:
+    properties:
+      Id:
+        type: string
+      Password:
+        description: Email    string `json:"email"`
+        type: string
+    type: object
+  model.ValueFrom:
+    properties:
+      configMapKeyRef:
+        $ref: '#/definitions/model.ConfigMapKeyRef'
+      fieldRef:
+        $ref: '#/definitions/model.FieldRef'
+    type: object
+  model.VolumeMounts:
+    properties:
+      mountpath:
+        type: string
+      name:
+        type: string
+      readonly:
+        type: boolean
+    type: object
+  model.Workspace:
+    properties:
+      clusterName:
+        items:
+          type: string
+        type: array
+      created_at:
+        type: string
+      memberName:
+        type: string
+      selectCluster:
+        items:
+          $ref: '#/definitions/model.WorkspaceClusters'
+        type: array
+      workspaceDescription:
+        type: string
+      workspaceName:
+        type: string
+    required:
+    - memberName
+    - workspaceDescription
+    - workspaceName
+    type: object
+  model.WorkspaceClusters:
+    properties:
+      cluster:
+        type: string
+    type: object
+host: 192.168.160.230:8013
 info:
   contact:
     name: GM-Center
@@ -25,45 +645,20 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: Gedge GM-Center Swagger API
-  version: "1.0"
+  version: "2.0"
 paths:
-  /apps:
-    get:
-      consumes:
-      - application/json
-      description: get App Lists
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          headers:
-            Token:
-              description: qwerty
-              type: string
-          schema:
-            $ref: '#/definitions/model.App'
-      summary: Show all apps
+  /auth:
     post:
       consumes:
       - application/json
-      description: create App
+      description: get JWT token
       parameters:
-      - description: App Name
-        in: path
-        name: appName
+      - description: User Info Body
+        in: body
+        name: authBody
         required: true
-        type: string
-      - description: App Category
-        in: path
-        name: appCategory
-        required: true
-        type: string
-      - description: App Description
-        in: path
-        name: appDescription
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/model.User'
       produces:
       - application/json
       responses:
@@ -74,21 +669,140 @@ paths:
               description: qwerty
               type: string
           schema:
-            $ref: '#/definitions/model.App'
-      summary: Create App
-  /apps/{name}:
+            $ref: '#/definitions/model.User'
+      summary: Login
+      tags:
+      - Login
+  /ceph/health:
     get:
       consumes:
       - application/json
-      description: get App
+      description: get Ceph volume Health info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.CEPH'
+      security:
+      - Bearer: []
+      summary: Show Ceph volume Health
+      tags:
+      - Volume
+  /clusters:
+    get:
+      consumes:
+      - application/json
+      description: get cluster List
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.CLUSTER'
+      security:
+      - Bearer: []
+      summary: Show List cluster
+      tags:
+      - Cluster
+    post:
+      consumes:
+      - application/json
+      description: Create Cluster
       parameters:
-      - description: App Name
+      - description: Cluster Info Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.Cluster'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/model.Cluster'
+      summary: Create Cluster
+      tags:
+      - Cluster
+  /clusters/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get cluster Details
+      parameters:
+      - description: name of the Cluster
         in: path
         name: name
         required: true
         type: string
       produces:
       - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Show detail cluster
+      tags:
+      - Cluster
+  /cronjob/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get cronjob Details
+      parameters:
+      - description: name of the Cronjob
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: cluster Name of the Cronjob
+        in: query
+        name: cluster
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.CRONJOB'
+      security:
+      - Bearer: []
+      summary: Show detail cronjob
+      tags:
+      - Kubernetes
+  /cronjobs:
+    get:
+      consumes:
+      - application/json
+      description: get cronjob List
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.CRONJOB'
+      security:
+      - Bearer: []
+      summary: Show List cronjob
+      tags:
+      - Kubernetes
+  /job/:name:
+    get:
+      consumes:
+      - application/json
+      description: get job Details
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
@@ -97,12 +811,544 @@ paths:
               description: qwerty
               type: string
           schema:
-            $ref: '#/definitions/model.App'
-      summary: Show App
+            $ref: '#/definitions/model.JOB'
+      summary: Show detail job
+  /jobs:
+    get:
+      consumes:
+      - application/json
+      description: get job List
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/model.JOB'
+      summary: Show List job
+  /members:
+    get:
+      consumes:
+      - application/json
+      description: get Member List
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Member'
+      security:
+      - Bearer: []
+      summary: Show List Member
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      description: Create Member
+      parameters:
+      - description: Cluster Info Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.Member'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/model.Member'
+      summary: Create Member
+      tags:
+      - User
+  /members/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get Member Details
+      parameters:
+      - description: name of the Member
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Show detail Member
+      tags:
+      - User
+  /pods:
+    get:
+      consumes:
+      - application/json
+      description: get pods List
+      parameters:
+      - description: cluster Name of the pods
+        in: query
+        name: cluster
+        type: string
+      - description: workspace Name of the pods
+        in: query
+        name: workspace
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.POD'
+      security:
+      - Bearer: []
+      summary: Show List pods
+  /pods/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get pods Details
+      parameters:
+      - description: name of the pods
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: cluster Name of the pods
+        in: query
+        name: cluster
+        required: true
+        type: string
+      - description: workspace Name of the pods
+        in: query
+        name: workspace
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.POD'
+      security:
+      - Bearer: []
+      summary: Show detail pods
+  /projects:
+    post:
+      consumes:
+      - application/json
+      description: Create userProject
+      parameters:
+      - description: UserProject Info Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.USERPROJECT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/model.USERPROJECT'
+      summary: Create userProject
+      tags:
+      - Project
+  /pvcs:
+    get:
+      consumes:
+      - application/json
+      description: get pvc List
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/model.PVC'
+      summary: Show app PVCs
+  /pvs:
+    get:
+      consumes:
+      - application/json
+      description: get pv List
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/model.PV'
+      summary: Show app PVs
+  /pvs/:name:
+    get:
+      responses: {}
+  /services:
+    get:
+      consumes:
+      - application/json
+      description: get Service List
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SERVICE'
+      security:
+      - Bearer: []
+      summary: Show List Service
+      tags:
+      - Kubernetes
+    post:
+      consumes:
+      - application/json
+      description: Create Service
+      parameters:
+      - description: Service Info Body
+        in: body
+        name: yaml
+        required: true
+        schema:
+          type: string
+      - description: cluster Name of the Service
+        in: query
+        name: cluster
+        required: true
+        type: string
+      - description: project Name of the Service
+        in: query
+        name: project
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/model.SERVICE'
+      security:
+      - Bearer: []
+      summary: Create Service
+      tags:
+      - Kubernetes
+  /services/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get cronjob Service
+      parameters:
+      - description: name of the Service
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: cluster Name of the Service
+        in: query
+        name: cluster
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SERVICE'
+      security:
+      - Bearer: []
+      summary: Show detail Service
+      tags:
+      - Kubernetes
+  /spider/cloudos:
+    get:
+      consumes:
+      - application/json
+      description: get CloudOS
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Cloudos
+      tags:
+      - VM
+  /spider/credentials:
+    get:
+      consumes:
+      - application/json
+      description: get ALLCredential
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Credential
+      tags:
+      - VM
+    post:
+      consumes:
+      - application/json
+      description: get Credential
+      parameters:
+      - description: Credential Info Body
+        in: body
+        name: CredentialBody
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Credential
+      tags:
+      - VM
+  /spider/credentials/{credentialName}:
+    delete:
+      consumes:
+      - application/json
+      description: get Credential
+      parameters:
+      - description: Name of the credentials
+        in: path
+        name: credentialName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Credential
+      tags:
+      - VM
+    get:
+      consumes:
+      - application/json
+      description: get Credential
+      parameters:
+      - description: Name of the credentials
+        in: path
+        name: credentialName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Credential
+      tags:
+      - VM
+  /systemProjects:
+    get:
+      consumes:
+      - application/json
+      description: get systemProject List
+      parameters:
+      - description: User Name of the Project Owner
+        in: query
+        name: user
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SYSTEMPROJECT'
+      security:
+      - Bearer: []
+      summary: Show List systemProject
+      tags:
+      - Project
+  /systemProjects/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get systemProject Details
+      parameters:
+      - description: name of the systemProject
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: cluster Name of the systemProject
+        in: query
+        name: cluster
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Show detail systemProject
+      tags:
+      - Project
+  /userProjects:
+    get:
+      consumes:
+      - application/json
+      description: get userProject List
+      parameters:
+      - description: User Name of the Project Owner
+        in: query
+        name: user
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.USERPROJECT'
+      security:
+      - Bearer: []
+      summary: Show List userProject
+      tags:
+      - Project
+  /userProjects/{name}:
+    delete:
+      consumes:
+      - application/json
+      description: delete userProjects
+      parameters:
+      - description: name of the userProjects
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: delete userProjects
+      tags:
+      - Project
+    get:
+      consumes:
+      - application/json
+      description: get userProject Details
+      parameters:
+      - description: name of the userProject
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Show detail userProject
+      tags:
+      - Project
+  /workspace/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get workspace Details
+      parameters:
+      - description: name of the workspace
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Show detail workspace
+      tags:
+      - Workspace
+  /workspaces:
+    get:
+      consumes:
+      - application/json
+      description: get workspace List
+      parameters:
+      - description: user name of the workspace Owner
+        in: query
+        name: user
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Workspace'
+      security:
+      - Bearer: []
+      summary: Show List workspace
+      tags:
+      - Workspace
+    post:
+      consumes:
+      - application/json
+      description: Create workspace
+      parameters:
+      - description: workspace Info Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.Workspace'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/model.Workspace'
+      summary: Create workspace
+      tags:
+      - Workspace
 schemes:
 - http
 securityDefinitions:
-  ApiKeyAuth:
+  Bearer:
+    description: '"Type \"Bearer \" and then your API Token"'
     in: header
     name: Authorization
     type: apiKey

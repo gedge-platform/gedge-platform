@@ -1,8 +1,36 @@
 # Changelog
 
+- __[v2.5 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v25-release)__
 - __[v2.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v20-release)__
 - __[v1.5 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v15-release)__
 - __[v1.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v10-release)__
+
+
+## v2.5 Release
+
+### GS-Engine
+- gse_api_server
+    - bug fix
+- gse_infra_interface
+    - 멀티 클러스터 환경의 시험 테스트 기능 추가
+    - 시험 테스트용 멀티 클러스터 모니터링 기능 추가
+    - 마이크로서비스 시험 테스트 기능 추가
+    - 기능 변경에 따른 테스트 도구 UI 수정
+    - bug fix
+### GM-Center
+- gm-center API 기능 고도화
+    - gm-center 아키텍처 변경
+    - 쿠버네티스 API 기능 추가
+    - VM 관리 기능 추가
+### GM-Tool
+- gm-tool 아키텍처 변경 
+- 통합 대시보드 수정 및 플랫폼 대시보드, 서비스 어드민 대시보드 추가
+- 쿠버네티스 클러스터 모니터링 기능 추가
+- PVC 생성 
+- 스토리지클래스 생성
+### GS-Broker
+- 신규 코드 업데이트(기능 추가 및 버그 수정)
+
 
 ## v2.0 Release
 

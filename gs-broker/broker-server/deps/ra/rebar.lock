@@ -1,0 +1,8 @@
+{"1.1.0",
+[{<<"aten">>,{pkg,<<"aten">>,<<"0.5.4">>},0},
+ {<<"gen_batch_server">>,{pkg,<<"gen_batch_server">>,<<"0.8.4">>},0}]}.
+[
+{pkg_hash,[
+ {<<"aten">>, <<"5FCC554290EC7617668BA15FC61E22E0D529A2CF8ADC9DDB947E076F84C2DD48">>},
+ {<<"gen_batch_server">>, <<"20535E9DBD4DC234E63B3DF79BA65D8A770396B2CAD6B4068A1E37E3AE010900">>}]}
+].

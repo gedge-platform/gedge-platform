@@ -1,0 +1,3 @@
+.env
+gmc_api_gateway/.env
+gmc_api_gateway/nohup.out

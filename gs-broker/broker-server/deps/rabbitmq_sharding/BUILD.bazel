@@ -1,0 +1,63 @@
+load("@rules_erlang//:xref.bzl", "xref")
+load("@rules_erlang//:dialyze.bzl", "dialyze", "plt")
+load(
+    "//:rabbitmq.bzl",
+    "RABBITMQ_DIALYZER_OPTS",
+    "assert_suites",
+    "broker_for_integration_suites",
+    "rabbitmq_app",
+    "rabbitmq_integration_suite",
+)
+
+APP_NAME = "rabbitmq_sharding"
+
+APP_DESCRIPTION = "RabbitMQ Sharding Plugin"
+
+DEPS = [
+    "//deps/rabbit:erlang_app",
+    "//deps/rabbit_common:erlang_app",
+    "@lager//:erlang_app",
+]
+
+rabbitmq_app(
+    app_description = APP_DESCRIPTION,
+    app_name = APP_NAME,
+    deps = DEPS,
+)
+
+xref(tags = ["xref"])
+
+plt(
+    name = "base_plt",
+    deps = DEPS,
+)
+
+dialyze(
+    dialyzer_opts = RABBITMQ_DIALYZER_OPTS,
+    plt = ":base_plt",
+    tags = ["dialyze"],
+    warnings_as_errors = False,
+)
+
+broker_for_integration_suites()
+
+PACKAGE = "deps/rabbitmq_sharding"
+
+suites = [
+    rabbitmq_integration_suite(
+        PACKAGE,
+        name = "rabbit_hash_exchange_SUITE",
+    ),
+    rabbitmq_integration_suite(
+        PACKAGE,
+        name = "rabbit_sharding_SUITE",
+        deps = [
+            "//deps/rabbit:erlang_app",
+        ],
+    ),
+]
+
+assert_suites(
+    suites,
+    glob(["test/**/*_SUITE.erl"]),
+)

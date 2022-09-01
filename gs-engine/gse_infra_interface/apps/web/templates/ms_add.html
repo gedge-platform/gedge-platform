@@ -1,0 +1,127 @@
+{% extends "common.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/ms_add.css')}}">
+{% endblock %}
+{% block content %}
+        <main id="content">
+            <div id="content_header">
+                <img src="{{url_for('static', filename='assets/img/tab-ms-add-ico/ico-add-ms.png')}}">
+                <span id="content_title">Add Micro Service</span>
+            </div>
+            <div class="content_div_line"></div>
+
+            <div id="ms_add" class="ms_add_container">
+                <form id="ms_add_form" class="form-group">
+                    <div class="d-flex align-items-center ms_add_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>Cluster</span>
+                        <div class="d-flex align-items-centers">
+                            <div class="dropdown">
+                                <input class="dropdown-toggle ms_add_cluster_dropdown" data-bs-toggle="dropdown" aria-expanded="false" placeholder="Selected Cluster" data-value="" name="cluster_name" readonly />
+                                <ul class="dropdown-menu ms_add_cluster_dropdown_menu">
+                                    {% for cluster in param.cluster_list %}
+                                    <li><a class="dropdown-item" href="#" onclick="ms_add_dropdown_menu_item_click_event(event, this)" value="{{ cluster.cluster_name }}">{{ cluster.cluster_name }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="d-flex align-items-center ms_add_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>Node type</span>
+                        <div class="d-flex align-items-center common_radio_container ms_add_node_type_data">
+                            <div class="form-check d-flex align-items-center">
+                                <input class="form-check-input d-none common_radio_input" type="radio" id="ms_add_node_type_radio_compute" name="ms_add_node_type_radio" checked>
+                                <label class="form-check-label common_radio_label" for="ms_add_node_type_radio_compute"></label>
+                            </div>
+                            <span>Compute</span>
+                            <div class="form-check d-flex align-items-center">
+                                <input class="form-check-input d-none common_radio_input" type="radio" id="ms_add_node_type_radio_gpu" name="ms_add_node_type_radio">
+                                <label class="form-check-label common_radio_label" for="ms_add_node_type_radio_gpu"></label>
+                            </div>
+                            <span>GPU</span>
+                            <div class="form-check d-flex align-items-center">
+                                <input class="form-check-input d-none common_radio_input" type="radio" id="ms_add_node_type_radio_public_cloud" name="ms_add_node_type_radio">
+                                <label class="form-check-label common_radio_label" for="ms_add_node_type_radio_public_cloud"></label>
+                            </div>
+                            <span>Public Cloud</span>
+                        </div>
+                    </div> -->
+
+                    <!-- <div class="d-flex align-items-center ms_add_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>uS Pod Name</span>
+                        <div class="d-flex align-items-center">
+                            <input class="form-control common_text_input ms_add_data_input" type="text" id="ms_pod_name_input" placeholder="POD Name">
+                        </div>
+                    </div> -->
+
+                    <div class="d-flex align-items-center ms_add_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>Cluster Resource</span>
+                        <div class="ms_add_computing_resource_data">
+                            <div class="d-flex">
+                                <div class="d-flex flex-column ms_add_computing_resource_ind_data">
+                                    <div class="d-flex align-items-center ms_add_computing_resource_ind_title">
+                                        <img src="{{url_for('static', filename='assets/img/cpu-ico/ico-cpu.png')}}">
+                                        <span>CPU</span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                            <span>Allocatable</span>
+                                            <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_cpu_allocatable_input" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column ms_add_computing_resource_ind_data">
+                                    <div class="d-flex align-items-center ms_add_computing_resource_ind_title">
+                                        <img src="{{url_for('static', filename='assets/img/memory-ico/ico-memory.png')}}">
+                                        <span>Memory</span>
+                                        <span> (GB)</span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                            <span>Allocatable</span>
+                                            <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_memory_allocatable_input" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column ms_add_computing_resource_ind_data">
+                                    <div class="d-flex align-items-center ms_add_computing_resource_ind_title">
+                                        <img src="{{url_for('static', filename='assets/img/gpu-ico/ico-gpu.png')}}">
+                                        <span>GPU</span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                            <span>Allocatable</span>
+                                            <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_gpu_allocatable_input" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center ms_add_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>uS YAML Edit</span>
+                        <div class="d-flex align-items-center">
+                            <textarea class="form-control ms_add_yaml_edit_data_textarea" cols="500" rows="35" name="yaml_data" id="ms_add_yaml_edit_text_area">{{ param.yaml_data }}</textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+        <div class="d-flex justify-content-center align-items-center">
+            <button class="btn d-flex justify-content-center align-items-center common_create_button ms_add_confirm_button" onclick="ms_add_click_event(event,this)" type="button">
+                <span>Add Pod</span>
+                <img src="{{url_for('static', filename='assets/img/list-add-ico/ico-table-add-item.png')}}">
+            </button>
+        </div>
+{% endblock %}
+
+{% block script %}
+    <script src="{{url_for('static', filename='assets/js/ms_add.js')}}"></script>
+{% endblock %}

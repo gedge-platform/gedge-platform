@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block bg_head %}
+<div class="d-flex header_tab_button_group">
+    {% if param.current_view != 'web_micro_service_add_view' %}
+    <div id="header_micro_service_add_tab">
+        <button class="btn header_tab_button_deactive" id="header_tab_micro_service_add_button" type="button" onclick="on_click_micro_service_add()">
+            <span>Add uS</span>
+        </button>
+        <div id="header_tab_micro_service_add_active_bar" class="header_tab_active_bar deactive"></div>
+    </div>
+    {% else %}
+    <div id="header_micro_service_add_tab">
+        <button class="btn header_tab_button_active" id="header_tab_micro_service_add_button" type="button" onclick="on_click_micro_service_add()">
+            <span>Add uS</span>
+        </button>
+        <div id="header_tab_micro_service_add_active_bar" class="header_tab_active_bar"></div>
+    </div>
+    {% endif %}
+    {% if param.current_view != 'web_micro_service_detail_view' %}
+    <div id="header_micro_service_detail_tab">
+        <button class="btn header_tab_button_deactive" id="header_tab_micro_service_detail_button" type="button" onclick="on_click_micro_service_detail()">
+            <span>uS Detail</span>
+        </button>
+        <div id="header_tab_micro_service_detail_active_bar" class="header_tab_active_bar deactive"></div>
+    </div>
+    {% else %}
+    <div id="header_micro_service_detail_tab">
+        <button class="btn header_tab_button_active" id="header_tab_micro_service_detail_button" type="button" onclick="on_click_micro_service_detail()">
+            <span>uS Detail</span>
+        </button>
+        <div id="header_tab_micro_service_detail_active_bar" class="header_tab_active_bar"></div>
+    </div>
+    {% endif %}
+
+    {% if session['user_role'] == 'ADMIN' %}
+        {% if param.current_view != 'web_multi_cluster_add_view' %}
+    <div id="header_cluster_add_tab">
+        <button class="btn header_tab_button_deactive" id="header_tab_cluster_add_button" type="button" onclick="on_click_multi_cluster_add()">
+            <span>Add Cluster</span>
+        </button>
+        <div id="header_tab_cluster_add_active_bar" class="header_tab_active_bar deactive"></div>
+    </div>
+        {% else %}
+    <div id="header_cluster_add_tab">
+        <button class="btn header_tab_button_active" id="header_tab_cluster_add_button" type="button" onclick="on_click_multi_cluster_add()">
+            <span>Add Cluster</span>
+        </button>
+        <div id="header_tab_cluster_add_active_bar" class="header_tab_active_bar"></div>
+    </div>
+        {% endif %}
+    {% endif %}
+    {% if param.current_view != 'web_multi_cluster_list_view' %}
+    <div id="header_cluster_list_tab">
+        <button class="btn header_tab_button_deactive" id="header_tab_cluster_list_button" type="button" onclick="on_click_multi_cluster_list()">
+            <span>Cluster Info.</span>
+        </button>
+        <div id="header_tab_cluster_list_active_bar" class="header_tab_active_bar deactive"></div>
+    </div>
+    {% else %}
+    <div id="header_cluster_list_tab">
+        <button class="btn header_tab_button_active" id="header_tab_cluster_list_button" type="button" onclick="on_click_multi_cluster_list()">
+            <span>Cluster Info.</span>
+        </button>
+        <div id="header_tab_cluster_list_active_bar" class="header_tab_active_bar"></div>
+    </div>
+    {% endif %}
+
+    <div id="header_logout_tab">
+        <button class="btn header_tab_button_deactive" id="header_tab_logout_button" type="button" onclick="on_click_logout()">
+            <span>Logout</span>
+        </button>
+        <div id="header_tab_cluster_list_active_bar" class="header_tab_active_bar deactive"></div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{application,eetcd,
+             [{description,"ETCD V3 client"},
+              {vsn,"0.3.3"},
+              {registered,[eetcd_sup,eetcd_conn_sup,eetcd_lease_sup]},
+              {mod,{eetcd_app,[]}},
+              {applications,[kernel,stdlib,gun]},
+              {env,[]},
+              {modules,[]},
+              {licenses,["Apache 2.0"]},
+              {links,[{"Github","https://github.com/zhongwencool/eetcd"}]}]}.
