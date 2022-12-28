@@ -1,16 +1,7 @@
-import { display, padding } from "@mui/system";
-import React, { useState, useEffect, PureComponent } from "react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import React from "react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { observer } from "mobx-react";
-import monitoringStore from "../../../../../store/Monitoring";
+import { monitoringStore } from "@/store";
 import { ClusterMetricTypes } from "../../Utils/MetricsVariables";
 import { unixToTime } from "../../Utils/MetricsVariableFormatter";
 
@@ -20,10 +11,10 @@ const APIAreaChart = observer(({ value }) => {
   let title = "";
   let metrics = [];
 
-  const searchMetrics = (filter) => {
+  const searchMetrics = filter => {
     Object.entries(allMetrics).map(([key, value]) => {
       if (key === filter) {
-        value[0]?.values.forEach((element) => {
+        value[0]?.values.forEach(element => {
           const tempMetrics = {
             time: unixToTime(element[0]),
             value: element[1],
@@ -78,12 +69,7 @@ const APIAreaChart = observer(({ value }) => {
           <XAxis tickLine="false" dataKey="time" />
           <YAxis />
           <Tooltip />
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke="#007EFF"
-            fill="#0080ff30"
-          />
+          <Area type="monotone" dataKey="value" stroke="#007EFF" fill="#0080ff30" />
         </AreaChart>
       </ResponsiveContainer>
     </div>

@@ -4,17 +4,13 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
+import { CCreateButton } from "@/components/buttons";
+import { CTabPanel } from "@/components/tabs";
 import { useHistory } from "react-router";
 import { observer } from "mobx-react";
 import Layout from "@/layout";
 import { Title } from "@/pages";
-import StorageClassStore from "../../../../store/StorageClass";
-import {
-  converterCapacity,
-  drawStatus,
-} from "@/components/datagrids/AggridFormatter";
+import { StorageClassStore } from "@/store";
 import StorageClassDetail from "./StorageClassDetail";
 import CreateStorageClass from "./Dialog/CreateStorageClass";
 import ViewYaml from "./Dialog/ViewYaml";
@@ -97,7 +93,7 @@ const Storage = observer(() => {
     },
   ]);
 
-  const handleOpen = (e) => {
+  const handleOpen = e => {
     let fieldName = e.colDef.field;
     loadStorageClass(e.data.name, e.data.cluster);
     loadStorageClassYaml(e.data.name, e.data.cluster, null, "storageclasses");
@@ -130,9 +126,10 @@ const Storage = observer(() => {
 
   return (
     <Layout currentPageTitle={currentPageTitle}>
-      <CReflexBox>
+      <CReflexBox style={{ height: 810 }}>
         <PanelBox>
           <CommActionBar
+
           // reloadFunc={loadStorageClasses}
           // isSearch={true}
           // isSelect={true}
@@ -158,16 +155,8 @@ const Storage = observer(() => {
               </div>
             </CTabPanel>
           </div>
-          <ViewYaml
-            open={openYaml}
-            yaml={getYamlFile}
-            onClose={handleCloseYaml}
-          />
-          <CreateStorageClass
-            open={open}
-            onClose={handleClose}
-            reloadFunc={loadStorageClasses}
-          />
+          <ViewYaml open={openYaml} yaml={getYamlFile} onClose={handleCloseYaml} />
+          <CreateStorageClass open={open} onClose={handleClose} reloadFunc={loadStorageClasses} />
         </PanelBox>
         <StorageClassDetail />
       </CReflexBox>

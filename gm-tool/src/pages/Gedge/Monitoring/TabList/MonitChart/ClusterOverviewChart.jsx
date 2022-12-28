@@ -1,5 +1,4 @@
-import { display, padding } from "@mui/system";
-import React, { useState, useEffect, PureComponent } from "react";
+import React from "react";
 import {
   AreaChart,
   Area,
@@ -11,7 +10,7 @@ import {
 } from "recharts";
 import { observer } from "mobx-react";
 import { PieChart, Pie, Sector, Cell } from "recharts";
-import monitoringStore from "../../../../../store/Monitoring";
+import { monitoringStore } from "@/store";
 
 const COAreaChartTop = observer(({ chartValue }) => {
   const {
@@ -26,23 +25,44 @@ const COAreaChartTop = observer(({ chartValue }) => {
   } = monitoringStore;
   let title = "";
   let metrics = [];
+  let maxData = 0;
 
+  const searchMetrics = (metrics) => {
+    maxData = 0;
+    metrics.map((data) => {
+      if (maxData < parseFloat(data.value)) {
+        maxData = parseFloat(data.value);
+      }
+    });
+  };
   switch (chartValue) {
     case "CPU":
       title = "CPU Util(%)";
       metrics = coPieCPU[2]?.metrics;
+      if (metrics != undefined) {
+        searchMetrics(metrics);
+      }
       break;
     case "MEMORY":
       title = "Memory Util(%)";
       metrics = coPieMemory[2]?.metrics;
+      if (metrics != undefined) {
+        searchMetrics(metrics);
+      }
       break;
     case "DISK":
       title = "Disk Util(%)";
       metrics = coPieDisk[2]?.metrics;
+      if (metrics != undefined) {
+        searchMetrics(metrics);
+      }
       break;
     case "POD":
       title = "Pods";
       metrics = coPiePod[2]?.metrics;
+      if (metrics != undefined) {
+        searchMetrics(metrics);
+      }
       break;
     default:
       break;
@@ -77,7 +97,7 @@ const COAreaChartTop = observer(({ chartValue }) => {
           />
 
           <XAxis interval={5} tickLine="false" dataKey="time" />
-          <YAxis type="number" domain={[0, 100]} />
+          <YAxis type="number" domain={[0, Math.round(maxData * 1.2)]} />
           <Tooltip />
           <Area
             type="monotone"

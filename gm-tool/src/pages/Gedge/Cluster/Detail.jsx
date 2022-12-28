@@ -2,13 +2,9 @@ import React, { useState, useEffect } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { observer } from "mobx-react";
-import clusterStore from "../../../store/Cluster";
+import { clusterStore } from "@/store";
 import styled from "styled-components";
-import {
-  dateFormatter,
-  isValidJSON,
-  nullCheck,
-} from "../../../utils/common-utils";
+import { dateFormatter, isValidJSON, nullCheck } from "@/utils/common-utils";
 import ReactJson from "react-json-view";
 import EventAccordion from "@/components/detail/EventAccordion";
 
@@ -65,7 +61,7 @@ const NoInfo = styled.div`
   background-color: #141a30;
 `;
 
-const Detail = observer((props) => {
+const Detail = observer(props => {
   const {
     clusterDetail: {
       clusterName,
@@ -77,16 +73,7 @@ const Detail = observer((props) => {
       events,
       ipAddr,
       nodes,
-      resource: {
-        cronjob_count,
-        deployment_count,
-        job_count,
-        pod_count,
-        service_count,
-        volume_count,
-        Statefulset_count,
-        daemonset_count,
-      },
+      resource: { cronjob_count, deployment_count, job_count, pod_count, service_count, volume_count, Statefulset_count, daemonset_count },
     },
   } = clusterStore;
   const nodesChk = nodes === null ? 0 : nodes;
@@ -132,16 +119,7 @@ const Detail = observer((props) => {
       <tr>
         <th style={{ width: "40%" }}>{key}</th>
         <td>
-          {isValidJSON(value) ? (
-            <ReactJson
-              src={JSON.parse(value)}
-              theme="summerfruit"
-              displayDataTypes={false}
-              displayObjectSize={false}
-            />
-          ) : (
-            value
-          )}
+          {isValidJSON(value) ? <ReactJson src={JSON.parse(value)} theme="summerfruit" displayDataTypes={false} displayObjectSize={false} /> : value}
         </td>
       </tr>
     ));

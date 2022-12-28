@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react";
-import dashboardStore from "../../../store/Dashboard";
-import CCreateButton from "@/components/buttons";
+import { dashboardStore } from "@/store";
 import styled from "styled-components";
-import theme from "@/styles/theme";
 
 const ButtonStyle = styled.button`
   width: 100%;
@@ -17,13 +15,7 @@ const ButtonStyle = styled.button`
 `;
 
 const ClusterRecent = observer(() => {
-  const {
-    clusterCpuTop5,
-    podCpuTop5,
-    clusterMemTop5,
-    podMemTop5,
-    loadClusterRecent,
-  } = dashboardStore;
+  const { clusterCpuTop5, podCpuTop5, clusterMemTop5, podMemTop5, loadClusterRecent } = dashboardStore;
 
   useEffect(() => {
     loadClusterRecent();
@@ -32,7 +24,7 @@ const ClusterRecent = observer(() => {
   const [toggle, setToggle] = useState(false);
 
   const clickToggle = () => {
-    setToggle((isOpen) => !isOpen);
+    setToggle(isOpen => !isOpen);
   };
 
   // const clusterCpuTop =
@@ -50,7 +42,7 @@ const ClusterRecent = observer(() => {
         <li>
           <span>{i + 1}</span>
           {clusterCpuTop5[i] ? clusterCpuTop5[i]["cluster"] : "-"}
-        </li>
+        </li>,
       );
     }
     return arr;
@@ -68,7 +60,7 @@ const ClusterRecent = observer(() => {
         <li>
           <span>{i + 1}</span>
           {podCpuTop5[i] ? podCpuTop5[i]["name"] : "-"}
-        </li>
+        </li>,
       );
     }
     return arr;
@@ -86,7 +78,7 @@ const ClusterRecent = observer(() => {
         <li>
           <span>{i + 1}</span>
           {clusterMemTop5[i] ? clusterMemTop5[i]["cluster"] : "-"}
-        </li>
+        </li>,
       );
     }
     return arr;
@@ -104,7 +96,7 @@ const ClusterRecent = observer(() => {
         <li>
           <span>{i + 1}</span>
           {podMemTop5[i] ? podMemTop5[i]["name"] : "-"}
-        </li>
+        </li>,
       );
     }
     return arr;
@@ -114,11 +106,7 @@ const ClusterRecent = observer(() => {
     <>
       {toggle ? (
         <div className="ClusterRecentWrap">
-          <ButtonStyle
-            variant="contained"
-            onClick={clickToggle}
-            toggle={toggle}
-          >
+          <ButtonStyle variant="contained" onClick={clickToggle} toggle={toggle}>
             CPU Top 5
           </ButtonStyle>
           <div className="ClusterRecentTitle">Cluster CPU Top 5</div>
@@ -138,11 +126,7 @@ const ClusterRecent = observer(() => {
         </div>
       ) : (
         <div className="ClusterRecentWrap">
-          <ButtonStyle
-            variant="contained"
-            onClick={clickToggle}
-            toggle={toggle}
-          >
+          <ButtonStyle variant="contained" onClick={clickToggle} toggle={toggle}>
             Memory Top 5
           </ButtonStyle>
           <div className="ClusterRecentTitle">Cluster Memory Top 5</div>

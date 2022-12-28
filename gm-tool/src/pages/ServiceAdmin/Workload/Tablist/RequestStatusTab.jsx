@@ -4,30 +4,14 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
 import { observer } from "mobx-react";
-import requestStatusStore from "../../../../store/RequestStatus";
-import { toJS } from "mobx";
-import { drawStatus } from "../../../../components/datagrids/AggridFormatter";
+import { requestStatusStore } from "@/store";
+import { drawStatus } from "@/components/datagrids/AggridFormatter";
 
 const RequestStatusTab = observer(() => {
-  const [tabvalue, setTabvalue] = useState(0);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
+  const [reRun, setReRun] = useState(false);
 
-  const {
-    requestList,
-    loadRequestList,
-    totalElements,
-    currentPage,
-    totalPages,
-    viewList,
-    goPrevPage,
-    goNextPage,
-  } = requestStatusStore;
+  const { requestList, loadRequestList, totalElements, currentPage, totalPages, viewList, goPrevPage, goNextPage } = requestStatusStore;
 
   const [columDefs] = useState([
     {
@@ -90,42 +74,45 @@ const RequestStatusTab = observer(() => {
     },
   ]);
 
-  const history = useHistory();
+  const reloadData = () => {
+    setReRun(true);
+  };
 
   useEffect(() => {
     loadRequestList();
-  }, []);
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
 
   return (
     <>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
-            isSearch={true}
-            isSelect={true}
-            keywordList={["이름"]}
-            reloadFunc={loadRequestList}
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
           >
             {/* <CCreateButton>생성</CCreateButton> */}
           </CommActionBar>
 
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  rowData={viewList}
-                  columnDefs={columDefs}
-                  totalElements={totalElements}
-                  isBottom={false}
-                  // onCellClicked={handleClick}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                  // totalElements={requestList.length}
-                />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                rowData={viewList}
+                columnDefs={columDefs}
+                totalElements={totalElements}
+                isBottom={false}
+                // onCellClicked={handleClick}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+                // totalElements={requestList.length}
+              />
+            </div>
           </div>
         </PanelBox>
       </CReflexBox>

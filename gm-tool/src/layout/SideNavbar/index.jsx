@@ -7,8 +7,8 @@ import SideMenu from "./SideMenu";
 // import sideLogo from '@/images/layout/logo.png';
 import sideLogo from "@/images/layout/new_logo.png";
 import axios from "axios";
-import { SERVER_URL } from "../../config";
-import { getItem, setItem } from "../../utils/sessionStorageFn";
+import { SERVER_URL } from "@/config";
+import { getItem, setItem } from "@/utils/sessionStorageFn";
 
 const SidebarArea = styled.div`
   position: absolute;
@@ -41,7 +41,6 @@ const SideNavbar = () => {
           <img src={sideLogo} alt="GEdge Cloud" />
         </Link>
       </LogoArea>
-      {/* <LogoArea>Hyperledger<br /> Fabric as a Service<br />(Big BlockChain Storage)</LogoArea> */}
       <SideUser />
       <SideMenu />
     </SidebarArea>

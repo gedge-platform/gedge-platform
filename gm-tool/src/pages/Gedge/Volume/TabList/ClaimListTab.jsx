@@ -4,31 +4,20 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import { observer } from "mobx-react";
-import axios from "axios";
-// import { BASIC_AUTH, SERVER_URL } from "../../../../config";
-// import VolumeDetail from "../VolumeDetail";
 import claimStore from "@/store/Claim";
 import ViewYaml from "../Dialog/ViewYaml";
 import ClaimDetail from "../ClaimDetail";
-import {
-  converterCapacity,
-  drawStatus,
-} from "@/components/datagrids/AggridFormatter";
-import CreateVolume from "../Dialog/CreateVolume";
+import { drawStatus } from "@/components/datagrids/AggridFormatter";
 import CreateClaim from "../ClaimDialog/CreateClaim";
+import { swalUpdate, swalError } from "@/utils/swal-utils";
 
 const ClaimListTab = observer(() => {
-  const [tabvalue, setTabvalue] = useState(0);
   const [open, setOpen] = useState(false);
+  const [reRun, setReRun] = useState(false);
+  const [claimName, setClaimName] = useState("");
   const [openYaml, setOpenYaml] = useState(false);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
-
   const {
     pvClaims,
     pvClaim,
@@ -38,6 +27,7 @@ const ClaimListTab = observer(() => {
     pvClaimAnnotations,
     pvClaimLables,
     loadVolumeYaml,
+    deletePvClaim,
     getYamlFile,
     // pvClaimEvents,
     loadPVClaims,
@@ -54,7 +44,6 @@ const ClaimListTab = observer(() => {
       headerName: "Name",
       field: "name",
       filter: true,
-
     },
     {
       headerName: "Namespace",
@@ -94,11 +83,6 @@ const ClaimListTab = observer(() => {
       field: "storageClass",
       filter: true,
     },
-    // {
-    //   headerName: "Cluster Name",
-    //   field: "clusterName",
-    //   filter: true,
-    // },
     {
       headerName: "Create At",
       field: "createAt",
@@ -121,15 +105,11 @@ const ClaimListTab = observer(() => {
     },
   ]);
 
-  const handleOpen = (e) => {
+  const handleClick = e => {
     let fieldName = e.colDef.field;
+    setClaimName(e.data.name);
     loadPVClaim(e.data.name, e.data.clusterName, e.data.namespace);
-    loadVolumeYaml(
-      e.data.name,
-      e.data.clusterName,
-      e.data.namespace,
-      "persistentvolumeclaims"
-    );
+    loadVolumeYaml(e.data.name, e.data.clusterName, e.data.namespace, "persistentvolumeclaims");
     if (fieldName === "yaml") {
       handleOpenYaml();
     }
@@ -139,54 +119,69 @@ const ClaimListTab = observer(() => {
     setOpenYaml(true);
   };
 
-  const handleCreateOpen = () => {
-    setOpen(true);
-  };
-
   const handleCloseYaml = () => {
     setOpenYaml(false);
   };
 
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
   const handleClose = () => {
-    setOpen(false)
-  }
+    setOpen(false);
+  };
+
+  const handleDelete = () => {
+    if (claimName === "") {
+      swalError("Claim를 선택해주세요!");
+    } else {
+      swalUpdate(claimName + "를 삭제하시겠습니까?", () => deletePvClaim(claimName, reloadData));
+    }
+    setClaimName("");
+  };
+
+  const reloadData = () => {
+    setReRun(true);
+  };
 
   useEffect(() => {
     loadPVClaims();
-  }, []);
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
 
   return (
     <>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
-          // reloadFunc={loadPVClaims}
-          // isSearch={true}
-          // isSelect={true}
-          // keywordList={["이름"]}
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
           >
-            <CCreateButton onClick={handleCreateOpen}>생성</CCreateButton>
+            <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  onCellClicked={handleOpen}
-                  rowData={viewList}
-                  columnDefs={columDefs}
-                  isBottom={false}
-                  totalElements={totalElements}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                onCellClicked={handleClick}
+                rowData={viewList}
+                columnDefs={columDefs}
+                isBottom={false}
+                totalElements={totalElements}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+              />
+            </div>
           </div>
           <ViewYaml open={openYaml} yaml={getYamlFile} onClose={handleCloseYaml} />
-          <CreateClaim open={open} onClose={handleClose} reloadFunc={loadPVClaim} />
+          <CreateClaim open={open} onClose={handleClose} reloadFunc={reloadData} />
         </PanelBox>
         <ClaimDetail
           pvClaim={pvClaim}

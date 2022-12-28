@@ -1,11 +1,8 @@
-// import axios from "axios";
 import React, { useLayoutEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import BrandArea from "./BrandArea";
 import "./css/Login.css";
 import tit_findId from "./images/tit_findId.png";
-// import { SERVER_URL } from "@/config.jsx";
-// import { swal, swalError } from "../../utils/swal-utils";
 
 const FindID = () => {
   const [userId, setUserId] = useState("");
@@ -17,7 +14,7 @@ const FindID = () => {
   });
   const { username, phone } = inputs;
 
-  const onChange = (e) => {
+  const onChange = e => {
     // console.log(e.target.value);
     const { value, name } = e.target;
     setInputs({
@@ -81,9 +78,7 @@ const FindID = () => {
                 <p className="find-result-id">
                   아이디는 <strong>{userId}</strong> 입니다.
                 </p>
-                <p className="find-result-txt">
-                  로그인하시면 서비스를 이용하실 수 있습니다.
-                </p>
+                <p className="find-result-txt">로그인하시면 서비스를 이용하실 수 있습니다.</p>
               </div>
               <div className="memberBtns">
                 <Link className="btn_contained submit" to="/Login">
@@ -129,28 +124,19 @@ const FindID = () => {
                   <li>
                     <label className="tit">&nbsp;</label>
                     <div className="data">
-                      <input
-                        type="text"
-                        placeholder="인증번호를 입력하세요."
-                        name=""
-                        className="input_confirm"
-                      />
+                      <input type="text" placeholder="인증번호를 입력하세요." name="" className="input_confirm" />
                     </div>
                   </li>
                 </ul>
                 <div className="memberBtns">
-                  <button
-                    type="button"
-                    className="btn_contained"
-                    onClick={() => history.back()}
-                  >
+                  <button type="button" className="btn_contained" onClick={() => history.back()}>
                     취소
                   </button>
                   <button
                     type="submit"
                     className="btn_contained submit"
-                  // onClick={findIdCheck}
-                  // setIsResult(true);
+                    // onClick={findIdCheck}
+                    // setIsResult(true);
                   >
                     확인
                   </button>

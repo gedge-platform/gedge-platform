@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
 import { CDialog } from "@/components/dialogs";
-import { CDialogNew } from "../../../../components/dialogs";
+import { CDialogNew } from "@/components/dialogs";
 import { swalUpdate } from "@/utils/swal-utils";
 import FormControl from "@material-ui/core/FormControl";
 import { CTextField } from "@/components/textfields";

@@ -3,7 +3,7 @@ import React from "react";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/theme-monokai";
-import StorageClassStore from "../../../../../store/StorageClass";
+import { StorageClassStore } from "@/store";
 
 const StorageClassYamlPopup = observer(() => {
   const { content, claimName } = StorageClassStore;

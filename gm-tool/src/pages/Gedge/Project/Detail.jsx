@@ -3,8 +3,7 @@ import { PanelBox } from "@/components/styles/PanelBox";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { observer } from "mobx-react";
 import styled from "styled-components";
-import { dateFormatter } from "@/utils/common-utils";
-import projectStore from "../../../store/Project";
+import { projectStore } from "@/store";
 import "@grapecity/wijmo.styles/wijmo.css";
 import { MenuItem, FormControl, Select } from "@mui/material";
 import EventAccordion from "@/components/detail/EventAccordion";
@@ -111,6 +110,12 @@ const Detail = observer(() => {
     workspace,
     events,
     resourceUsage,
+    eventList,
+    totalEvents,
+    eventLength,
+    currentEvent,
+    goPrevEvent,
+    goNextEvent,
   } = projectStore;
   console.log(resourceUsage);
 
@@ -118,25 +123,34 @@ const Detail = observer(() => {
   const [open, setOpen] = useState(false);
   const [tabvalue, setTabvalue] = useState(0);
 
+  const [columDefs] = useState([
+    {
+      headerName: "message",
+      field: "message",
+      filter: true,
+    },
+    {
+      headerName: "kind",
+      field: "kind",
+      filter: true,
+    },
+  ]);
+
   const eventsTable = () => {
     return (
       <EventWrap className="event-wrap">
         <FormControl>
-          <Select
-            value={selectCluster}
-            inputProps={{ "aria-label": "Without label" }}
-            onChange={clusterChange}
-          >
-            {clusterList.map((cluster) => (
+          <Select value={events.cluster} inputProps={{ "aria-label": "Without label" }} onChange={clusterChange}>
+            {events.map(cluster => (
               <MenuItem
                 style={{
                   color: "black",
                   backgroundColor: "white",
                   fontSize: 15,
                 }}
-                value={cluster}
+                value={cluster.eventTime}
               >
-                {cluster}
+                {cluster.eventTime}
               </MenuItem>
             ))}
           </Select>
@@ -145,12 +159,16 @@ const Detail = observer(() => {
     );
   };
 
-  const clusterChange = (e) => {
+  const eventAccor = () => {
+    return eventList.map(item => <EventAccordion events={item} />);
+  };
+
+  const clusterChange = e => {
     changeCluster(e.target.value);
   };
 
   const clusterResourceTable = () => {
-    return detailInfo.map((cluster) => (
+    return detailInfo.map(cluster => (
       <>
         <ClusterTitle>{cluster.clusterName}</ClusterTitle>
         <table className="tb_data">
@@ -159,17 +177,9 @@ const Detail = observer(() => {
               {cluster.resourceUsage ? (
                 <>
                   <th>CPU</th>
-                  <td>
-                    {cluster.resourceUsage?.namespace_cpu
-                      ? cluster.resourceUsage?.namespace_cpu
-                      : "-"}
-                  </td>
+                  <td>{cluster.resourceUsage?.namespace_cpu ? cluster.resourceUsage?.namespace_cpu : "0"}</td>
                   <th>MEMORY</th>
-                  <td>
-                    {cluster.resourceUsage?.namespace_memory
-                      ? cluster.resourceUsage?.namespace_memory
-                      : "-"}
-                  </td>
+                  <td>{cluster.resourceUsage?.namespace_memory ? cluster.resourceUsage?.namespace_memory : "0"}</td>
                 </>
               ) : (
                 <></>
@@ -183,7 +193,7 @@ const Detail = observer(() => {
   };
 
   const resourcesTable = () => {
-    return detailInfo.map((resources) => (
+    return detailInfo.map(resources => (
       <>
         <ClusterTitle>{resources.clusterName}</ClusterTitle>
         <table className="tb_data" style={{ tableLayout: "fixed" }}>
@@ -192,59 +202,27 @@ const Detail = observer(() => {
               <>
                 <tr>
                   <th>Deployment</th>
-                  <td>
-                    {resources?.resource?.deployment_count
-                      ? resources?.resource?.deployment_count
-                      : "-"}
-                  </td>
+                  <td>{resources?.resource?.deployment_count ? resources?.resource?.deployment_count : "0"}</td>
                   <th>Pod</th>
-                  <td>
-                    {resources?.resource?.pod_count
-                      ? resources?.resource?.pod_count
-                      : "-"}
-                  </td>
+                  <td>{resources?.resource?.pod_count ? resources?.resource?.pod_count : "0"}</td>
                 </tr>
                 <tr>
                   <th>Service</th>
-                  <td>
-                    {resources?.resource?.service_count
-                      ? resources?.resource?.service_count
-                      : "-"}
-                  </td>
+                  <td>{resources?.resource?.service_count ? resources?.resource?.service_count : "0"}</td>
                   <th>CronJob</th>
-                  <td>
-                    {resources?.resource?.cronjob_count
-                      ? resources?.resource?.cronjob_count
-                      : "-"}
-                  </td>
+                  <td>{resources?.resource?.cronjob_count ? resources?.resource?.cronjob_count : "0"}</td>
                 </tr>
                 <tr>
                   <th>Job</th>
-                  <td>
-                    {resources?.resource?.job_count
-                      ? resources?.resource?.job_count
-                      : "-"}
-                  </td>
+                  <td>{resources?.resource?.job_count ? resources?.resource?.job_count : "0"}</td>
                   <th>Volume</th>
-                  <td>
-                    {resources?.resource?.volume_count
-                      ? resources?.resource?.volume_count
-                      : "-"}
-                  </td>
+                  <td>{resources?.resource?.volume_count ? resources?.resource?.volume_count : "0"}</td>
                 </tr>
                 <tr>
                   <th>Statefulset</th>
-                  <td>
-                    {resources?.resource?.Statefulset_count
-                      ? resources?.resource?.Statefulset_count
-                      : "-"}
-                  </td>
+                  <td>{resources?.resource?.Statefulset_count ? resources?.resource?.Statefulset_count : "0"}</td>
                   <th>Daemonset</th>
-                  <td>
-                    {resources?.resource?.daemonset_count
-                      ? resources?.resource?.daemonset_count
-                      : "-"}
-                  </td>
+                  <td>{resources?.resource?.daemonset_count ? resources?.resource?.daemonset_count : "0"}</td>
                 </tr>
               </>
             ) : (
@@ -294,11 +272,7 @@ const Detail = observer(() => {
               </tr>
               <tr>
                 <th>Cluster Name</th>
-                <td style={{ whiteSpace: "pre-wrap" }}>
-                  {selectClusterInfo?.map(
-                    (cluster) => cluster.clusterName + "\n"
-                  )}
-                </td>
+                <td style={{ whiteSpace: "pre-wrap" }}>{selectClusterInfo?.map(cluster => cluster.clusterName + "\n")}</td>
                 <th>Creator</th>
                 <td>{projectDetail.memberName}</td>
               </tr>
@@ -349,7 +323,25 @@ const Detail = observer(() => {
         </div>
       </CTabPanel>
       <CTabPanel value={tabvalue} index={3}>
+        {/* <div className="grid-height2"> */}
+        {/* {eventsTable()} */}
+        {/* <EventAccordion events={events} /> */}
+        {/* <EventAccordion events={eventList}> */}
         <EventAccordion events={events} />
+        {/* <div style={{ height: 0 }}>
+            <AgGrid
+              // rowData={eventAccor()}
+              // columDefs={columDefs}
+              isBottom={false}
+              totalElements={eventLength}
+              totalPages={totalEvents}
+              currentPage={currentEvent}
+              goNextPage={goNextEvent}
+              goPrevPage={goPrevEvent}
+            />
+          </div> */}
+        {/* </AgGrid> */}
+        {/* </div> */}
       </CTabPanel>
     </PanelBox>
   );

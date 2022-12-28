@@ -1,6 +1,7 @@
 import axios from "axios";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
-import { BASIC_AUTH, SERVER_URL4 } from "../config";
+import { SERVER_URL } from "../config";
+import { getItem } from "@/utils/sessionStorageFn";
 
 class PlatformProject {
   platformProjectList = [
@@ -10,7 +11,7 @@ class PlatformProject {
   ];
   totalElements = 0;
   clusterList = [];
-  platformDetail = [{}];
+  platformProjectDetail = {};
   labels = {};
   annotations = {};
   events = [
@@ -40,6 +41,7 @@ class PlatformProject {
     namespace_memory: "",
     namespace_pod_count: "",
   };
+  detailInfo = {};
 
   currentPage = 1;
   totalPages = 1;
@@ -110,7 +112,6 @@ class PlatformProject {
 
       this.setTotalPages(totalCnt);
       setFunc(this.resultList);
-      console.log(this.platformProjectList);
       this.setViewList(0);
     });
   };
@@ -127,62 +128,82 @@ class PlatformProject {
     });
   };
 
-  loadPlatformProjectList = async (type) => {
+  loadPlatformProjectList = async () => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
     await axios
-      .get(`${SERVER_URL4}/systemProjects`)
-      .then(({ data: { data } }) => {
+      .get(`${SERVER_URL}/systemProjects?user=${id}`)
+      .then((res) => {
         runInAction(() => {
-          this.platformProjectList = data;
-          this.platformDetail = data[0];
+          console.log(res);
+          this.platformProjectList = res.data.data;
+          this.platformDetail = res.data.data[0];
           // const temp = new Set(
           //   res.data.data.map((cluster) => cluster.clusterName)
           // );
           // this.clusterList = [...temp];
-          this.totalElements = data.length;
+          this.totalElements = res.data.data.length;
         });
       })
       .then(() => {
         this.convertList(this.platformProjectList, this.setPlatformProjectList);
       })
       .then(() => {
-        this.loadPlatformDetail(this.viewList[0].projectName);
-        this.loadCluster(
+        this.loadPlatformProjectDetail(
           this.viewList[0].projectName,
           this.viewList[0].clusterName
-          // this.platformProjectList[0].projectName,
-          // this.platformProjectList[0].clusterName
         );
+        // this.loadCluster(
+        //   this.viewList[0].projectName,
+        //   this.viewList[0].clusterName
+        // this.platformProjectList[0].projectName,
+        // this.platformProjectList[0].clusterName
+        // );
       });
   };
 
-  loadPlatformDetail = async (projectName) => {
+  loadPlatformProjectDetail = async (projectName, clusterName) => {
     await axios
-      .get(`${SERVER_URL4}/systemProjects/${projectName}`)
+      .get(`${SERVER_URL}/systemProjects/${projectName}?cluster=${clusterName}`)
       .then((res) => {
-        runInAction(() => {});
-      });
-  };
-
-  loadCluster = async (projectName, clusterName) => {
-    await axios
-      .get(
-        `${SERVER_URL4}/systemProjects/${projectName}?cluster=${clusterName}`
-      )
-      .then(({ data: { data } }) => {
         runInAction(() => {
-          this.platformDetail = data;
-          this.labels = data.labels;
-          this.annotations = data.annotations;
-          this.resource = data.resource;
-          if (data.events !== null) {
-            this.events = data.events;
-          } else {
-            this.events = null;
-          }
-          this.resourceUsage = data.resourceUsage;
+          this.platformProjectDetail = res.data;
+          this.detailInfo = res.data.DetailInfo;
+          this.labels = this.detailInfo.labels ? this.detailInfo.labels : "-";
+
+          this.annotations = this.detailInfo.annotations;
+          this.resource = this.detailInfo.resource;
+          this.evetns = res.data.events;
+          // if (data.events !== null) {
+          //   this.events = data.events;
+          // } else {
+          //   this.events = null;
+          // }
+          this.resourceUsage = this.detailInfo.resourceUsage
+            ? this.detailInfo.resourceUsage
+            : 0;
         });
       });
   };
+
+  // loadCluster = async (projectName, clusterName) => {
+  //   await axios
+  //     .get(`${SERVER_URL}/systemProjects/${projectName}?cluster=${clusterName}`)
+  //     .then(({ data: { data } }) => {
+  //       runInAction(() => {
+  //         this.platformDetail = data;
+  //         this.labels = data.labels;
+  //         this.annotations = data.annotations;
+  //         this.resource = data.resource;
+  //         if (data.events !== null) {
+  //           this.events = data.events;
+  //         } else {
+  //           this.events = null;
+  //         }
+  //         this.resourceUsage = data.resourceUsage;
+  //       });
+  //     });
+  // };
 }
 
 const platformProjectStore = new PlatformProject();

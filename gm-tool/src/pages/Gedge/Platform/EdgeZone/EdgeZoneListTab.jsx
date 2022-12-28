@@ -8,30 +8,10 @@ import { CCreateButton } from "@/components/buttons";
 import { CTabPanel } from "@/components/tabs";
 import { useHistory } from "react-router";
 import { observer } from "mobx-react";
-import Detail from "../Detail";
-import clusterStore from "../../../../store/Cluster";
+import { clusterStore } from "@/store";
 import CreateCluster from "../Dialog/CreateCluster";
 import Layout from "@/layout";
 import { Title } from "@/pages";
-import ClusterInfo from "@/pages/Dashboard/DashboardCont/ClusterInfo";
-import MapContent from "@/pages/Dashboard/DashboardCont/MapContent";
-import EdgeZoneSummary from "./EdgeZoneSummary";
-import styled from "styled-components";
-
-// const EdgeZoneWrap = styled.div`
-//   .panel_summary {
-//     width: 100%;
-//     padding: 20px;
-//     background: #202842;
-//     border: 0;
-//     display: flex;
-//     justify-content: space-between;
-//     flex-wrap: wrap;
-//     &::before {
-//       display: none;
-//     }
-//   }
-// `;
 
 const EdgeZoneListTab = observer(() => {
   const currentPageTitle = Title.EdgeZone;
@@ -41,19 +21,8 @@ const EdgeZoneListTab = observer(() => {
     setTabvalue(newValue);
   };
 
-  const {
-    clusterDetail,
-    clusterList,
-    totalElements,
-    loadClusterList,
-    loadCluster,
-
-    currentPage,
-    totalPages,
-    viewList,
-    goPrevPage,
-    goNextPage,
-  } = clusterStore;
+  const { clusterDetail, clusterList, totalElements, loadClusterList, loadCluster, currentPage, totalPages, viewList, goPrevPage, goNextPage } =
+    clusterStore;
 
   const [columDefs] = useState([
     {
@@ -106,7 +75,7 @@ const EdgeZoneListTab = observer(() => {
 
   const history = useHistory();
 
-  const handleClick = (e) => {
+  const handleClick = e => {
     loadCluster(e.data.clusterName);
   };
 

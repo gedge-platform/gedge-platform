@@ -4,10 +4,11 @@ import { Title } from "@/pages";
 import { PanelBox } from "@/components/styles/PanelBox";
 import styled from "styled-components";
 import { FormControl, MenuItem, Select } from "@mui/material";
-import serviceAdminDashboardStore from "../../../store/ServiceAdminDashboard";
+import { serviceAdminDashboardStore, monitoringStore } from "@/store";
 import { observer } from "mobx-react";
-import { ResponsiveLine } from "@nivo/line";
-import ApexCharts from "apexcharts";
+import ServiceAdminChart from "./ServiceAdminChart";
+import { unixStartTime, stepConverter, unixCurrentTime, unixToTime } from "@/pages/Gedge/Monitoring/Utils/MetricsVariableFormatter";
+import { data } from "react-dom-factories";
 
 const ServiceAdminWrap = styled.div`
   padding: 0 10px;
@@ -36,26 +37,43 @@ const ButtonStyle = styled.button`
 `;
 
 const ServiceAdminDashboard = observer(() => {
-  useEffect(() => {
-    loadWorkspaceName();
-    loadServiceAdminDashboard(setWorkspaceName);
-  }, []);
-
   const {
     loadServiceAdminDashboard,
     dashboardData,
     workspaceNameList,
     loadWorkspaceName,
-    setWorkspaceNameList,
     setWorkspaceName,
-    workspaceName,
     projectList,
     podCpuTop,
     podMemTop,
     projectCpuTop,
     projectMemTop,
     resource,
+    serviceAdminMonitoring,
+    loadProjectName,
+    setProjectNameInMonitoring,
+    resourceMetricData,
+    allMetrics,
+    deploymentMetrics,
+    setDeploymentMetrics,
+    jobMetrics,
+    podMetrics,
+    volumeMetrics,
+    cronjobMetrics,
+    daemonsetMetrics,
+    serviceMetrics,
+    statefulsetMetrics,
   } = serviceAdminDashboardStore;
+
+  const { lastTime, interval } = monitoringStore;
+  const [resetTest, setResetTest] = useState("");
+
+  useEffect(() => {
+    loadWorkspaceName();
+    loadServiceAdminDashboard(setWorkspaceName);
+    loadProjectName();
+    serviceAdminMonitoring();
+  }, []);
 
   const currentPageTitle = Title.ServiceAdminDashboard;
 
@@ -63,21 +81,84 @@ const ServiceAdminDashboard = observer(() => {
     if (name === "workspace") {
       setWorkspaceName(value);
       loadServiceAdminDashboard(value);
-      return;
     }
-    if (name === "project") {
-      console.log(name, value);
+    if (name === "projectName") {
+      console.log("projectName", value);
+      setProjectNameInMonitoring(value);
+      serviceAdminMonitoring(
+        value,
+        unixStartTime(60),
+        unixCurrentTime(),
+        stepConverter(5)
+      );
+      // setDeploymentMetrics("");
     }
   };
 
   const [toggleProject, setToggleProject] = useState(false);
-  const clickToggleProject = (e) => {
-    setToggleProject((current) => !current);
+  const clickToggleProject = e => {
+    setToggleProject(current => !current);
   };
 
   const [togglePod, setTogglePod] = useState(false);
-  const clickTogglePod = (e) => {
-    setTogglePod((current) => !current);
+  const clickTogglePod = e => {
+    setTogglePod(current => !current);
+  };
+
+  // const searchMetrics = (MetricList, name) => {
+  //   let metrics = [];
+  //   console.log(MetricList);
+
+  //   if (MetricList[0].length > 0) {
+  //     MetricList[0].forEach((element) => {
+  //       const tempMetrics = {
+  //         x: unixToTime(element[0]),
+  //         y: parseFloat(element[1]),
+  //       };
+  //       metrics.push(tempMetrics);
+  //     });
+  //     const data = {
+  //       name: MetricList[1],
+  //       data: metrics,
+  //     };
+  //     console.log(data);
+  //     return data;
+  //   } else {
+  //     for (
+  //       let index = unixStartTime(60);
+  //       index < unixCurrentTime();
+  //       index = index + 60 * 5
+  //     ) {
+  //       const tempMetrics = {
+  //         x: unixToTime(index),
+  //         y: 0,
+  //       };
+  //       metrics.push(tempMetrics);
+  //     }
+  //     const data = {
+  //       name: MetricList[1],
+  //       data: metrics,
+  //     };
+  //     console.log(data);
+  //   }
+  //   return data;
+  // };
+
+  let MetricList = [];
+  const searchMetrics = (MetricList, name) => {
+    let metrics = [];
+    MetricList[0].forEach(element => {
+      const tempMetrics = {
+        x: unixToTime(element[0]),
+        y: parseFloat(element[1]),
+      };
+      metrics.push(tempMetrics);
+    });
+    const data = {
+      name: MetricList[1],
+      data: metrics,
+    };
+    return data;
   };
 
   const podCpuTop5 = () => {
@@ -87,7 +168,7 @@ const ServiceAdminDashboard = observer(() => {
         <li>
           <span>{i + 1}</span>
           {podCpuTop[i] ? podCpuTop[i]["name"] : "-"}
-        </li>
+        </li>,
       );
     }
     return arr;
@@ -100,7 +181,7 @@ const ServiceAdminDashboard = observer(() => {
         <li>
           <span>{i + 1}</span>
           {projectMemTop[i] ? projectMemTop[i]["name"] : "-"}
-        </li>
+        </li>,
       );
     }
     return arr;
@@ -113,7 +194,7 @@ const ServiceAdminDashboard = observer(() => {
         <li>
           <span>{i + 1}</span>
           {projectCpuTop[i] ? projectCpuTop[i]["name"] : "-"}
-        </li>
+        </li>,
       );
     }
     return arr;
@@ -126,299 +207,11 @@ const ServiceAdminDashboard = observer(() => {
         <li>
           <span>{i + 1}</span>
           {podMemTop[i] ? podMemTop[i]["name"] : "-"}
-        </li>
+        </li>,
       );
     }
     return arr;
   };
-
-  const workspaceEX = [
-    {
-      id: "japan",
-      color: "hsl(72, 70%, 50%)",
-      data: [
-        {
-          x: "plane",
-          y: 65,
-        },
-        {
-          x: "helicopter",
-          y: 86,
-        },
-        {
-          x: "boat",
-          y: 109,
-        },
-        {
-          x: "train",
-          y: 123,
-        },
-        {
-          x: "subway",
-          y: 158,
-        },
-        {
-          x: "bus",
-          y: 168,
-        },
-        {
-          x: "car",
-          y: 163,
-        },
-        {
-          x: "moto",
-          y: 37,
-        },
-        {
-          x: "bicycle",
-          y: 44,
-        },
-        {
-          x: "horse",
-          y: 218,
-        },
-        {
-          x: "skateboard",
-          y: 260,
-        },
-        {
-          x: "others",
-          y: 252,
-        },
-      ],
-    },
-  ];
-
-  const projectEX = [
-    {
-      id: "france",
-      color: "hsl(122, 70%, 50%)",
-      data: [
-        {
-          x: "plane",
-          y: 5,
-        },
-        {
-          x: "helicopter",
-          y: 33,
-        },
-        {
-          x: "boat",
-          y: 140,
-        },
-        {
-          x: "train",
-          y: 154,
-        },
-        {
-          x: "subway",
-          y: 296,
-        },
-        {
-          x: "bus",
-          y: 13,
-        },
-        {
-          x: "car",
-          y: 112,
-        },
-        {
-          x: "moto",
-          y: 109,
-        },
-        {
-          x: "bicycle",
-          y: 10,
-        },
-        {
-          x: "horse",
-          y: 78,
-        },
-        {
-          x: "skateboard",
-          y: 196,
-        },
-        {
-          x: "others",
-          y: 68,
-        },
-      ],
-    },
-  ];
-
-  const podEX = [
-    {
-      id: "france",
-      color: "hsl(122, 70%, 50%)",
-      data: [
-        {
-          x: "plane",
-          y: 5,
-        },
-        {
-          x: "helicopter",
-          y: 33,
-        },
-        {
-          x: "boat",
-          y: 140,
-        },
-        {
-          x: "train",
-          y: 154,
-        },
-        {
-          x: "subway",
-          y: 296,
-        },
-        {
-          x: "bus",
-          y: 13,
-        },
-        {
-          x: "car",
-          y: 112,
-        },
-        {
-          x: "moto",
-          y: 109,
-        },
-        {
-          x: "bicycle",
-          y: 10,
-        },
-        {
-          x: "horse",
-          y: 78,
-        },
-        {
-          x: "skateboard",
-          y: 196,
-        },
-        {
-          x: "others",
-          y: 68,
-        },
-      ],
-    },
-  ];
-
-  const workspaceEXgraph = () => (
-    <ResponsiveLine
-      data={workspaceEX}
-      margin={{ top: 15, right: 15, bottom: 15, left: 15 }}
-      colors={{ scheme: "accent" }} // 그래프 색
-      xScale={{ type: "point" }}
-      yScale={{
-        type: "linear",
-        min: "auto",
-        max: "auto",
-        stacked: true,
-        reverse: false,
-      }}
-      // enableGridX={false} // X축 실선
-      // enableGridY={false} // Y축 실선
-      // yFormat=" >-.2f"
-      // axisTop={null}
-      // axisRight={null}
-      axisBottom={{
-        enable: true,
-        orient: "bottom",
-        tickSize: 5,
-        tickPadding: 5,
-        tickRotation: 0,
-        legend: "transportation",
-        legendOffset: 36,
-        legendPosition: "middle",
-      }}
-      // axisLeft={{
-      //   orient: "left",
-      //   tickSize: 5,
-      //   tickPadding: 5,
-      //   tickRotation: 0,
-      //   legend: "count",
-      //   legendOffset: -40,
-      //   legendPosition: "middle",
-      // }}
-      pointSize={8}
-      // pointColor={{ theme: "background" }}
-      pointBorderWidth={2}
-      pointBorderColor={{ from: "serieColor" }}
-      pointLabelYOffset={-12}
-      useMesh={true} // 점선
-      // legends={[
-      //   {
-      //     anchor: "bottom-right",
-      //     direction: "column",
-      //     justify: false,
-      //     translateX: 100,
-      //     translateY: 0,
-      //     itemsSpacing: 0,
-      //     itemDirection: "left-to-right",
-      //     itemWidth: 80,
-      //     itemHeight: 20,
-      //     itemOpacity: 0.75,
-      //     symbolSize: 12,
-      //     symbolShape: "circle",
-      //     symbolBorderColor: "rgba(0, 0, 0, .5)",
-      //   },
-      // ]}
-    />
-  );
-
-  const projectEXgraph = () => (
-    <ResponsiveLine
-      data={projectEX}
-      margin={{ top: 15, right: 15, bottom: 15, left: 15 }}
-      colors={{ scheme: "category10" }}
-      xScale={{ type: "point" }}
-      yScale={{
-        type: "linear",
-        min: "auto",
-        max: "auto",
-        stacked: true,
-        reverse: false,
-      }}
-      // enableGridX={false} // X축 실선
-      // enableGridY={false} // Y축 실선
-      axisBottom={{
-        enable: true,
-        orient: "bottom",
-        tickSize: 5,
-        tickPadding: 5,
-        tickRotation: 0,
-        legend: "transportation",
-        legendOffset: 36,
-        legendPosition: "middle",
-      }}
-      pointSize={8}
-      pointBorderWidth={2}
-      pointBorderColor={{ from: "serieColor" }}
-      pointLabelYOffset={-12}
-      useMesh={true}
-    />
-  );
-
-  const podEXgraph = () => (
-    <ResponsiveLine
-      data={podEX}
-      margin={{ top: 5, right: 5, bottom: 5, left: 5 }}
-      colors={{ scheme: "dark2" }}
-      xScale={{ type: "point" }}
-      yScale={{
-        type: "linear",
-        min: "auto",
-        max: "auto",
-        stacked: true,
-        reverse: false,
-      }}
-      pointSize={8}
-      pointBorderWidth={2}
-      pointBorderColor={{ from: "serieColor" }}
-      pointLabelYOffset={-12}
-      useMesh={true}
-    />
-  );
 
   return (
     <Layout currentPageTitle={currentPageTitle}>
@@ -442,7 +235,7 @@ const ServiceAdminDashboard = observer(() => {
               <div className="ServiceSelect">
                 <FormControl className="form_serviceAdmin">
                   <select name="workspace" onChange={onChange}>
-                    {workspaceNameList.map((name) => (
+                    {workspaceNameList.map(name => (
                       <option value={name}>{name}</option>
                     ))}
                   </select>
@@ -456,9 +249,7 @@ const ServiceAdminDashboard = observer(() => {
           <div className="ServiceCircleWrap">
             <div className="service_circle_inner">
               <div className="service_circle">
-                <span className="count">
-                  {projectList ? projectList?.length : 0}
-                </span>
+                <span className="count">{projectList ? projectList?.length : 0}</span>
                 <div className="title">Project</div>
               </div>
 
@@ -509,12 +300,8 @@ const ServiceAdminDashboard = observer(() => {
               {/* <div className="ServiceRecentTitle"> */}
               {toggleProject ? (
                 <div className="ServiceRecentInner">
-                  <ButtonStyle
-                    variant="contained"
-                    onClick={clickToggleProject}
-                    toggle={toggleProject}
-                  >
-                    Project Top 5
+                  <ButtonStyle variant="contained" onClick={clickToggleProject} toggle={toggleProject}>
+                    Project CPU Top 5
                   </ButtonStyle>
                   {/* </div> */}
                   <div className="ServiceRecentListWrap">
@@ -523,12 +310,8 @@ const ServiceAdminDashboard = observer(() => {
                 </div>
               ) : (
                 <div className="ServiceRecentInner">
-                  <ButtonStyle
-                    variant="contained"
-                    onClick={clickToggleProject}
-                    toggle={toggleProject}
-                  >
-                    Project Memory Top5
+                  <ButtonStyle variant="contained" onClick={clickToggleProject} toggle={toggleProject}>
+                    Project Memory Top 5
                   </ButtonStyle>
                   <div className="ServiceRecentListWrap">
                     <ul>{projectMemTop5()}</ul>
@@ -537,12 +320,8 @@ const ServiceAdminDashboard = observer(() => {
               )}
               {togglePod ? (
                 <div className="ServiceRecentInner">
-                  <ButtonStyle
-                    variant="contained"
-                    onClick={clickTogglePod}
-                    toggle={togglePod}
-                  >
-                    Pod Top 5
+                  <ButtonStyle variant="contained" onClick={clickTogglePod} toggle={togglePod}>
+                    Pod CPU Top 5
                   </ButtonStyle>
                   <div className="ServiceRecentListWrap">
                     <ul>{podCpuTop5()}</ul>
@@ -550,11 +329,7 @@ const ServiceAdminDashboard = observer(() => {
                 </div>
               ) : (
                 <div className="ServiceRecentInner">
-                  <ButtonStyle
-                    variant="contained"
-                    onClick={clickTogglePod}
-                    toggle={togglePod}
-                  >
+                  <ButtonStyle variant="contained" onClick={clickTogglePod} toggle={togglePod}>
                     Pod Memory Top 5
                   </ButtonStyle>
                   <div className="ServiceRecentListWrap">
@@ -572,28 +347,53 @@ const ServiceAdminDashboard = observer(() => {
               Monitoring
               <div className="ServiceSelect">
                 <FormControl className="form_serviceAdmin">
-                  <select name="project" onChange={onChange}>
-                    {Object.values(projectList).map((val) => (
-                      <option value={val.projectName}>{val.projectName}</option>
-                    ))}
-                  </select>
+                  {projectList !== 0 ? (
+                    <select name="projectName" onChange={onChange}>
+                      {Object.values(projectList).map((val) => (
+                        <option value={val.projectName}>
+                          {val.projectName}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <></>
+                  )}
+
+                  {/* {Object.values(projectList).map((val) => (
+                       <option value={val.projectName}>{val.projectName}</option>
+                     ))} */}
                 </FormControl>
               </div>
             </div>
             <div className="monitoringInner">
               <div className="monitoringBox">
                 <div className="monitoringBoxTitle">Workspace 총 개수</div>
-                <div className="monitoringBoxCont">{workspaceEXgraph()}</div>
+                <div className="monitoringBoxCont">
+                  <ServiceAdminChart
+                    seriesData={[
+                      searchMetrics([deploymentMetrics, "deployment"]),
+                      searchMetrics([cronjobMetrics, "cronjob"]),
+                      searchMetrics([jobMetrics, "job"]),
+                      searchMetrics([daemonsetMetrics, "daemonset"]),
+                      searchMetrics([statefulsetMetrics, "statefulset"]),
+                      searchMetrics([podMetrics, "pod"]),
+                    ]}
+                  />
+                </div>
               </div>
 
               <div className="monitoringBox">
-                <div className="monitoringBoxTitle">Project 총 개수</div>
-                <div className="monitoringBoxCont">{projectEXgraph()}</div>
+                <div className="monitoringBoxTitle">Service 총 개수</div>
+                <div className="monitoringBoxCont">
+                  <ServiceAdminChart seriesData={[searchMetrics([serviceMetrics, "service"])]} />
+                </div>
               </div>
 
               <div className="monitoringBox">
-                <div className="monitoringBoxTitle">Pod 총 개수</div>
-                <div className="monitoringBoxCont">{podEXgraph()}</div>
+                <div className="monitoringBoxTitle">Volume 총 개수</div>
+                <div className="monitoringBoxCont">
+                  <ServiceAdminChart seriesData={[searchMetrics([volumeMetrics, "volume"])]} />
+                </div>
               </div>
             </div>
           </div>

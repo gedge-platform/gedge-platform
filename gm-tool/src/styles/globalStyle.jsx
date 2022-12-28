@@ -2,21 +2,17 @@ import React from "react";
 import reset from "styled-reset";
 import theme from "@/styles/theme";
 import { createGlobalStyle } from "styled-components";
-import NotoR2 from "@/fonts/NotoSansKR/NotoSans-Regular.woff2";
-import NotoR from "@/fonts/NotoSansKR/NotoSans-Regular.woff";
-import NotoROtf from "@/fonts/NotoSansKR/NotoSansKR-Regular.otf";
+import NotoR2 from "@/fonts/NotoSansKR/NotoSansKR-Regular.woff2";
+import NotoR from "@/fonts/NotoSansKR/NotoSansKR-Regular.woff";
 
-import NotoL2 from "@/fonts/NotoSansKR/NotoSans-Light.woff2";
-import NotoL from "@/fonts/NotoSansKR/NotoSans-Light.woff";
-import NotoLOtf from "@/fonts/NotoSansKR/NotoSansKR-Light.otf";
+import NotoL2 from "@/fonts/NotoSansKR/NotoSansKR-Light.woff2";
+import NotoL from "@/fonts/NotoSansKR/NotoSansKR-Light.woff";
 
-import NotoM2 from "@/fonts/NotoSansKR/NotoSans-Medium.woff2";
-import NotoM from "@/fonts/NotoSansKR/NotoSans-Medium.woff";
-import NotoMOtf from "@/fonts/NotoSansKR/NotoSansKR-Medium.otf";
+import NotoM2 from "@/fonts/NotoSansKR/NotoSansKR-Medium.woff2";
+import NotoM from "@/fonts/NotoSansKR/NotoSansKR-Medium.woff";
 
-import NotoB2 from "@/fonts/NotoSansKR/NotoSans-Bold.woff2";
-import NotoB from "@/fonts/NotoSansKR/NotoSans-Bold.woff";
-import NotoBOtf from "@/fonts/NotoSansKR/NotoSansKR-Bold.otf";
+import NotoB2 from "@/fonts/NotoSansKR/NotoSansKR-Bold.woff2";
+import NotoB from "@/fonts/NotoSansKR/NotoSansKR-Bold.woff";
 
 import selectArr from "@/images/bullet/select_arr.png";
 import passed from "@/images/bullet/ico_step_passed.png";
@@ -25,44 +21,41 @@ import deleteBtn2 from "@/images/ico-action/ico_del.png";
 import terminalBtn from "@/images/ico-action/ico_terminal.png";
 
 import { PanelBox } from "@/components/styles/PanelBox";
+import { PanelBox2 } from "@/components/styles/PanelBox2";
 
 const globalStyles = createGlobalStyle`
   ${reset};
 
   @font-face {
-    font-family: 'Noto Sans';
+    font-family: 'Noto Sans KR';
     font-style: normal;
     font-weight: 400;
-    src: url(${NotoROtf}) format('opentype'),
-    url(${NotoR2}) format('woff2'),
+    src: url(${NotoR2}) format('woff2'),
     url(${NotoR}) format('woff');
     
   }
 
   @font-face {
-    font-family: 'Noto Sans';
+    font-family: 'Noto Sans KR';
     font-style: normal;
     font-weight: 300;
-    src: url(${NotoLOtf}) format('opentype'),
-    url(${NotoL2}) format('woff2'),
+    src: url(${NotoL2}) format('woff2'),
     url(${NotoL}) format('woff');
   }
 
   @font-face {
-    font-family: 'Noto Sans';
+    font-family: 'Noto Sans KR';
     font-style: normal;
     font-weight: 500;
-    src: url(${NotoMOtf}) format('opentype'),
-    url(${NotoM2}) format('woff2'),
+    src: url(${NotoM2}) format('woff2'),
     url(${NotoM}) format('woff');
   }
 
   @font-face {
-    font-family: 'Noto Sans';
+    font-family: 'Noto Sans KR';
     font-style: normal;
     font-weight: 700;
-    src: url(${NotoBOtf}) format('opentype'),
-    url(${NotoB2}) format('woff2'),
+    src: url(${NotoB2}) format('woff2'),
     url(${NotoB}) format('woff');
   }
   
@@ -88,7 +81,7 @@ const globalStyles = createGlobalStyle`
 
 
   body, input, button, select, textarea, td {
-    font-family: "Noto Sans", sans-serif;
+    font-family: "Noto Sans KR", sans-serif;
     color: #626b7a;
     font-size: 12px;
     font-weight: 400
@@ -412,13 +405,35 @@ const globalStyles = createGlobalStyle`
     .grid-height {
       height: 100%
     }
+
+    ${PanelBox2} {
+      height: 800px;
+      display: flex;
+      flex-direction: column;
+      .panelTitBar {
+        flex-shrink: 0;
+      }
+      .panelCont {
+        flex-grow: 1;
+        padding: 0;
+      }
+    }
+    .grid-height {
+      height: 100%
+    }
   }
-  
+
   .paper_main {
     ${PanelBox} {
     }
   }
-  
+
+  .paper_main {
+    ${PanelBox2} {
+      height: 800px;
+    }
+  }
+
   .tabPanelContainer {
     flex: 1;
     .tabPanel {
@@ -459,6 +474,27 @@ const globalStyles = createGlobalStyle`
         top: 43px
       }
     }
+    ${PanelBox2} {
+      overflow:hidden;
+      .panelTitBar {
+        height: 43px;
+        padding-bottom: 1px;
+        box-shadow: inset 0 -1px 0 #232f47;
+        .tit { font-size: 13px }
+      }
+      .panelCont {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        padding: 9px;
+        overflow-y: auto;
+      }
+      .panelTitBar + .panelCont {
+        top: 43px
+      }
+    }
     .tb_data {
       border: 1px double #141a30;
 
@@ -470,7 +506,7 @@ const globalStyles = createGlobalStyle`
   }
 
   .horizontal > .reflex-splitter {
-    position: relative;
+    position: inherit;
     height: 6px;
     background: transparent !important;
     border: 0 !important;
@@ -2894,13 +2930,47 @@ const globalStyles = createGlobalStyle`
         }
       }
     }
-
+    .storageCircleBoxWrap2 {
+      padding: 10px;
+      display: flex;
+      height:100%;
+      justify-content: space-between;
+      .storageCircleBox2 {
+        width: calc(100% / 3 - 6px);
+        background: #1d243c;
+        border: 1px solid #11162a;
+        border-radius: 8px;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        .storageCircleBoxTitle2 {
+          width: 100%;
+          height: 40px;
+          padding: 0 18px;
+          display: flex;
+          align-items: center;
+          border-top-right-radius: 8px;
+          border-top-left-radius: 8px;
+          border-bottom: 1px solid #141a30;
+          background: #25304b;
+          font-size: 14px;
+          font-weight: bold;
+          color: #fff;
+        }
+        .storageCircleBoxCont2 {
+          height:100%;
+          padding: 10px;
+          display: inline-grid;
+        }
+      }
+    }
     .storageCircleBoxWrap {
       padding: 10px;
       display: flex;
       justify-content: space-between;
       .storageCircleBox {
-        width: calc(100% / 5 - 6px);
+        width: calc(100% / 4 - 6px);
         background: #1d243c;
         border: 1px solid #11162a;
         border-radius: 8px;
@@ -2994,18 +3064,26 @@ const globalStyles = createGlobalStyle`
                 }
                 &.used {
                   &::before {
-                    background: #f8adf7;
+                    background: #EA78EA;
                   }
                   span {
-                    color: #f8adf7;
+                    color: #EA78EA;
                   }
                 }
                 &.avail {
                   &::before {
-                    background: #d725d5;
+                    background: #E04AE0;
                   }
                   span {
-                    color: #d725d5;
+                    color: #E04AE0;
+                  }
+                }
+                 &.total {
+                  &::before {
+                    background: #CE00CE;
+                  }
+                  span {
+                    color: #CE00CE;
                   }
                 }
                 &.clean {
@@ -3033,6 +3111,14 @@ const globalStyles = createGlobalStyle`
                   }
                 }
                 &.unknown {
+                  &::before {
+                    background: #ce0000;
+                  }
+                  span {
+                    color: #ce0000;
+                  }
+                }
+                 &.down {
                   &::before {
                     background: #ce0000;
                   }

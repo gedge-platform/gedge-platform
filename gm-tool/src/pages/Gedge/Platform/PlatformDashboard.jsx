@@ -7,7 +7,6 @@ import CloudZoneDashboard from "./CloudZone/CloudZoneDashboard";
 
 const PlatformDashboard = () => {
   const currentPageTitle = Title.Dashboard;
-
   const [tabvalue, setTabvalue] = useState(0);
 
   const handleTabChange = (event, newValue) => {

@@ -1,18 +1,15 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
 import { CTabPanel } from "@/components/tabs";
 import { useHistory } from "react-router";
 import { observer } from "mobx-react";
-import Detail from "../Detail";
-import clusterStore from "../../../../store/Cluster";
-import { Title } from "@/pages";
 import ClusterInfo from "@/pages/Dashboard/DashboardCont/ClusterInfo";
 import MapContent from "@/pages/Dashboard/DashboardCont/MapContent";
 import EdgeZoneSummary from "./EdgeZoneSummary";
 import styled from "styled-components";
-import NodeList from "../../../Dashboard/DashboardCont/NodeList";
-import dashboardStore from "../../../../store/Dashboard";
+import NodeList from "@/pages/Dashboard/DashboardCont/NodeList";
+import { dashboardStore } from "@/store";
 
 const EdgeZoneWrap = styled.div`
   .panel_summary {
@@ -34,19 +31,17 @@ const EdgeZoneDashboard = observer(() => {
   const handleTabChange = (event, newValue) => {
     setTabvalue(newValue);
   };
-
-  const { clusterDetail, loadClusterList, loadCluster } = clusterStore;
-
-  const {nodeInfo} =dashboardStore;
+  const { loadEdgeZoneDashboard, loadEdgeZoneDetailDashboard, setMapZoom } =
+    dashboardStore;
 
   const history = useHistory();
 
   const handleClick = (e) => {
-    loadCluster(e.data.clusterName);
+    loadEdgeZoneDetailDashboard(e.data.clusterName);
   };
 
-  useLayoutEffect(() => {
-    loadClusterList("edge");
+  useEffect(() => {
+    loadEdgeZoneDashboard();
   }, []);
 
   return (
@@ -60,17 +55,14 @@ const EdgeZoneDashboard = observer(() => {
             <ClusterInfo />
           </div>
           <div className="ClusterMapWrap">
-            <MapContent />
+            <MapContent zoom={setMapZoom(2)} />
           </div>
 
           <div className="SummaryWrap">
-            <EdgeZoneSummary/>
+            <EdgeZoneSummary />
           </div>
-          {/* </PanelBox> */}
-
           <div className="panel_summary">
             <CReflexBox>
-              {/* <Detail cluster={nodeInfo} /> */}
               <NodeList />
             </CReflexBox>
           </div>

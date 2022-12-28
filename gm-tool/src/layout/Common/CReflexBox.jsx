@@ -1,6 +1,5 @@
 import React from "react";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
-import { DragSizing } from "react-drag-sizing";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import Detail from "@/pages/Template/Detail/Detail";
 import "react-reflex/styles.css";

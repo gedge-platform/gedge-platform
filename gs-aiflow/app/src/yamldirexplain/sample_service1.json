@@ -1,0 +1,53 @@
+{
+   "nodes":[
+      {
+         "id":"node-1",
+         "content":"start pod",
+         "coordinates":[
+            0,
+            100
+         ],
+         "className": "node-1"
+      },
+      {
+         "id":"node-2",
+         "content":"pod-aieye-det-track",
+         "coordinates":[
+            250,
+            70
+         ],
+         "className": "pod-aieye-det-track"
+      },
+      {
+         "id":"node-3",
+         "content":"pod-aieye-dataserver",
+         "coordinates":[
+            250,
+            140
+         ],
+         "className": "pod-aieye-dataserver"
+      },
+      {
+         "id":"node-4",
+         "content":"pod-dummy2",
+         "coordinates":[
+            100,
+            210
+         ]
+      }
+   ],
+   "links":[
+      {
+         "input":"node-1",
+         "output":"node-2"
+      },
+      {
+         "input":"node-1",
+         "output":"node-3"
+      },
+      {
+         "input":"node-1",
+         "output":"node-4"
+      }
+   ]
+}

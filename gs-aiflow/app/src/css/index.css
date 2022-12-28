@@ -1,0 +1,281 @@
+#main_wrap{
+    display:flex;
+}
+
+/* sidemenu.js */
+#sidemenu{
+    width: 300px;
+    height: 100%;
+    background-color:#5e5555
+}
+
+#sidemenu a{
+    text-decoration-line: none;
+    color:#ffffff
+}
+#sidemenu a:link{
+    color:#ffffff
+}
+#sidemenu a:visited{
+    color:#ffffff
+}
+#sidemenu a:active{
+    color:#ffffff
+}
+
+#image_aieyeflow{
+    display:block;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+#body{
+
+    display: flex;
+    width: 100%;
+    overflow-y:hidden;
+}
+#body_main{
+    width: 100%;
+}
+#monitor_main{
+    width:100%;
+}
+
+#side{
+
+}
+#image_aieyeflow{
+    width:280px;
+
+}
+
+.tableStyle{
+    border: 1px solid black;
+    border-collapse: collapse;
+    text-align: center;
+    width: 100%;
+}
+.tdStyle{
+    border: 1px solid #85C1E9;
+    background: white;
+    padding: 5px;
+}
+
+.thStyle{
+    border: 1px solid #3498DB;
+    background: #3498DB;
+    color: white;
+    padding: 5px;
+}
+
+.createTable{
+    border: 1px solid #444444;
+}
+.createTableMain{
+    border: 1px solid;
+    display: flex;
+    height: 50vh;
+}
+.createTableLeft{
+
+}
+
+.createTableResult{
+    width:100%;
+}
+
+#createTableResultTextArea{
+    height:100%;
+    width:100%;
+    resize:none;
+}
+
+#divLogin{
+
+}
+#divLoginMain{
+    padding:5%;
+    display: flex;
+    background: #dddddd;
+}
+
+.borderless{
+    border:none;
+}
+
+#logviewerMain{
+    padding:10px;
+    height: 60vh;
+}
+
+#logviewerForm{
+    font-size:1.4em;
+}
+
+#podLog{
+    border:none;
+    width: 100%;
+    height: 100%;
+    resize: none;
+    background: #111111;
+    color:#cccccc;
+    margin-top: 20px;
+    margin-bottom: 5px;
+
+}
+
+/* create.js */
+
+#createServerMain{
+    border: 1px solid;
+    width: 100%;
+    height:50vh;
+}
+
+#createServerMain form{
+    height:100%;
+}
+
+#createServerContent{
+    display:flex;
+    justify-content: center;
+    height:100%;
+}
+
+#createServerContent #cSC1{
+    display:flex;
+    flex:1
+}
+#createServerContent #cSC2{
+    display:flex;
+    flex:1
+}
+#createServerContent #cSC3{
+    flex:2
+}
+#createServerContent label{
+    padding:10px;
+}
+
+#createServerContent #cSC1 select{
+    width:100%;
+    height:100%;
+    font-size:2em;
+    overflow-y: hidden;
+}
+#createServerContent #cSC2 select{
+    width:100%;
+    font-size:2em;
+    overflow-y: hidden;
+}
+
+
+/* delete */
+#deletemain{
+    height:100vh;
+}
+#deleteDeploymentMain{
+    border: 1px solid;
+    border-radius: 10px;
+}
+
+#deleteDeploymentContent{
+    display:flex;
+}
+
+#deleteDeploymentContent label{
+    padding:10px;
+}
+
+#deleteDeploymentContent #dDC1{
+    display:flex;
+    flex:1;
+}
+
+#deleteDeploymentContent #dDC2{
+    display:flex;
+    flex:1;
+}
+
+#deleteDeploymentContent select{
+    width:100%;
+    font-size:2em;
+}
+
+#divnivocreateflow{
+    width: 500px;
+    height:100px;
+}
+
+/* enroll.js */
+#enroll_main{
+    height:100vh;
+}
+#enrollClusterMain{
+    background: #eeeeee;
+    padding:10px;
+    border-radius : 10px;
+
+}
+
+#enrollClusterMain label,input{
+    font-size:1.3em;
+}
+
+#abstractClusterMain{
+    font-size:1.3em;
+    background: #eeeeee;
+    border-radius : 10px;
+    padding:10px;
+}
+
+#abstractClusterMain select{
+    font-size:1.1em;
+}
+
+/* logviewer */
+#logmain{
+    height:100vh
+}
+#divlogviewerButton{
+    text-align:right;
+}
+
+/* every */
+.formErrors{
+    white-space:pre-wrap;
+}
+
+.h3title{
+    background: #bbbbbb;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 4px;
+}
+
+.label13{
+    font-size:1.3em;
+}
+
+.divpad{
+    height:1em;
+}
+
+
+/* test */
+#rnetworktest{
+    height:100px;
+}
+#height100{
+    height:100%;
+}
+#wrapcreateflow{
+    height:100px;
+}
+
+#flowchart{
+    padding: 10px;
+    height:20rem;
+    pointer-events: none;
+}

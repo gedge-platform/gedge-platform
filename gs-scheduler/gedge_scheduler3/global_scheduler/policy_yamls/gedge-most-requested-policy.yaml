@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gedge-most-requested-policy-account
+  namespace: gedge-system-scheduler
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gedge-most-requested-policy-role
+rules:
+- apiGroups: ['rbac.authorization.k8s.io']
+  resources: ['clusterroles','clusterrolebindings']
+  verbs: ['create', 'delete', 'deletecollection', 'get', 'list', 'patch', 'update', 'watch']
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gedge-most-requested-policy-role-binding
+subjects:
+- kind: ServiceAccount
+  name: gedge-most-requested-policy-account
+  namespace: gedge-system-scheduler
+roleRef:
+  kind: ClusterRole
+  name: gedge-most-requested-policy-role
+  apiGroup: '' 
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gedge-most-requested-policy-node-role
+rules:
+- apiGroups: ['']
+  resources: ['nodes','nodes/status']
+  verbs: ['list','get','watch']
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gedge-most-requested-policy-node-role-binding
+subjects:
+- kind: ServiceAccount
+  name: gedge-most-requested-policy-account
+  namespace: gedge-system-scheduler
+roleRef:
+  kind: ClusterRole
+  name: gedge-most-requested-policy-node-role
+  apiGroup: ''  
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gedge-most-requested-policy-scheduler-role-binding
+subjects:
+- kind: ServiceAccount
+  name: gedge-most-requested-policy-account
+  namespace: gedge-system-scheduler
+roleRef:
+  kind: ClusterRole
+  name: admin 
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: gedge-system-scheduler
+  name: gedge-most-requested-policy-dep
+spec:
+  selector:
+    matchLabels:
+      app: gedge-most-requested-policy
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gedge-most-requested-policy
+        policy : GMostRequestedPriority
+    spec:
+      serviceAccount: gedge-most-requested-policy-account
+      containers:
+      - name: gedge-most-requested-policy-container
+        image: dockereyes/gedge-most-requested-policy
+        env:
+        - name: API_GATEWAY_HOST
+          value: '129.254.202.42'
+        - name: API_GATEWAY_PORT
+          value: '31414'        
+        ports:
+        - containerPort: 5000

@@ -1,26 +1,12 @@
 import React, { useState, useEffect } from "react";
-import CommActionBar from "@/components/common/CommActionBar";
-import { CIconButton, CSelectButton } from "@/components/buttons";
 import { PanelBox } from "@/components/styles/PanelBox";
-import { swalConfirm } from "@/utils/swal-utils";
-import { CScrollbar } from "@/components/scrollbars";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { AgGrid } from "@/components/datagrids";
-import LogDialog from "../../Template/Dialog/LogDialog";
-import { CDatePicker } from "@/components/textfields/CDatePicker";
 import { observer } from "mobx-react";
 import ReactJson from "react-json-view";
-import {
-  agDateColumnFilter,
-  dateFormatter,
-  isValidJSON,
-  nullCheck,
-} from "@/utils/common-utils";
+import { agDateColumnFilter, dateFormatter, isValidJSON, nullCheck } from "@/utils/common-utils";
 import EventAccordion from "@/components/detail/EventAccordion";
-
-import { create } from "lodash";
 import styled from "styled-components";
-import StorageClassStore from "../../../store/StorageClass";
+import { StorageClassStore } from "@/store";
 
 const TableTitle = styled.p`
   font-size: 14px;
@@ -64,7 +50,7 @@ const Label = styled.span`
   }
 `;
 
-const StorageClassDetail = observer(({ }) => {
+const StorageClassDetail = observer(({}) => {
   const [open, setOpen] = useState(false);
   const [tabvalue, setTabvalue] = useState(0);
 
@@ -72,11 +58,7 @@ const StorageClassDetail = observer(({ }) => {
     setTabvalue(newValue);
   };
 
-  const { storageClass,events, annotations,label } =
-  StorageClassStore;
-
-
-
+  const { storageClass, events, annotations, label } = StorageClassStore;
 
   const metaTable = [];
   if (storageClass?.annotations) {
@@ -86,17 +68,12 @@ const StorageClassDetail = observer(({ }) => {
           <th style={{ width: "20%" }}>{key}</th>
           <td>
             {isValidJSON(value) ? (
-              <ReactJson
-                src={JSON.parse(value)}
-                theme="summerfruit"
-                displayDataTypes={false}
-                displayObjectSize={false}
-              />
+              <ReactJson src={JSON.parse(value)} theme="summerfruit" displayDataTypes={false} displayObjectSize={false} />
             ) : (
               value
             )}
           </td>
-        </tr>
+        </tr>,
       );
     });
   }
@@ -120,37 +97,19 @@ const StorageClassDetail = observer(({ }) => {
               </tr>
               <tr>
                 <th>Reclaim Policy</th>
-                <td>
-                  {storageClass?.reclaimPolicy
-                    ? storageClass?.reclaimPolicy
-                    : "-"}
-                </td>
+                <td>{storageClass?.reclaimPolicy ? storageClass?.reclaimPolicy : "-"}</td>
                 <th>Provisioner</th>
-                <td>
-                  {storageClass?.provisioner ? storageClass?.provisioner : "-"}
-                </td>
+                <td>{storageClass?.provisioner ? storageClass?.provisioner : "-"}</td>
               </tr>
               <tr>
                 <th>VolumeBindingMode</th>
-                <td>
-                  {storageClass?.volumeBindingMode
-                    ? storageClass?.volumeBindingMode
-                    : "-"}
-                </td>
+                <td>{storageClass?.volumeBindingMode ? storageClass?.volumeBindingMode : "-"}</td>
                 <th>AllowVolumeExpansion</th>
-                <td>
-                  {storageClass?.allowVolumeExpansion
-                    ? storageClass?.allowVolumeExpansion
-                    : "-"}
-                </td>
+                <td>{storageClass?.allowVolumeExpansion ? storageClass?.allowVolumeExpansion : "-"}</td>
               </tr>
               <tr>
                 <th>Created</th>
-                <td>
-                  {storageClass?.createAt
-                    ? dateFormatter(storageClass?.createAt)
-                    : "-"}
-                </td>
+                <td>{storageClass?.createAt ? dateFormatter(storageClass?.createAt) : "-"}</td>
                 <th>{null}</th>
                 <td>{null}</td>
               </tr>
@@ -159,7 +118,7 @@ const StorageClassDetail = observer(({ }) => {
         </div>
       </CTabPanel>
       <CTabPanel value={tabvalue} index={1}>
-      <div className="tb_container">
+        <div className="tb_container">
           <TableTitle>Labels</TableTitle>
           <LabelContainer>
             {label ? (
@@ -196,7 +155,7 @@ const StorageClassDetail = observer(({ }) => {
         </div>
       </CTabPanel>
       <CTabPanel value={tabvalue} index={2}>
-      <EventAccordion events={events} />
+        <EventAccordion events={events} />
       </CTabPanel>
       <CTabPanel value={tabvalue} index={3}>
         <div className="panelCont">

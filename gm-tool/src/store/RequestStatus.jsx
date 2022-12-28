@@ -1,6 +1,6 @@
 import axios from "axios";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
-import { SERVER_URL3 } from "../config";
+import { SERVER_URL } from "../config";
 
 class RequestStatus {
   requestList = [];
@@ -102,7 +102,7 @@ class RequestStatus {
 
   loadRequestList = async () => {
     await axios
-      .get(`${SERVER_URL3}`)
+      .get(`${SERVER_URL}`)
       .then(({ data }) => {
         runInAction(() => {
           this.requestList = data;

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { observer } from "mobx-react";
-import secretStore from "../../../store/Secret";
+import { secretStore } from "@/store";
 import styled from "styled-components";
 import EventAccordion from "@/components/detail/EventAccordion";
 import { dateFormatter } from "@/utils/common-utils";
@@ -74,7 +74,7 @@ const SecretDetail = observer(() => {
           {/* 강제로 줄바꿈 */}
           {value}
         </td>
-      </tr>
+      </tr>,
     );
   });
 

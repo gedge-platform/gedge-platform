@@ -3,9 +3,8 @@ import { PanelBox } from "@/components/styles/PanelBox";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { observer } from "mobx-react";
 import styled from "styled-components";
-import serviceAccountStore from "../../../store/ServiceAccount";
-import { isValidJSON, dateFormatter } from "../../../utils/common-utils";
-import ReactJson from "react-json-view";
+import { serviceAccountStore } from "@/store";
+import { dateFormatter } from "@/utils/common-utils";
 
 const TableTitle = styled.p`
   font-size: 14px;
@@ -51,16 +50,7 @@ const Label = styled.span`
 
 const ServiceAccountsDetail = observer(() => {
   const {
-    serviceAccountDetail: {
-      annotations,
-      cluster,
-      createAt,
-      label,
-      name,
-      namespace,
-      secretCnt,
-      secrets,
-    },
+    serviceAccountDetail: { annotations, cluster, createAt, label, name, namespace, secretCnt, secrets },
   } = serviceAccountStore;
 
   console.log(secrets);
@@ -105,13 +95,7 @@ const ServiceAccountsDetail = observer(() => {
             <tbody>
               <tr>
                 <th style={{ width: "15%" }}>Secrets Name</th>
-                <td style={{ whiteSpace: "pre-wrap" }}>
-                  {secrets !== null ? (
-                    secrets.map((secret) => secret.name + "\n")
-                  ) : (
-                    <></>
-                  )}
-                </td>
+                <td style={{ whiteSpace: "pre-wrap" }}>{secrets !== null ? secrets.map(secret => secret.name + "\n") : <></>}</td>
               </tr>
               <tr>
                 <th>Secrets Count</th>

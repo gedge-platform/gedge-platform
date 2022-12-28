@@ -4,23 +4,17 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import { observer } from "mobx-react";
 import Detail from "../ServiceDetail";
-import serviceStore from "../../../../store/Service";
+import { serviceStore } from "@/store";
 import CreateService from "../Dialog/CreateService";
-import { ViewList } from "@mui/icons-material";
-import { toJS } from "mobx";
-
+import { swalUpdate, swalError } from "@/utils/swal-utils";
 
 const ServiceListTab = observer(() => {
   const [open, setOpen] = useState(false);
-  const [tabvalue, setTabvalue] = useState(0);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
+  const [reRun, setReRun] = useState(false);
+  const [serviceName, setServiceName] = useState("");
 
   const {
     pServiceList,
@@ -30,6 +24,7 @@ const ServiceListTab = observer(() => {
     totalElements,
     loadServiceList,
     loadServiceDetail,
+    deleteService,
     currentPage,
     totalPages,
     goPrevPage,
@@ -75,7 +70,12 @@ const ServiceListTab = observer(() => {
     },
   ]);
 
-  const handleCreateOpen = () => {
+  const handleClick = e => {
+    setServiceName(e.data.name);
+    loadServiceDetail(e.data.name, e.data.cluster, e.data.project);
+  };
+
+  const handleOpen = () => {
     setOpen(true);
   };
 
@@ -83,51 +83,55 @@ const ServiceListTab = observer(() => {
     setOpen(false);
   };
 
-  const handleClick = (e) => {
-    const fieldName = e.colDef.field;
-    loadServiceDetail(e.data.name, e.data.cluster, e.data.project);
+  const handleDelete = () => {
+    if (serviceName === "") {
+      swalError("Service를 선택해주세요!");
+    } else {
+      swalUpdate(serviceName + "를 삭제하시겠습니까?", () => deleteService(serviceName, reloadData));
+    }
+    setServiceName("");
   };
 
-  const history = useHistory();
+  const reloadData = () => {
+    setReRun(true);
+  };
 
   useEffect(() => {
     loadServiceList();
-  }, []);
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
 
   return (
     <>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
-            reloadFunc={loadServiceList}
-            isSearch={true}
-            isSelect={true}
-            keywordList={["이름"]}
-            >
-            <CCreateButton onClick={handleCreateOpen}>생성</CCreateButton>
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
+          >
+            <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  onCellClicked={handleClick}
-                  rowData={viewList}
-                  columnDefs={columDefs}
-                  isBottom={false}
-                  totalElements={totalElements}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                  />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                onCellClicked={handleClick}
+                rowData={viewList}
+                columnDefs={columDefs}
+                isBottom={false}
+                totalElements={totalElements}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+              />
+            </div>
           </div>
-          <CreateService
-            open={open}
-            onClose={handleClose}
-            reloadFunc={loadServiceList}
-            />
+          <CreateService open={open} onClose={handleClose} reloadFunc={reloadData} />
         </PanelBox>
         <Detail service={serviceDetail} />
       </CReflexBox>

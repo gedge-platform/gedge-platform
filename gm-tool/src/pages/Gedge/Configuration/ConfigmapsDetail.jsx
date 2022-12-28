@@ -2,11 +2,10 @@ import React, { useState } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { observer } from "mobx-react";
-import configmapsStore from "../../../store/Configmaps";
+import { configmapsStore } from "@/store";
 import styled from "styled-components";
-import { dateFormatter, isValidJSON } from "../../../utils/common-utils";
+import { dateFormatter, isValidJSON } from "@/utils/common-utils";
 import ReactJson from "react-json-view";
-import { toJS } from "mobx";
 
 const TableTitle = styled.p`
   font-size: 14px;
@@ -136,13 +135,11 @@ const ConfigmapsDetail = observer(() => {
             </tbody>
           </table> */}
           <br />
-
         </div>
       </CTabPanel>
       <CTabPanel value={tabvalue} index={1}>
-
-      <div className="tb_container" style={{ width: "95%" }}>
-        <TableTitle>Annotations</TableTitle>
+        <div className="tb_container" style={{ width: "95%" }}>
+          <TableTitle>Annotations</TableTitle>
           {/* {annotationsTable.length > 0 ? ( */}
           {annotations ? (
             <table className="tb_data" style={{ tableLayout: "fixed" }}>
@@ -152,12 +149,7 @@ const ConfigmapsDetail = observer(() => {
                     <th className="tb_workload_detail_labels_th">{key}</th>
                     <td>
                       {isValidJSON(value) ? (
-                        <ReactJson
-                          src={JSON.parse(value)}
-                          theme="summerfruit"
-                          displayDataTypes={false}
-                          displayObjectSize={false}
-                        />
+                        <ReactJson src={JSON.parse(value)} theme="summerfruit" displayDataTypes={false} displayObjectSize={false} />
                       ) : (
                         value
                       )}

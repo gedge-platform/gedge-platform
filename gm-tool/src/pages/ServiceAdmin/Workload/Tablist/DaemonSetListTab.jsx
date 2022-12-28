@@ -4,18 +4,16 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import { observer } from "mobx-react";
 import Detail from "../DaemonSetDetail";
-import daemonSetStore from "../../../../store/DaemonSet";
+import { daemonSetStore } from "@/store";
+import { swalUpdate, swalError } from "@/utils/swal-utils";
 
 const DaemonSetListTab = observer(() => {
-  const [tabvalue, setTabvalue] = useState(0);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
+  const [open, setOpen] = useState(false);
+  const [reRun, setReRun] = useState(false);
+  const [daemonSetName, setDaemonSetName] = useState("");
 
   const {
     daemonSetList,
@@ -23,6 +21,7 @@ const DaemonSetListTab = observer(() => {
     totalElements,
     loadDaemonSetList,
     loadDaemonSetDetail,
+    deleteDaemonSet,
     currentPage,
     totalPages,
     viewList,
@@ -64,47 +63,71 @@ const DaemonSetListTab = observer(() => {
     },
   ]);
 
-  const handleClick = (e) => {
-    const fieldName = e.colDef.field;
+  const handleClick = e => {
+    console.log("e is ", e.data.name);
+    setDaemonSetName(e.data.name);
     loadDaemonSetDetail(e.data.name, e.data.cluster, e.data.project);
   };
 
-  const history = useHistory();
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleDelete = () => {
+    if (daemonSetName === "") {
+      swalError("DaemonSet을 선택해주세요!");
+    } else {
+      swalUpdate(daemonSetName + "을 삭제하시겠습니까?", () => deleteDaemonSet(daemonSetName, reloadData));
+    }
+    setDaemonSetName("");
+  };
+
+  const reloadData = () => {
+    setReRun(true);
+  };
 
   useEffect(() => {
     loadDaemonSetList();
-  }, []);
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
 
   return (
     <>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
-            reloadFunc={loadDaemonSetList}
-            isSearch={true}
-            isSelect={true}
-            keywordList={["이름"]}
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
           >
-            <CCreateButton>생성</CCreateButton>
+            <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  onCellClicked={handleClick}
-                  rowData={viewList}
-                  columnDefs={columDefs}
-                  isBottom={false}
-                  totalElements={totalElements}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                onCellClicked={handleClick}
+                rowData={viewList}
+                columnDefs={columDefs}
+                isBottom={false}
+                totalElements={totalElements}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+              />
+            </div>
           </div>
+          {/* TODO: CreateDaemonSet 팝업 작업 필요 */}
+          {/* <CreateDaemonSet type={"user"} open={open} onClose={handleClose} reloadFunc={reloadData} /> */}
         </PanelBox>
         <Detail daemonSet={daemonSetDetail} />
       </CReflexBox>

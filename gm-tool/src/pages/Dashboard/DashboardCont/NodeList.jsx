@@ -1,16 +1,10 @@
 import { observer } from "mobx-react";
-import React, { useEffect } from "react";
+import React from "react";
 import { styled } from "@mui/material/styles";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
+import { Table, TableBody, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import TableCell, { tableCellClasses } from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import clusterStore from "../../../store/Cluster";
-import dashboardStore from "../../../store/Dashboard";
-import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
+import { clusterStore, dashboardStore } from "@/store";
+import { dateFormatter } from "@/utils/common-utils";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -59,16 +53,14 @@ const NodeList = observer(() => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {nodeInfo.map((node) => (
+          {nodeInfo.map(node => (
             <StyledTableRow key={node.name}>
               <StyledTableCell>{node.name}</StyledTableCell>
               <StyledTableCell>{node.type}</StyledTableCell>
               <StyledTableCell>{node.nodeIP}</StyledTableCell>
               <StyledTableCell>{node.kubeVersion}</StyledTableCell>
               <StyledTableCell>{node.os}</StyledTableCell>
-              <StyledTableCell>
-                {dateFormatter(node.created_at)}
-              </StyledTableCell>
+              <StyledTableCell>{dateFormatter(node.created_at)}</StyledTableCell>
             </StyledTableRow>
           ))}
         </TableBody>

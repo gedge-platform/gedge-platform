@@ -9,9 +9,9 @@ import { CTabPanel } from "@/components/tabs";
 import { useHistory } from "react-router";
 import { observer } from "mobx-react";
 import Detail from "../PlatformDetail";
-import platformProjectStore from "../../../../store/PlatformProject";
-import { drawStatus } from "../../../../components/datagrids/AggridFormatter";
-import CreateProject from "../../../ServiceAdmin/Project/Dialog/CreateProject";
+import { platformProjectStore } from "@/store";
+import { drawStatus } from "@/components/datagrids/AggridFormatter";
+import CreateProject from "@/pages/ServiceAdmin/Project/Dialog/CreateProject";
 
 const PlatfromServiceListTab = observer(() => {
   const [open, setOpen] = useState(false);
@@ -32,6 +32,7 @@ const PlatfromServiceListTab = observer(() => {
     viewList,
     goPrevPage,
     goNextPage,
+    loadPlatformProjectDetail,
   } = platformProjectStore;
 
   const [columDefs] = useState([
@@ -66,11 +67,11 @@ const PlatfromServiceListTab = observer(() => {
     },
   ]);
 
-  const handleClick = (e) => {
+  const handleClick = e => {
     const fieldName = e.colDef.field;
     // console.log(e.data.projectName);
     // loadPlatformProjectList()
-    loadCluster(e.data.projectName, e.data.clusterName);
+    loadPlatformProjectDetail(e.data.projectName, e.data.clusterName);
     // loadPlatformDetail(e.data.projectName);
   };
 
@@ -117,12 +118,7 @@ const PlatfromServiceListTab = observer(() => {
               </div>
             </CTabPanel>
           </div>
-          <CreateProject
-            reloadFunc={loadPlatformProjectList}
-            type={"admin"}
-            open={open}
-            onClose={handleClose}
-          />
+          <CreateProject reloadFunc={loadPlatformProjectList} type={"admin"} open={open} onClose={handleClose} />
         </PanelBox>
         <Detail platformDetil={platformDetil} />
       </CReflexBox>

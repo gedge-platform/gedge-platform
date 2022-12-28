@@ -8,7 +8,7 @@ const BrandArea = () => {
     <div className="brandArea">
       <div className="logo">
         <Link to="/">
-          <img src={logo} alt="HyperLedger" />
+          <img src={logo} alt="GEdge" />
         </Link>
       </div>
       <div className="division-line"></div>

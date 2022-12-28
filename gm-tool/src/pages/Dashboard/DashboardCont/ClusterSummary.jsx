@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
-import React, { useEffect, useState } from "react";
-import dashboardStore from "../../../store/Dashboard";
+import React, { useEffect } from "react";
+import { dashboardStore } from "@/store";
 
 const ClusterSummary = observer(() => {
   const {

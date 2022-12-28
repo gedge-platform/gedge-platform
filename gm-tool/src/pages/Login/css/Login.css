@@ -505,39 +505,35 @@ input:-ms-input-placeholder {
   opacity: 0.4;
 }
 
-/* font style */
+/* font style
 @font-face {
   font-family: "Noto Sans KR";
   font-style: normal;
   font-weight: 300;
-  src: url(../fonts/noto/NotoSans-Light.woff2) format("woff2"),
-    url(../fonts/noto/NotoSans-Light.woff) format("woff"),
-    url(../fonts/noto/NotoSans-Light.otf) format("opentype");
+  src: url(../fonts/noto/NotoSansKR-Light.woff2) format("woff2"), url(../fonts/noto/NotoSansKR-Light.woff) format("woff"),
+    url(../fonts/noto/NotoSansKR-Light.otf) format("opentype");
 }
 @font-face {
   font-family: "Noto Sans KR";
   font-style: normal;
   font-weight: 400;
-  src: url(../fonts/noto/NotoSans-Regular.woff2) format("woff2"),
-    url(../fonts/noto/NotoSans-Regular.woff) format("woff"),
-    url(../fonts/noto/NotoSans-Regular.otf) format("opentype");
+  src: url(../fonts/noto/NotoSansKR-Regular.woff2) format("woff2"), url(../fonts/noto/NotoSansKR-Regular.woff) format("woff"),
+    url(../fonts/noto/NotoSansKR-Regular.otf) format("opentype");
 }
 @font-face {
   font-family: "Noto Sans KR";
   font-style: normal;
   font-weight: 500;
-  src: url(../fonts/noto/NotoSans-Medium.woff2) format("woff2"),
-    url(../fonts/noto/NotoSans-Medium.woff) format("woff"),
-    url(../fonts/noto/NotoSans-Medium.otf) format("opentype");
+  src: url(../fonts/noto/NotoSansKR-Medium.woff2) format("woff2"), url(../fonts/noto/NotoSansKR-Medium.woff) format("woff"),
+    url(../fonts/noto/NotoSansKR-Medium.otf) format("opentype");
 }
 @font-face {
   font-family: "Noto Sans KR";
   font-style: normal;
   font-weight: 700;
-  src: url(../fonts/noto/NotoSans-Bold.woff2) format("woff2"),
-    url(../fonts/noto/NotoSans-Bold.woff) format("woff"),
-    url(../fonts/noto/NotoSans-Bold.otf) format("opentype");
-}
+  src: url(../fonts/noto/NotoSansKR-Bold.woff2) format("woff2"), url(../fonts/noto/NotoSansKR-Bold.woff) format("woff"),
+    url(../fonts/noto/NotoSansKR-Bold.otf) format("opentype");
+} */
 /*========================================================================== utils */
 /* default */
 /* brand color */
@@ -1098,7 +1094,7 @@ textarea {
   vertical-align: middle;
 }
 
-.wrap_inputBtn input[type="file" i] {
+.wrap_inputBtn input[type="file"] {
   position: absolute;
   width: 0;
   height: 0;

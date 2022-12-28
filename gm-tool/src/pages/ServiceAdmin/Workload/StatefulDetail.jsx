@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import styled from "styled-components";
-import statefulSetStore from "../../../store/StatefulSet";
+import { statefulSetStore } from "@/store";
 import { observer } from "mobx-react-lite";
-import { isValidJSON } from "../../../utils/common-utils";
+import { isValidJSON } from "@/utils/common-utils";
 import ReactJson from "react-json-view";
 import { dateFormatter } from "@/utils/common-utils";
 import EventAccordion from "@/components/detail/EventAccordion";
@@ -53,19 +53,21 @@ const Label = styled.span`
 
 const StatefulSetDetail = observer(() => {
   const {
-    statefulSetDetail: {
-      annotations,
-      cluster,
-      containers,
-      createAt,
-      events,
-      label,
-      name,
-      ownerReferences,
-      project,
-      status,
-    },
+    // statefulSetDetail: {
+    statefulSetDetail,
+    annotations,
+    cluster,
+    containers,
+    createAt,
+    events,
+    label,
+    name,
+    ownerReferences,
+    project,
+    status,
+    // },
   } = statefulSetStore;
+  console.log(containers);
 
   const [open, setOpen] = useState(false);
   const [tabvalue, setTabvalue] = useState(0);
@@ -95,15 +97,15 @@ const StatefulSetDetail = observer(() => {
             <tbody className="tb_data_detail">
               <tr>
                 <th className="tb_workload_detail_th">Name</th>
-                <td>{name ? name : "-"}</td>
+                <td>{statefulSetDetail ? statefulSetDetail.name : "-"}</td>
                 <th className="tb_workload_detail_th">Cluster</th>
-                <td>{cluster ? cluster : "-"}</td>
+                <td>{statefulSetDetail ? statefulSetDetail.cluster : "-"}</td>
               </tr>
               <tr>
                 <th>Project</th>
-                <td>{project ? project : "-"}</td>
+                <td>{statefulSetDetail ? statefulSetDetail.project : "-"}</td>
                 <th>Created</th>
-                <td>{createAt ? dateFormatter(createAt) : "-"}</td>
+                <td>{statefulSetDetail ? dateFormatter(statefulSetDetail.createAt) : "-"}</td>
               </tr>
             </tbody>
           </table>
@@ -112,61 +114,68 @@ const StatefulSetDetail = observer(() => {
       <CTabPanel value={tabvalue} index={1}>
         <div className="tb_container">
           <TableTitle>Containers</TableTitle>
-          {containers
-            ? containers.map((container) => (
-                <table className="tb_data tb_data_container">
-                  <tbody>
-                    <tr>
-                      <th>Container Name</th>
-                      <td>{container.name}</td>
-                    </tr>
-                    <tr>
-                      <th>Image</th>
-                      <td>{container.image}</td>
-                    </tr>
-                    <tr>
-                      <th>Container Ports</th>
-                      <td>
-                        {container.ports?.map((port) => (
+          {containers ? (
+            containers.map(container => (
+              <table className="tb_data tb_data_container">
+                <tbody>
+                  <tr>
+                    <th>Container Name</th>
+                    <td>{container.name ? container.name : "-"}</td>
+                  </tr>
+                  <tr>
+                    <th>Image</th>
+                    <td>{container.image ? container.image : "-"}</td>
+                  </tr>
+                  <tr>
+                    <th>Container Ports</th>
+                    <td>
+                      {container?.ports.containerPort ? (
+                        container.ports?.map(port => (
                           <p>
                             {port.containerPort}/{port.protocol}
                           </p>
-                        ))}
-                      </td>
-                    </tr>
+                        ))
+                      ) : (
+                        <p>-</p>
+                      )}
+                    </td>
+                  </tr>
 
-                    <tr>
-                      <th>Environment</th>
-                      <td>
-                        {container.env ? (
-                          <table className="tb_data">
-                            <tbody>
+                  <tr>
+                    <th>Environment</th>
+                    <td>
+                      {container.env.name ? (
+                        <table className="tb_data">
+                          <tbody>
+                            <tr>
+                              <th>Name</th>
+                              <th>Value</th>
+                              <th>Source</th>
+                            </tr>
+                            {container.env.map(item => (
                               <tr>
-                                <th>Name</th>
-                                <th>Value</th>
-                                <th>Source</th>
+                                <td>{item.name ? item.name : "-"}</td>
+                                <td>{item.value ? item.value : "-"}</td>
+                                <td>{item.valueFrom?.fieldRef?.fieldPath ? item.valueFrom?.fieldRef?.fieldPath : "-"}</td>
                               </tr>
-                              {container.env.map((item) => (
-                                <tr>
-                                  <td>{item.name}</td>
-                                  <td>{item.value}</td>
-                                  <td>{item.valueFrom?.fieldRef?.fieldPath}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        ) : (
-                          "No Env Info."
-                        )}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>Args</th>
-                      <td>{JSON.stringify(container.args)}</td>
-                    </tr>
-                    <tr>
-                      <th>Volume Mounts</th>
-                      <td>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        "No Env Info."
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Args</th>
+                    <td>{container.args ? JSON.stringify(container.args) : "-"}</td>
+                  </tr>
+                  <tr>
+                    <th>Volume Mounts</th>
+                    <td>
+                      {container.volumeMounts.length === 0 ? (
+                        "No Volume Info."
+                      ) : (
                         <table className="tb_data">
                           <tbody>
                             <tr>
@@ -174,30 +183,33 @@ const StatefulSetDetail = observer(() => {
                               <th>Mount Path</th>
                               <th>Propagation</th>
                             </tr>
-                            {container.volumeMounts
-                              ? container.volumeMounts.map((volume) => (
-                                  <tr>
-                                    <td>{volume.name}</td>
-                                    <td>{volume.mountPath}</td>
-                                    <td></td>
-                                  </tr>
-                                ))
-                              : "No Volume Info."}
+                            {container.volumeMounts.map(volume => (
+                              <tr>
+                                <td>{volume.name ? volume.name : "-"}</td>
+                                <td>{volume.mountPath ? volume.mountPath : "-"}</td>
+                                <td>-</td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              ))
-            : "No Containers Info."}
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            ))
+          ) : (
+            <LabelContainer>
+              <p>No Containers Info.</p>
+            </LabelContainer>
+          )}
         </div>
       </CTabPanel>
       <CTabPanel value={tabvalue} index={2}>
         <div className="tb_container">
           <TableTitle>Labels</TableTitle>
           <LabelContainer>
-            {label ? (
+            {label != null ? (
               Object.entries(label).map(([key, value]) => (
                 <Label>
                   <span className="key">{key}</span>
@@ -209,33 +221,28 @@ const StatefulSetDetail = observer(() => {
             )}
           </LabelContainer>
           <TableTitle>Annotations</TableTitle>
-          <table className="tb_data">
-            <tbody>
-              {annotations ? (
-                Object.entries(annotations).map(([key, value]) => (
+          {annotations != null ? (
+            <table className="tb_data" style={{ tableLayout: "fixed" }}>
+              <tbody style={{ whiteSpace: "pre-line" }}>
+                {Object.entries(annotations).map(([key, value]) => (
                   <tr>
                     <th style={{ width: "20%" }}>{key}</th>
                     <td>
                       {isValidJSON(value) ? (
-                        <ReactJson
-                          src={JSON.parse(value)}
-                          theme="summerfruit"
-                          displayDataTypes={false}
-                          displayObjectSize={false}
-                        />
+                        <ReactJson src={JSON.parse(value)} theme="summerfruit" displayDataTypes={false} displayObjectSize={false} />
                       ) : (
                         value
                       )}
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td>No Annotations Info.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <LabelContainer>
+              <p>No Annotations Info.</p>
+            </LabelContainer>
+          )}
         </div>
       </CTabPanel>
       <CTabPanel value={tabvalue} index={3}>

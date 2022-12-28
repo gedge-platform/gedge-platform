@@ -3,15 +3,13 @@ import { CDialog } from "@/components/dialogs";
 import { swalUpdate, swalError } from "@/utils/swal-utils";
 import { CTextField } from "@/components/textfields";
 import { CSelectButton } from "@/components/buttons";
-import Radio from "@material-ui/core/Radio";
-import RadioGroup from "@material-ui/core/RadioGroup";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
+import { Radio, RadioGroup, FormControlLabel } from "@material-ui/core";
 import { observer } from "mobx-react";
-import userStore from "../../../store/UserStore";
+import { userStore } from "@/store";
 import { SERVER_URL } from "@/config.jsx";
 import axios from "axios";
 
-const UserAdd = observer((props) => {
+const UserAdd = observer(props => {
   const { open } = props;
   const { loadUserList } = userStore;
   const [value, setValue] = useState("false");
@@ -28,8 +26,7 @@ const UserAdd = observer((props) => {
   const { id, name, password, email, department, role } = inputs;
 
   const validCheck = () => {
-    const emailReg =
-      /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
+    const emailReg = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
 
     if (id === "") {
       swalError("아이디를 입력해주세요!");
@@ -83,7 +80,7 @@ const UserAdd = observer((props) => {
           return;
         }
       })
-      .catch((e) => console.log(e));
+      .catch(e => console.log(e));
   };
 
   const handleClose = () => {
@@ -112,7 +109,7 @@ const UserAdd = observer((props) => {
             return;
           }
         })
-        .catch((e) => console.log(e));
+        .catch(e => console.log(e));
     }
   };
 
@@ -120,7 +117,7 @@ const UserAdd = observer((props) => {
     swalUpdate("추가하시겠습니까?", createUser);
   };
 
-  const handleChange = (event) => {
+  const handleChange = event => {
     setValue(event.target.value);
   };
 
@@ -159,15 +156,7 @@ const UserAdd = observer((props) => {
           <tr>
             <th>User ID</th>
             <td>
-              <CTextField
-                id="template-name"
-                type="text"
-                name="id"
-                onChange={onChange}
-                value={id}
-                placeholder="User Id"
-                className="form_fullWidth"
-              />
+              <CTextField id="template-name" type="text" name="id" onChange={onChange} value={id} placeholder="User Id" className="form_fullWidth" />
             </td>
             <td style={{ display: "flex" }}>
               <button
@@ -177,7 +166,7 @@ const UserAdd = observer((props) => {
                   height: "30px",
                   backgroundColor: "#0a2348",
                   color: "white",
-                  fontSize: "bold",
+                  fontWeight: "bold",
                   borderRadius: "2px",
                   fontSize: "13px",
                   border: "none",
@@ -243,19 +232,13 @@ const UserAdd = observer((props) => {
           <tr>
             <th>역할</th>
             <td>
-              <CSelectButton items={actionList}>
-                {role === "" ? "역할 선택" : role}
-              </CSelectButton>
+              <CSelectButton items={actionList}>{role === "" ? "역할 선택" : role}</CSelectButton>
             </td>
             <th>승인 여부</th>
             <td>
               <RadioGroup value={value} onChange={handleChange}>
                 <FormControlLabel value="1" control={<Radio />} label="승인" />
-                <FormControlLabel
-                  value="0"
-                  control={<Radio />}
-                  label="승인 대기"
-                />
+                <FormControlLabel value="0" control={<Radio />} label="승인 대기" />
               </RadioGroup>
             </td>
           </tr>

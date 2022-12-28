@@ -1,18 +1,13 @@
 import { observer } from "mobx-react";
 import React, { useEffect, useState } from "react";
-import workspacesStore from "../../../../store/WorkSpace";
-import projectStore from "../../../../store/Project";
-import deploymentStore from "../../../../store/Deployment";
+import { workspaceStore, projectStore, deploymentStore, clusterStore, serviceStore } from "@/store";
 import FormControl from "@material-ui/core/FormControl";
 import { CTextField } from "@/components/textfields";
-import clusterStore from "../../../../store/Cluster";
-import serviceStore from "../../../../store/Service";
-import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
 
 const DeploymentBasicInformation = observer(() => {
   const [projectEnable, setProjectEnable] = useState(true);
   const [clusterEnable, setClusterEnable] = useState(true);
-  const { loadWorkSpaceList, workSpaceList, workspace } = workspacesStore;
+  const { loadWorkSpaceList, workSpaceList, workspace } = workspaceStore;
   const { loadProjectListInWorkspace, projectListinWorkspace } = projectStore;
   const {
     cluster,
@@ -36,11 +31,11 @@ const DeploymentBasicInformation = observer(() => {
     if (checked) {
       setClusterList([...cluster, name]);
     } else {
-      setClusterList(cluster.filter((item) => item !== name));
+      setClusterList(cluster.filter(item => item !== name));
     }
   };
 
-  const onChange = (e) => {
+  const onChange = e => {
     const { value, name } = e.target;
     if (name === "workspace") {
       loadProjectListInWorkspace(value);
@@ -88,7 +83,7 @@ const DeploymentBasicInformation = observer(() => {
               <FormControl className="form_fullWidth">
                 <select name="workspace" onChange={onChange}>
                   <option value={""}>Select Workspace</option>
-                  {workspace.map((item) => (
+                  {workspace.map(item => (
                     <option value={item}>{item}</option>
                   ))}
                 </select>
@@ -102,15 +97,9 @@ const DeploymentBasicInformation = observer(() => {
             </th>
             <td>
               <FormControl className="form_fullWidth">
-                <select
-                  disabled={projectEnable}
-                  name="project"
-                  onChange={onChange}
-                >
-                  {projectListinWorkspace.map((project) => (
-                    <option value={project.projectName}>
-                      {project.projectName}
-                    </option>
+                <select disabled={projectEnable} name="project" onChange={onChange}>
+                  {projectListinWorkspace.map(project => (
+                    <option value={project.projectName}>{project.projectName}</option>
                   ))}
                   <option value={""}>Select Project</option>
                 </select>
@@ -157,14 +146,7 @@ const DeploymentBasicInformation = observer(() => {
               <span className="requried">*</span>
             </th>
             <td>
-              <CTextField
-                type="text"
-                placeholder="App Name"
-                className="form_fullWidth"
-                name="App Name"
-                onChange={onChange}
-                value={appName}
-              />
+              <CTextField type="text" placeholder="App Name" className="form_fullWidth" name="App Name" onChange={onChange} value={appName} />
             </td>
             <th></th>
           </tr>
@@ -188,14 +170,7 @@ const DeploymentBasicInformation = observer(() => {
               <span className="requried">*</span>
             </th>
             <td>
-              <CTextField
-                type="text"
-                placeholder="Port"
-                className="form_fullWidth"
-                name="Port"
-                onChange={onChange}
-                value={port}
-              />
+              <CTextField type="text" placeholder="Port" className="form_fullWidth" name="Port" onChange={onChange} value={port} />
             </td>
             <th></th>
           </tr>

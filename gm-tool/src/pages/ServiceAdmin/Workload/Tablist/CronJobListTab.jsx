@@ -4,18 +4,16 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import { observer } from "mobx-react";
 import Detail from "../CronJobDetail";
-import cronJobStore from "../../../../store/CronJob";
+import { cronJobStore } from "@/store";
+import { swalUpdate, swalError } from "@/utils/swal-utils";
 
 const CronJobListTab = observer(() => {
-  const [tabvalue, setTabvalue] = useState(0);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
+  const [open, setOpen] = useState(false);
+  const [reRun, setReRun] = useState(false);
+  const [cronjobName, setCronJobName] = useState("");
 
   const {
     viewList,
@@ -24,6 +22,7 @@ const CronJobListTab = observer(() => {
     totalElements,
     loadCronJobList,
     loadCronJobDetail,
+    deleteCronJob,
     currentPage,
     totalPages,
     goPrevPage,
@@ -81,47 +80,69 @@ const CronJobListTab = observer(() => {
     },
   ]);
 
-  const handleClick = (e) => {
-    const fieldName = e.colDef.field;
+  const handleClick = e => {
+    setCronJobName(e.data.name);
     loadCronJobDetail(e.data.name, e.data.cluster, e.data.project);
   };
 
-  const history = useHistory();
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleDelete = () => {
+    if (cronjobName === "") {
+      swalError("Cron Job을 선택해주세요!");
+    } else {
+      swalUpdate(cronjobName + "을 삭제하시겠습니까?", () => deleteCronJob(cronjobName, reloadData));
+    }
+    setCronJobName("");
+  };
+
+  const reloadData = () => {
+    setReRun(true);
+  };
 
   useEffect(() => {
     loadCronJobList();
-  }, []);
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
 
   return (
     <>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
-            reloadFunc={loadCronJobList}
-            isSearch={true}
-            isSelect={true}
-            keywordList={["이름"]}
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
           >
-            <CCreateButton>생성</CCreateButton>
+            <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
-
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  onCellClicked={handleClick}
-                  rowData={viewList}
-                  columnDefs={columDefs}
-                  isBottom={false}
-                  totalElements={totalElements}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                onCellClicked={handleClick}
+                rowData={viewList}
+                columnDefs={columDefs}
+                isBottom={false}
+                totalElements={totalElements}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+              />
+            </div>
           </div>
+          {/* TODO: CreateCronJob 팝업 작업 필요 */}
+          {/* <CreateCronJob type={"user"} open={open} onClose={handleClose} reloadFunc={reloadData} /> */}
         </PanelBox>
         <Detail cronJob={cronJobDetail} />
       </CReflexBox>

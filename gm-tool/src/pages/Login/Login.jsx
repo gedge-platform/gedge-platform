@@ -5,14 +5,11 @@ import "./css/Login.css";
 import tit_welcome from "./images/tit_welcome.png";
 import { useHistory } from "react-router-dom";
 import axios from "axios";
-import { SERVER_URL2 } from "@/config.jsx";
-import { setItem } from "../../utils/sessionStorageFn";
-import { swalError } from "../../utils/swal-utils";
+import { SERVER_URL } from "@/config.jsx";
+import { setItem } from "@/utils/sessionStorageFn";
+import { swalError } from "@/utils/swal-utils";
 import jwtDecode from "jwt-decode";
-import userStore from "../../store/UserStore";
-//token의 playload 내용을 디코딩해줌
-
-import { Redirect } from "react-router-dom/cjs/react-router-dom.min";
+import { userStore } from "@/store";
 
 const Login = () => {
   const history = useHistory();
@@ -22,16 +19,16 @@ const Login = () => {
   });
   const [check, setCheck] = useState(false);
   const { id, password } = inputs;
-  const { setUser } = userStore;
+  const { setUser, updateUser } = userStore;
 
-  const onChange = (e) => {
+  const onChange = e => {
     const { value, name } = e.target;
     setInputs({
       ...inputs,
       [name]: value,
     });
   };
-  const login = async (e) => {
+  const login = async e => {
     e.preventDefault();
     if (id === "") {
       setCheck(true);
@@ -44,7 +41,7 @@ const Login = () => {
     setCheck(false);
 
     await axios
-      .post(`${SERVER_URL2}/auth`, inputs)
+      .post(`${SERVER_URL}/auth`, inputs)
       // .post(`${SERVER_URL}/auth`, inputs)
       .then(({ data }) => {
         const { accessToken, status } = data;
@@ -52,9 +49,7 @@ const Login = () => {
           // setItem("userRole", data.userRole);
           // setItem("user", id);
 
-          axios.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${accessToken}`; // API 요청하는 콜마다 헤더에 accessToken 담아 보내도록 설정
+          axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // API 요청하는 콜마다 헤더에 accessToken 담아 보내도록 설정
           setItem("user", jwtDecode(accessToken));
           setItem("userRole", jwtDecode(accessToken).role);
           setItem("token", accessToken); // local storage에 저장
@@ -66,7 +61,14 @@ const Login = () => {
           // 속도가 느리지만 일단 작동은 됩니다.....
           // 로그인 후 새로고침을 다시 해서 데이터 받아오기 때문에 느리지만 데이터를 처음부터 체크하면서 받아오니까 잘 가져온다......
           // swalError("로그인 되었습니다.", () => history.push("/"));
-          swalError("로그인 되었습니다.", () => window.location.replace("/"));
+
+          swalError("로그인 되었습니다.", () => {
+            window.location.replace("/");
+          });
+          const logined_at = {
+            logined_at: new Date(),
+          };
+          updateUser(logined_at);
         } else {
           swalError("로그인 정보를 확인해주세요.", () => setCheck(true));
           setInputs({
@@ -76,7 +78,10 @@ const Login = () => {
           return;
         }
       })
-      .catch((e) => console.log(e));
+      .catch(e => {
+        swalError("로그인에 실패했습니다. 다시 시도해주세요.");
+        console.log(e.response);
+      });
   };
 
   // const onSilentRefresh = () => {
@@ -126,11 +131,7 @@ const Login = () => {
                 </li>
               </ul>
               <div className="loginBtns">
-                <button
-                  type="submit"
-                  className="btn_contained primary"
-                  onClick={login}
-                >
+                <button type="submit" className="btn_contained primary" onClick={login}>
                   로그인
                 </button>
               </div>
@@ -143,9 +144,7 @@ const Login = () => {
           </div> */}
           {check && (
             <div className="login-err">
-              <p className="notice">
-                가입하지 않은 아이디이거나, 잘못된 비밀번호입니다.
-              </p>
+              <p className="notice">가입하지 않은 아이디이거나, 잘못된 비밀번호입니다.</p>
             </div>
           )}
         </div>

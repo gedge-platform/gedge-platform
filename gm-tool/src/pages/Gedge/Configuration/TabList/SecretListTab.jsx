@@ -5,11 +5,10 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
+import { CTabPanel } from "@/components/tabs";
 import { useHistory } from "react-router";
 import { observer } from "mobx-react";
-import secretStore from "../../../../store/Secret";
+import { secretStore } from "@/store";
 import SecretDetail from "../SecretsDetail";
 
 const SecretListTab = observer(() => {
@@ -72,7 +71,7 @@ const SecretListTab = observer(() => {
     },
   ]);
 
-  const handleClick = (e) => {
+  const handleClick = e => {
     const fieldName = e.colDef.field;
     loadsecretTabList(e.data.name, e.data.clusterName, e.data.namespace);
   };

@@ -1,6 +1,8 @@
 import axios from "axios";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
-import { BASIC_AUTH, SERVER_URL2 } from "../config";
+import { SERVER_URL } from "../config";
+import { swalError } from "../utils/swal-utils";
+import { getItem } from "../utils/sessionStorageFn";
 
 class Job {
   currentPage = 1;
@@ -9,6 +11,7 @@ class Job {
   viewList = [];
   pJobList = [];
   jobList = [];
+  containers = [];
   jobDetailData = {
     containers: [
       {
@@ -80,7 +83,11 @@ class Job {
       if (this.currentPage > 1) {
         this.currentPage = this.currentPage - 1;
         this.setViewList(this.currentPage - 1);
-        this.loadDeploymentDetail(this.viewList[0].name, this.viewList[0].cluster, this.viewList[0].project);
+        this.loadJobDetail(
+          this.viewList[0].name,
+          this.viewList[0].cluster,
+          this.viewList[0].project
+        );
       }
     });
   };
@@ -90,7 +97,11 @@ class Job {
       if (this.totalPages > this.currentPage) {
         this.currentPage = this.currentPage + 1;
         this.setViewList(this.currentPage - 1);
-        this.loadDeploymentDetail(this.viewList[0].name, this.viewList[0].cluster, this.viewList[0].project);
+        this.loadJobDetail(
+          this.viewList[0].name,
+          this.viewList[0].cluster,
+          this.viewList[0].project
+        );
       }
     });
   };
@@ -115,18 +126,20 @@ class Job {
       let cntCheck = true;
       this.resultList = {};
 
-      Object.entries(apiList).map(([_, value]) => {
-        cntCheck = true;
-        tempList.push(toJS(value));
-        cnt = cnt + 1;
-        if (cnt > 10) {
-          cntCheck = false;
-          cnt = 1;
-          this.resultList[totalCnt] = tempList;
-          totalCnt = totalCnt + 1;
-          tempList = [];
-        }
-      });
+      apiList === null
+        ? "-"
+        : Object.entries(apiList).map(([_, value]) => {
+            cntCheck = true;
+            tempList.push(toJS(value));
+            cnt = cnt + 1;
+            if (cnt > 10) {
+              cntCheck = false;
+              cnt = 1;
+              this.resultList[totalCnt] = tempList;
+              totalCnt = totalCnt + 1;
+              tempList = [];
+            }
+          });
 
       if (cntCheck) {
         this.resultList[totalCnt] = tempList;
@@ -139,47 +152,68 @@ class Job {
     });
   };
 
-      setPJobList = (list) => {
-        runInAction(() => {
-          this.pJobList = list;
-        })
-      };
+  setJobList = (list) => {
+    runInAction(() => {
+      this.jobList = list;
+    });
+  };
 
-      setViewList = (n) => {
+  setViewList = (n) => {
+    runInAction(() => {
+      this.viewList = this.jobList[n];
+    });
+  };
+
+  loadJobList = async () => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
+    await axios
+      .get(`${SERVER_URL}/jobs?user=${id}`)
+      .then((res) => {
         runInAction(() => {
-          this.viewList = this.pJobList[n];
+          // const list = res.data.data.filter((item) => item.projectType === type);
+          this.jobList = res.data.data;
+          // this.jobDetail = list[0];
+          res.data.data === null
+            ? (this.totalElements = 0)
+            : (this.totalElements = res.data.data.length);
         });
-      };
-
-  loadJobList = async (type) => {
-    await axios.get(`${SERVER_URL2}/jobs`).then((res) => {
-      runInAction(() => {
-        const list = res.data.data.filter((item) => item.projectType === type);
-        this.jobList = list;
-        // this.jobDetail = list[0];
-        this.totalElements = list.length;
+      })
+      .then(() => {
+        this.convertList(this.jobList, this.setJobList);
       });
-    }).then(() => {
-      this.convertList(this.jobList, this.setPJobList);
-    })
-    this.loadJobDetail(
-      this.jobList[0].name,
-      this.jobList[0].cluster,
-      this.jobList[0].project
-    );
+    console.log(this.jobList);
+    this.totalElements === 0
+      ? ((this.containers = null),
+        (this.jobDetailData = null),
+        (this.labels = null),
+        (this.involvesPodList = null),
+        (this.annotations = null),
+        (this.involvesPodList = null),
+        (this.ownerReferences = null))
+      : this.loadJobDetail(
+          this.jobList[0][0].name,
+          this.jobList[0][0].cluster,
+          this.jobList[0][0].project
+        );
   };
 
   loadJobDetail = async (name, cluster, project) => {
     await axios
-      .get(`${SERVER_URL2}/jobs/${name}?cluster=${cluster}&project=${project}`)
+      .get(`${SERVER_URL}/jobs/${name}?cluster=${cluster}&project=${project}`)
       .then(({ data: { data, involves } }) => {
+        // console.log(data);
+        // console.log(involves);
         runInAction(() => {
           this.jobDetailData = data;
+          this.containers = data.containers;
           this.jobDetailInvolves = involves;
           this.labels = data.label;
           this.annotations = data.annotations;
           this.involvesPodList = involves.podList;
           this.ownerReferences = involves.ownerReferences;
+          this.containers = data.containers;
+          console.log(this.containers);
 
           if (data.events !== null) {
             this.events = data.events;
@@ -188,6 +222,15 @@ class Job {
           }
         });
       });
+  };
+
+  deleteJob = async (jobName, callback) => {
+    axios
+      .delete(`${SERVER_URL}/jobs/${jobName}`)
+      .then((res) => {
+        if (res.status === 201) swalError("Job이 삭제되었습니다.", callback);
+      })
+      .catch((err) => swalError("삭제에 실패하였습니다."));
   };
 }
 

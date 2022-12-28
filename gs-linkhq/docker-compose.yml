@@ -1,0 +1,67 @@
+version: "3.9"
+services:
+  env:
+    build: env
+    restart: always
+    environment:
+      CONFIG_PATH: config.yaml
+      DEBUG: "true"
+      SILENT: "false"
+
+  task-db:
+    image: redis:7.0.4-bullseye
+    command:
+      - "--loglevel warning"
+
+  agent:
+    build: agent
+    depends_on:
+      - env
+      - task-db
+    links:
+      - env
+      - task-db
+    volumes:
+      - ./weights:/etc/weights
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    environment:
+      ENV_ADDRESS: env
+      ENV_PORT: 80
+      DEBUG: "true"
+      SILENT: "false"
+
+  generator:
+    build: task-generator
+    depends_on:
+      - agent
+    links:
+      - agent
+    restart: always
+    environment:
+      LAMBDA: 1.0
+      TIME: 1.0
+      AGENT_ADDRESS: agent
+      AGENT_PORT: 80
+      DEBUG: "true"
+      SILENT: "false"
+
+#  test:
+#    build: test
+#    depends_on:
+#      - agent
+#      - env
+#    links:
+#      - agent
+#      - env
+#    environment:
+#      AGENT_ADDRESS: agent
+#      AGENT_PORT: 80
+#      ENV_ADDRESS: env
+#      ENV_PORT: 80
+
+

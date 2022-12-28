@@ -8,6 +8,10 @@
   height: 734px;
 }
 
+.grid-height_storage {
+  height: 0px;
+}
+
 .grid-height2 {
   height: 100% !important;
 }
@@ -15,6 +19,10 @@
 .grid-wrapper {
   width: 100%;
   height: calc(100% - 37px);
+}
+
+.MainContents__ContArea-sc-aoz082-3 {
+  height: 500px;
 }
 
 .paging-wrap {
@@ -274,7 +282,7 @@
   }
 
   .paging-wrap {
-    border-bottom: 1px solid #c5cad0;
+    // border-bottom: 1px solid #c5cad0;
   }
 
   //kwoo2

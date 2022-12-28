@@ -1,0 +1,50 @@
+{
+   "nodes":[
+      {
+         "id":"node-1",
+         "content":"Server 233",
+         "coordinates":[
+            0,
+            100
+         ]
+      },
+      {
+         "id":"node-2",
+         "content":"Server 2",
+         "coordinates":[
+            250,
+            70
+         ]
+      },
+      {
+         "id":"node-3",
+         "content":"Server 3",
+         "coordinates":[
+            250,
+            140
+         ]
+      },
+      {
+         "id":"node-4",
+         "content":"Server 4",
+         "coordinates":[
+            100,
+            210
+         ]
+      }
+   ],
+   "links":[
+      {
+         "input":"node-1",
+         "output":"node-2"
+      },
+      {
+         "input":"node-1",
+         "output":"node-3"
+      },
+      {
+         "input":"node-1",
+         "output":"node-4"
+      }
+   ]
+}

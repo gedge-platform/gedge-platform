@@ -2,16 +2,8 @@ import { observer } from "mobx-react";
 import React, { useEffect, useState } from "react";
 import FormControl from "@material-ui/core/FormControl";
 import { CTextField } from "@/components/textfields";
-import { CCreateButton } from "@/components/buttons";
-import { PanelBox } from "@/components/styles/PanelBox";
-import { swalError } from "../../../../utils/swal-utils";
 import styled from "styled-components";
-import workspacestore from "../../../../store/WorkSpace";
-import projectStore from "../../../../store/Project";
-import deploymentStore from "../../../../store/Deployment";
-import clusterStore from "../../../../store/Cluster";
-import volumeStore from "../../../../store/Volume";
-import StorageClassStore from "../../../../store/StorageClass";
+import { workspaceStore, projectStore, deploymentStore, volumeStore, StorageClassStore } from "@/store";
 
 const Button = styled.button`
   background-color: #fff;
@@ -30,31 +22,19 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const volumeBasicInformation = observer((props) => {
-  const { loadWorkSpaceList, workSpaceList, loadWorkspaceDetail, projectList } =
-    workspacestore;
+const volumeBasicInformation = observer(props => {
+  const { loadWorkSpaceList, workSpaceList, loadWorkspaceDetail, projectList } = workspaceStore;
   const [projectEnable, setProjectEnable] = useState(true);
   const [clusterEnable, setClusterEnable] = useState(true);
   const [storageClassEnable, setStorageClassEnable] = useState(true);
-  const { selectClusterInfo, setSelectClusterInfo, loadProjectDetail } =
-    projectStore;
+  const { selectClusterInfo, setSelectClusterInfo, loadProjectDetail } = projectStore;
   const { setWorkspace } = deploymentStore;
 
-  const {
-    setVolumeName,
-    setAccessMode,
-    setVolumeCapacity,
-    volumeCapacity,
-    volumeName,
-    setProject,
-    selectClusters,
-    setSelectClusters,
-  } = volumeStore;
+  const { setVolumeName, setAccessMode, setVolumeCapacity, volumeCapacity, volumeName, setProject, selectClusters, setSelectClusters } = volumeStore;
 
-  const { loadStorageClassName, setStorageClass, storageClassNameData } =
-    StorageClassStore;
+  const { loadStorageClassName, setStorageClass, storageClassNameData } = StorageClassStore;
 
-  const onChange = async (e) => {
+  const onChange = async e => {
     const { value, name } = e.target;
     if (name === "volumeName") {
       setVolumeName(value);
@@ -133,14 +113,7 @@ const volumeBasicInformation = observer((props) => {
               <span className="requried">*</span>
             </th>
             <td>
-              <CTextField
-                type="text"
-                placeholder="Volume Name"
-                className="form_fullWidth"
-                name="volumeName"
-                onChange={onChange}
-                value={volumeName}
-              />
+              <CTextField type="text" placeholder="Volume Name" className="form_fullWidth" name="volumeName" onChange={onChange} value={volumeName} />
             </td>
             <th></th>
           </tr>
@@ -152,10 +125,8 @@ const volumeBasicInformation = observer((props) => {
               <FormControl className="form_fullWidth">
                 <select name="workspace" onChange={onChange}>
                   <option value={""}>Select Workspace</option>
-                  {workSpaceList.map((item) => (
-                    <option value={item.workspaceName}>
-                      {item.workspaceName}
-                    </option>
+                  {workSpaceList.map(item => (
+                    <option value={item.workspaceName}>{item.workspaceName}</option>
                   ))}
                 </select>
               </FormControl>
@@ -168,16 +139,10 @@ const volumeBasicInformation = observer((props) => {
             </th>
             <td>
               <FormControl className="form_fullWidth">
-                <select
-                  disabled={projectEnable}
-                  name="project"
-                  onChange={onChange}
-                >
+                <select disabled={projectEnable} name="project" onChange={onChange}>
                   <option value={""}>Select Project</option>
-                  {projectList.map((project) => (
-                    <option value={project.projectName}>
-                      {project.projectName}
-                    </option>
+                  {projectList.map(project => (
+                    <option value={project.projectName}>{project.projectName}</option>
                   ))}
                 </select>
               </FormControl>
@@ -197,22 +162,16 @@ const volumeBasicInformation = observer((props) => {
                     <th>타입</th>
                     <th>IP</th>
                   </tr>
-                  {selectClusterInfo.map(
-                    ({ clusterName, clusterType, clusterEndpoint }) => (
-                      <tr>
-                        <td style={{ textAlign: "center" }}>
-                          <input
-                            type="checkbox"
-                            name="selectClusters"
-                            onChange={(e) => checkCluster(e, clusterName)}
-                          />
-                        </td>
-                        <td>{clusterName}</td>
-                        <td>{clusterType}</td>
-                        <td>{clusterEndpoint}</td>
-                      </tr>
-                    )
-                  )}
+                  {selectClusterInfo.map(({ clusterName, clusterType, clusterEndpoint }) => (
+                    <tr>
+                      <td style={{ textAlign: "center" }}>
+                        <input type="checkbox" name="selectClusters" onChange={e => checkCluster(e, clusterName)} />
+                      </td>
+                      <td>{clusterName}</td>
+                      <td>{clusterType}</td>
+                      <td>{clusterEndpoint}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </td>
@@ -224,18 +183,10 @@ const volumeBasicInformation = observer((props) => {
             </th>
             <td>
               <FormControl className="form_fullWidth">
-                <select
-                  disabled={storageClassEnable}
-                  name="storageClass"
-                  onChange={onChange}
-                >
+                <select disabled={storageClassEnable} name="storageClass" onChange={onChange}>
                   <option value={""}>Select StorageClass</option>
                   {storageClassNameData
-                    ? storageClassNameData.map((storageClass) => (
-                        <option value={storageClass.name}>
-                          {storageClass.name}
-                        </option>
-                      ))
+                    ? storageClassNameData.map(storageClass => <option value={storageClass.name}>{storageClass.name}</option>)
                     : ""}
                 </select>
               </FormControl>

@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React from "react";
-import StorageClassStore from "../../../../../store/StorageClass";
+import { StorageClassStore } from "@/store";
 
 const StorageClassPopup = observer(() => {
   const { responseData } = StorageClassStore;

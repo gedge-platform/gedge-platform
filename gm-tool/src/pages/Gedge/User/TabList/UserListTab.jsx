@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
@@ -6,31 +6,18 @@ import { CReflexBox } from "@/layout/Common/CReflexBox";
 import UserDetail from "../../User/UserDetail";
 import { observer } from "mobx-react";
 import userStore from "@/store/UserStore";
-import { swalUpdate } from "@/utils/swal-utils";
-import axios from "axios";
-import { SERVER_URL } from "@/config.jsx";
-import { getItem } from "../../../../utils/sessionStorageFn";
-import { swalError } from "../../../../utils/swal-utils";
 import CommActionBar from "@/components/common/CommActionBar";
-import moment from "moment";
-import { CCreateButton } from "@/components/buttons";
+import dayjs from "dayjs";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import CreateUser from "../Dialog/CreateUser";
+import { swalUpdate, swalError } from "@/utils/swal-utils";
 
 const UserListTab = observer(() => {
   const [open, setOpen] = useState(false);
-  const [open2, setOpen2] = useState(false);
+  const [userName, setUserName] = useState("");
 
-  const {
-    userDetail,
-    loadUserList,
-    loadUserDetail,
-    totalElements,
-    currentPage,
-    totalPages,
-    viewList,
-    goPrevPage,
-    goNextPage,
-  } = userStore;
+  const { deleteUser, userDetail, loadUserList, loadUserDetail, totalElements, currentPage, totalPages, viewList, goPrevPage, goNextPage } =
+    userStore;
 
   const [columnDefs] = useState([
     {
@@ -55,7 +42,7 @@ const UserListTab = observer(() => {
       field: "logined_at",
       filter: true,
       cellRenderer: function (data) {
-        if (moment(data.value).year() === 1) {
+        if (dayjs(data.value).year() === 1) {
           return `<span>-</span>`;
         }
         return `<span>${dateFormatter(data.value)}</span>`;
@@ -85,15 +72,9 @@ const UserListTab = observer(() => {
     },
   ]);
 
-  const handleCreateOpen = () => {
-    setOpen2(true);
-  };
-  const handleCreateClose = () => {
-    setOpen2(false);
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
+  const handleClick = e => {
+    loadUserDetail(e.data.memberId);
+    setUserName(e.data.memberId);
   };
 
   const handleOpen = () => {
@@ -103,28 +84,13 @@ const UserListTab = observer(() => {
     setOpen(false);
   };
 
-  const handleClick = (e) => {
-    const fieldName = e.colDef.field;
-    loadUserDetail(e.data.memberId);
-  };
-
-  const deleteUser = () => {
-    swalUpdate("삭제하시겠습니까", deleteAPI);
-  };
-  const deleteAPI = async () => {
-    await axios
-      .delete(`${SERVER_URL}/users/${userDetail.memberId}`, {
-        auth: getItem("auth"),
-      })
-      .then(({ status }) => {
-        if (status === 200) {
-          swalError("User 삭제에 성공하였습니다.");
-          loadUserList();
-        } else {
-          swalError("User 삭제에 실패하였습니다.");
-        }
-      })
-      .catch((e) => console.log(e));
+  const handleDelete = () => {
+    if (userName === "") {
+      swalError("사용자를 선택해주세요!");
+    } else {
+      swalUpdate(userName + "를 삭제하시겠습니까?", () => deleteUser(userName, loadUserList));
+    }
+    setUserName("");
   };
 
   useLayoutEffect(() => {
@@ -135,14 +101,10 @@ const UserListTab = observer(() => {
     <>
       <CReflexBox>
         <PanelBox>
-           <CommActionBar
-            // reloadFunc={loadUserList}
-            // isSearch={true}
-            // isSelect={true}
-            // keywordList={["이름"]}
-          >
+          <CommActionBar>
             <CCreateButton onClick={handleOpen}>생성</CCreateButton>
-          </CommActionBar> 
+            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
+          </CommActionBar>
           <div className="grid-height2">
             <AgGrid
               rowData={viewList}
@@ -156,11 +118,7 @@ const UserListTab = observer(() => {
               goPrevPage={goPrevPage}
             />
           </div>
-          <CreateUser
-            reloadFunc={loadUserList}
-            open={open}
-            onClose={handleClose}
-          />
+          <CreateUser open={open} onClose={handleClose} reloadFunc={loadUserList} />
         </PanelBox>
         <UserDetail user={userDetail} />
       </CReflexBox>

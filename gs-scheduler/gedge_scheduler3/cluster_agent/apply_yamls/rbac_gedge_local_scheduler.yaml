@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gedge-custom-scheduler-account
+  namespace: gedge-system-scheduler
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gedge-custom-scheduler-role
+rules:
+- apiGroups: ['rbac.authorization.k8s.io']
+  resources: ['clusterroles','clusterrolebindings']
+  verbs: ['create', 'delete', 'deletecollection', 'get', 'list', 'patch', 'update', 'watch']
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gedge-custom-scheduler-role-binding
+subjects:
+- kind: ServiceAccount
+  name: gedge-custom-scheduler-account
+  namespace: gedge-system-scheduler
+roleRef:
+  kind: ClusterRole
+  name: gedge-custom-scheduler-role
+  apiGroup: ""  
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gedge-custom-scheduler-node-role
+rules:
+- apiGroups: ["","storage.k8s.io"]
+  resources: ["nodes","nodes/status","persistentvolumes","persistentvolumeclaims","storageclasses"]
+  verbs: ['create', 'delete', 'deletecollection', 'get', 'list', 'patch', 'update', 'watch']
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gedge-custom-scheduler-node-role-binding
+subjects:
+- kind: ServiceAccount
+  name: gedge-custom-scheduler-account
+  namespace: gedge-system-scheduler
+roleRef:
+  kind: ClusterRole
+  name: gedge-custom-scheduler-node-role
+  apiGroup: ""  
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gedge-custom-scheduler-kube-scheduler-role-binding
+subjects:
+- kind: ServiceAccount
+  name: gedge-custom-scheduler-account
+  namespace: gedge-system-scheduler
+roleRef:
+  kind: ClusterRole
+  name: system:kube-scheduler
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gedge-custom-scheduler-volume-scheduler-role-binding
+subjects:
+- kind: ServiceAccount
+  name: gedge-custom-scheduler-account
+  namespace: gedge-system-scheduler
+roleRef:
+  kind: ClusterRole
+  name: system:volume-scheduler
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gedge-custom-local-scheduler
+  namespace: gedge-system-scheduler
+spec:
+  selector:
+    matchLabels:
+      app: gedge-custom-local-scheduler
+  replicas: 1  
+  template:
+    metadata:
+      namespace: gedge-system-scheduler
+      labels:
+        app: gedge-custom-local-scheduler
+    spec:
+      serviceAccount: gedge-custom-scheduler-account
+      containers:
+      - name: gedge-custom-local-scheduler
+        image: dockereyes/gedge-custom-local-scheduler
+        ports:
+        - containerPort: 5000

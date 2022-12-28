@@ -4,14 +4,11 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
+import { CTabPanel } from "@/components/tabs";
 import { useHistory } from "react-router";
 import { observer } from "mobx-react";
-import axios from "axios";
-import configmapsStore from "../../../../store/Configmaps";
+import { configmapsStore } from "@/store";
 import ConfigmapsDetail from "../ConfigmapsDetail";
-import { LogoutTwoTone } from "@mui/icons-material";
 
 const ConfigmapsListTab = observer(() => {
   const [tabvalue, setTabvalue] = useState(0);
@@ -67,7 +64,7 @@ const ConfigmapsListTab = observer(() => {
     },
   ]);
 
-  const handleClick = (e) => {
+  const handleClick = e => {
     const fieldName = e.colDef.field;
     loadconfigmapsTabList(e.data.name, e.data.cluster, e.data.namespace);
   };

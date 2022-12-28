@@ -3,10 +3,9 @@ import { PanelBox } from "@/components/styles/PanelBox";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { observer } from "mobx-react";
 import styled from "styled-components";
-import workspaceStore from "../../../store/WorkSpace";
+import { workspaceStore } from "@/store";
 import "@grapecity/wijmo.styles/wijmo.css";
 import { dateFormatter } from "@/utils/common-utils";
-import { Projection } from "leaflet";
 import EventAccordion from "@/components/detail/EventAccordion";
 
 const EventWrap = styled.div`

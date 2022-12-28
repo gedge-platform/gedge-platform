@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { observer } from "mobx-react";
-import { CDialogNew } from "../../../../../components/dialogs";
-import { CTextFeild } from "../../../../../components/textfields";
-import { swalError } from "../../../../../utils/swal-utils";
+import { CDialogNew } from "@/components/dialogs";
+import { swalError } from "@/utils/swal-utils";
 
-import { Projection } from "leaflet";
-import deploymentStore from "../../../../../store/Deployment";
-import projectStore from "../../../../../store/Project";
-import workspacestore from "../../../../../store/WorkSpace";
-import { values } from "lodash";
-
-import StorageClassStore from "../../../../../store/StorageClass";
+import { StorageClassStore } from "@/store";
 import StorageClassBasicInfo from "./StorageClassBasicInfo";
 import StorageClassAdvancedSetting from "./StorageClassAdvancedSetting";
 import StorageClassYamlPopup from "./StorageClassYamlPopup";
@@ -33,7 +26,7 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const CreateStorageClass = observer((props) => {
+const CreateStorageClass = observer(props => {
   const { open } = props;
   const [stepValue, setStepValue] = useState(1);
   const {
@@ -70,11 +63,9 @@ const CreateStorageClass = observer((props) => {
       clusterID: "rook-ceph",
       fsName: "myfs",
       pool: "myfs-replicated",
-      "csi.storage.k8s.io/provisioner-secret-name":
-        "rook-csi-cephfs-provisioner",
+      "csi.storage.k8s.io/provisioner-secret-name": "rook-csi-cephfs-provisioner",
       "csi.storage.k8s.io/provisioner-secret-namespace": "rook-ceph",
-      "csi.storage.k8s.io/controller-expand-secret-name":
-        "rook-csi-cephfs-provisioner",
+      "csi.storage.k8s.io/controller-expand-secret-name": "rook-csi-cephfs-provisioner",
       "csi.storage.k8s.io/controller-expand-secret-namespace": "rook-ceph",
       "csi.storage.k8s.io/node-stage-secret-name": "rook-csi-cephfs-node",
       "csi.storage.k8s.io/node-stage-secret-namespace": "rook-ceph",
@@ -102,11 +93,9 @@ const CreateStorageClass = observer((props) => {
       clusterID: "rook-ceph",
       fsName: "myfs",
       pool: "myfs-replicated",
-      "csi.storage.k8s.io/provisioner-secret-name":
-        "rook-csi-cephfs-provisioner",
+      "csi.storage.k8s.io/provisioner-secret-name": "rook-csi-cephfs-provisioner",
       "csi.storage.k8s.io/provisioner-secret-namespace": "rook-ceph",
-      "csi.storage.k8s.io/controller-expand-secret-name":
-        "rook-csi-cephfs-provisioner",
+      "csi.storage.k8s.io/controller-expand-secret-name": "rook-csi-cephfs-provisioner",
       "csi.storage.k8s.io/controller-expand-secret-namespace": "rook-ceph",
       "csi.storage.k8s.io/node-stage-secret-name": "rook-csi-cephfs-node",
       "csi.storage.k8s.io/node-stage-secret-namespace": "rook-ceph",
@@ -135,8 +124,7 @@ const CreateStorageClass = observer((props) => {
       imageFeatures: "layering",
       "csi.storage.k8s.io/provisioner-secret-name": "rook-csi-rbd-provisioner",
       "csi.storage.k8s.io/provisioner-secret-namespace": "rook-ceph",
-      "csi.storage.k8s.io/controller-expand-secret-name":
-        "rook-csi-rbd-provisioner",
+      "csi.storage.k8s.io/controller-expand-secret-name": "rook-csi-rbd-provisioner",
       "csi.storage.k8s.io/controller-expand-secret-namespace": "rook-ceph",
       "csi.storage.k8s.io/node-stage-secret-name": "rook-csi-rbd-node",
       "csi.storage.k8s.io/node-stage-secret-namespace": "rook-ceph",
@@ -148,7 +136,6 @@ const CreateStorageClass = observer((props) => {
   };
 
   const handleClose = () => {
-    props.reloadFunc && props.reloadFunc();
     props.onClose && props.onClose();
     setStepValue(1);
     setStorageClassName("");
@@ -158,7 +145,7 @@ const CreateStorageClass = observer((props) => {
     setVolumeBindingMode("");
   };
 
-  const onClickStepOne = (e) => {
+  const onClickStepOne = e => {
     if (storageClassName === "") {
       swalError("StorageClass 이름을 입력해주세요");
       return;
@@ -196,21 +183,18 @@ const CreateStorageClass = observer((props) => {
 
   const CreateStorageClass = () => {
     if (storageSystem === "CephFS") {
-      postStorageClass(
-        require("json-to-pretty-yaml").stringify(templateCephfs)
-      );
-      handleClose();
+      postStorageClass(require("json-to-pretty-yaml").stringify(templateCephfs));
     }
     if (storageSystem === "NFS") {
       console.log("NFS: ", storageSystem);
       postStorageClass(require("json-to-pretty-yaml").stringify(templateNfs));
-      handleClose();
     }
     if (storageSystem === "BlockStorage") {
       console.log("BlockStorage: ", storageSystem);
       postStorageClass(require("json-to-pretty-yaml").stringify(templateRbd));
-      handleClose();
     }
+    handleClose();
+    props.reloadFunc && props.reloadFunc();
   };
 
   const handlePreStepValue = () => {
@@ -252,7 +236,7 @@ const CreateStorageClass = observer((props) => {
               }}
             >
               <Button onClick={handleClose}>취소</Button>
-              <ButtonNext onClick={(e) => onClickStepOne(e)}>다음</ButtonNext>
+              <ButtonNext onClick={e => onClickStepOne(e)}>다음</ButtonNext>
             </div>
           </div>
         </>
@@ -307,9 +291,7 @@ const CreateStorageClass = observer((props) => {
               }}
             >
               <Button onClick={() => setStepValue(2)}>이전</Button>
-              <ButtonNext onClick={() => CreateStorageClass()}>
-                Schedule Apply
-              </ButtonNext>
+              <ButtonNext onClick={() => CreateStorageClass()}>Schedule Apply</ButtonNext>
             </div>
           </div>
         </>
@@ -318,15 +300,7 @@ const CreateStorageClass = observer((props) => {
   };
 
   return (
-    <CDialogNew
-      id="myDialog"
-      open={open}
-      maxWidth="md"
-      title={"Create StorageClass"}
-      onClose={handleClose}
-      bottomArea={false}
-      modules={["custom"]}
-    >
+    <CDialogNew id="myDialog" open={open} maxWidth="md" title={"Create StorageClass"} onClose={handleClose} bottomArea={false} modules={["custom"]}>
       {stepOfComponent()}
     </CDialogNew>
   );

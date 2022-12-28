@@ -2,16 +2,11 @@ import React, { useState, useEffect } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { observer } from "mobx-react";
-import clusterStore from "../../../store/Cluster";
+import { clusterStore } from "@/store";
 import styled from "styled-components";
-import {
-  dateFormatter,
-  isValidJSON,
-  nullCheck,
-} from "../../../utils/common-utils";
+import { dateFormatter, isValidJSON, nullCheck } from "@/utils/common-utils";
 import ReactJson from "react-json-view";
 import EventAccordion from "@/components/detail/EventAccordion";
-import dashboardStore from "../../../store/Dashboard";
 
 const TableTitle = styled.p`
   font-size: 14px;
@@ -66,7 +61,7 @@ const NoInfo = styled.div`
   background-color: #141a30;
 `;
 
-const Detail = observer((props) => {
+const Detail = observer(props => {
   const {
     clusterDetail: {
       clusterName,
@@ -78,19 +73,9 @@ const Detail = observer((props) => {
       events,
       ipAddr,
       nodes,
-      resource: {
-        cronjob_count,
-        deployment_count,
-        job_count,
-        pod_count,
-        service_count,
-        volume_count,
-        Statefulset_count,
-        daemonset_count,
-      },
+      resource: { cronjob_count, deployment_count, job_count, pod_count, service_count, volume_count, Statefulset_count, daemonset_count },
     },
   } = clusterStore;
-
 
   const [open, setOpen] = useState(false);
   const [tabvalue, setTabvalue] = useState(0);
@@ -133,16 +118,7 @@ const Detail = observer((props) => {
       <tr>
         <th style={{ width: "40%" }}>{key}</th>
         <td>
-          {isValidJSON(value) ? (
-            <ReactJson
-              src={JSON.parse(value)}
-              theme="summerfruit"
-              displayDataTypes={false}
-              displayObjectSize={false}
-            />
-          ) : (
-            value
-          )}
+          {isValidJSON(value) ? <ReactJson src={JSON.parse(value)} theme="summerfruit" displayDataTypes={false} displayObjectSize={false} /> : value}
         </td>
       </tr>
     ));
@@ -239,26 +215,22 @@ const Detail = observer((props) => {
               </tbody>
             </table>
             <div id="pagination">
-            <div className="paging-wrap">
-              <div className="select-wrap">
+              <div className="paging-wrap">
+                <div className="select-wrap">
                   <select>
                     <option value="10">10건</option>
                     <option value="20">20건</option>
                     <option value="50">50건</option>
                   </select>
                   <span>총 218건</span>
-              </div>
-              <div className="btn-wrap">
-                  <button className="btnLabel_icon prev">
-                    이전
-                  </button>
+                </div>
+                <div className="btn-wrap">
+                  <button className="btnLabel_icon prev">이전</button>
                   <span className="page-num">10 of 28</span>
-                  <button className="btnLabel_icon">
-                    다음
-                  </button>
+                  <button className="btnLabel_icon">다음</button>
+                </div>
               </div>
             </div>
-          </div>
           </>
         ) : (
           <LabelContainer>
@@ -296,7 +268,7 @@ const Detail = observer((props) => {
               </tr>
             </tbody>
           </table>
-      </div>
+        </div>
       </CTabPanel>
       <CTabPanel style={{ overflowY: "scroll" }} value={tabvalue} index={2}>
         <div className="tb_container">

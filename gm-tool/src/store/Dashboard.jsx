@@ -1,7 +1,7 @@
 import axios from "axios";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
 import { createContext } from "react";
-import { BASIC_AUTH, SERVER_URL2 } from "../config";
+import { SERVER_URL } from "../config";
 
 class Dashboard {
   viewList = [];
@@ -70,8 +70,21 @@ class Dashboard {
   VMList = [];
 
   clusterNameList = [];
+  cloudNameList = [];
   clusterName = "";
-  cloudDashboardDetail = [];
+  setClusterName = (value) => {
+    runInAction(() => {
+      this.clusterName = value;
+    });
+  };
+
+  cloudName = "";
+  setCloudName = (value) => {
+    runInAction(() => {
+      this.cloudName = value;
+    });
+  };
+
   clusterInfo = {
     address: "",
   };
@@ -102,21 +115,33 @@ class Dashboard {
   diskUtil = "";
   diskTotal = "";
 
-  resourceCnt = [
-    {
-      cronjob_count: 0,
-      daemonset_count: 0,
-      deployment_count: 0,
-      job_count: 0,
-      namespace_count: 0,
-      pod_count: 0,
-      project_count: 0,
-      pv_count: 0,
-      service_count: 0,
-      statefulset_count: 0,
-      workspace_count: 0,
-    },
-  ];
+  resourceCnt = {
+    cronjob_count: 0,
+    daemonset_count: 0,
+    deployment_count: 0,
+    job_count: 0,
+    namespace_count: 0,
+    pod_count: 0,
+    project_count: 0,
+    pv_count: 0,
+    service_count: 0,
+    statefulset_count: 0,
+    workspace_count: 0,
+  };
+
+  cloudResourceCnt = {};
+
+  edgeNodeRunning = [];
+  nodeRunning = [];
+  nodeReady = 0;
+  nodeNotReady = 0;
+
+  mapZoom = 1;
+  setMapZoom = (value) => {
+    runInAction(() => {
+      this.mapZoom = value;
+    });
+  };
 
   constructor() {
     makeAutoObservable(this);
@@ -136,13 +161,12 @@ class Dashboard {
 
   loadDashboardCnt = async () => {
     await axios
-      .get(`${SERVER_URL2}/totalDashboard`)
-      // .get(`${SERVER_URL2}/totalDashboard`)
+      .get(`${SERVER_URL}/totalDashboard`)
+      // .get(`${SERVER_URL}/totalDashboard`)
       .then(({ data: { data } }) => {
         runInAction(() => {
           this.dashboardDetail = data;
           this.clusterCnt = data.clusterCnt;
-          // this.coreClusterCnt = data.coreClusterCnt;
           this.credentialCnt = data.credentialCnt;
           this.edgeClusterCnt = data.edgeClusterCnt;
           this.workspaceCnt = data.workspaceCnt;
@@ -154,7 +178,7 @@ class Dashboard {
 
   loadClusterRecent = async () => {
     await axios
-      .get(`${SERVER_URL2}/totalDashboard`)
+      .get(`${SERVER_URL}/totalDashboard`)
       .then(({ data: { data, involvesData } }) => {
         runInAction(() => {
           this.dashboardDetail = data;
@@ -202,7 +226,6 @@ class Dashboard {
             (provider) => provider.ProviderName
           );
         });
-        console.log(this.ConfigNameList);
       })
       .then(() => {
         // console.log(this.ConfigName);
@@ -297,14 +320,11 @@ class Dashboard {
           return vmCntList;
         });
     });
-    console.log(vmCntList);
     // res.forEach((result) => {
     //   Object.values(result.data.connectionconfig).map(
     //     (val) => val.ConfigName
     // );
     // })
-
-    console.log(configNameList);
   };
 
   loadVMStatusCnt = async () => {
@@ -312,7 +332,6 @@ class Dashboard {
       `http://210.207.104.188:1024/spider/connectionconfig`
     );
     const configResult = await Promise.all([urls]).then((res) => {
-      console.log(res);
       return res;
     });
     const configNameList = configResult[0].data.connectionconfig;
@@ -368,38 +387,34 @@ class Dashboard {
   //     VMList.running = this.Running;
   //     VMList.stop = this.Stop;
   //     console.log(VMList);
-  //   // }
+  //   // }l
   // })
   // };
 
-  loadClusterList = async (type = "") => {
-    await axios
-      .get(`${SERVER_URL2}/clusters`)
-      .then((res) => {
-        runInAction(() => {
-          const list =
-            type === ""
-              ? res.data
-              : res.data.filter((item) => item.clusterType === type);
-          this.clusterList = list;
-          this.clusterNameList = list.map((item) => item.clusterName);
-          this.totalElements = list.length;
-        });
-      })
-      .then(() => {
-        this.loadClusterDetail(this.clusterNameList[0]);
+  edgeType = [];
+  cloudType = [];
+
+  loadEdgeZoneDashboard = async () => {
+    await axios.get(`${SERVER_URL}/clusters`).then(({ data: { data } }) => {
+      runInAction(() => {
+        this.edgeType = data.filter((item) => item.clusterType === "edge");
+        this.clusterNameList = this.edgeType.map((item) => item.clusterName);
+
+        this.totalElements = data.length;
       });
+    });
+    console.log(this.clusterNameList);
+    // this.clusterNameList.map((item) => this.loadEdgeZoneDetailDashboard(item));
+    this.loadEdgeZoneDetailDashboard(this.clusterNameList[0]);
   };
 
-  loadClusterDetail = async (clusterName) => {
+  loadEdgeZoneDetailDashboard = async (clusterName) => {
     await axios
-      .get(`${SERVER_URL2}/cloudDashboard?cluster=${clusterName}`)
-      .then(({ data: { data } }) => {
+      .get(`${SERVER_URL}/cloudDashboard?cluster=${clusterName}`)
+      .then(({ data: { data } }) =>
         runInAction(() => {
-          this.clusterName = clusterName;
-          this.cloudDashboardDetail = data;
+          console.log("data", data);
           this.clusterInfo = data.ClusterInfo;
-          this.address = data.ClusterInfo.address;
           this.nodeInfo = data.nodeInfo;
           this.type = this.nodeInfo.map((val) => val.type);
           this.master = this.type.reduce(
@@ -410,19 +425,69 @@ class Dashboard {
             (cnt, element) => cnt + ("worker" === element),
             0
           );
-          this.cpuUsage = data.cpuUsage;
-          this.cpuUtil = data.cpuUtil;
-          this.cpuTotal = data.cpuTotal;
-          this.memoryUsage = data.memoryUsage;
-          this.memoryUtil = data.memoryUtil;
-          this.memoryTotal = data.memoryTotal;
-          this.diskUsage = data.diskUsage;
-          this.diskUtil = data.diskUtil;
-          this.diskTotal = data.diskTotal;
-          this.resourceCnt = data.resourceCnt;
-          console.log(this.resourceCnt);
-        });
+          this.cpuUsage = data.cpuUsage ? data.cpuUsage : 0;
+          this.cpuUtil = data.cpuUtil ? data.cpuUtil : 0;
+          this.cpuTotal = data.cpuTotal ? data.cpuTotal : 0;
+          this.memoryUsage = data.memoryUsage ? data.memoryUsage : 0;
+          this.memoryUtil = data.memoryUtil ? data.memoryUtil : 0;
+          this.memoryTotal = data.memoryTotal ? data.memoryTotal : 0;
+          this.diskUsage = data.diskUsage ? data.diskUsage : 0;
+          this.diskUtil = data.diskUtil ? data.diskUtil : 0;
+          this.diskTotal = data.diskTotal ? data.diskTotal : 0;
+          this.resourceCnt = data.resourceCnt ? data.resourceCnt : 0;
+          this.nodeRunning = data.nodeRunning ? data.nodeRunning : 0;
+          this.nodeReady = this.nodeRunning
+            ? this.nodeRunning.filter((element) => "Ready" === element).length
+            : 0;
+          this.nodeNotReady = this.nodeRunning
+            ? this.nodeRunning.filter((element) => "NotReady" === element)
+                .length
+            : 0;
+        })
+      );
+  };
+
+  loadCloudZoneDashboard = async () => {
+    await axios.get(`${SERVER_URL}/clusters`).then(({ data: { data } }) => {
+      runInAction(() => {
+        this.cloudType = data.filter((item) => item.clusterType === "cloud");
+        this.cloudNameList = this.cloudType.map((item) => item.clusterName);
+        this.totalElements = data.length;
       });
+    });
+    this.loadCloudZoneDetailDashboard(this.cloudNameList[0]);
+  };
+
+  loadCloudZoneDetailDashboard = async (cloudName) => {
+    await axios
+      .get(`${SERVER_URL}/cloudDashboard?cluster=${cloudName}`)
+      .then(({ data: { data } }) =>
+        runInAction(() => {
+          this.cloudName = cloudName;
+          this.clusterInfo = data.ClusterInfo;
+          this.nodeInfo = data.nodeInfo;
+          this.type = this.nodeInfo.map((val) => val.type);
+          this.master = this.type.reduce(
+            (cnt, element) => cnt + ("master" === element),
+            0
+          );
+          this.worker = this.type.reduce(
+            (cnt, element) => cnt + ("worker" === element),
+            0
+          );
+          this.cpuUsage = data.cpuUsage ? data.cpuUsage : 0;
+          this.cpuUtil = data.cpuUtil ? data.cpuUtil : 0;
+          this.cpuTotal = data.cpuTotal ? data.cpuTotal : 0;
+          this.memoryUsage = data.memoryUsage ? data.memoryUsage : 0;
+          this.memoryUtil = data.memoryUtil ? data.memoryUtil : 0;
+          this.memoryTotal = data.memoryTotal ? data.memoryTotal : 0;
+          this.diskUsage = data.diskUsage ? data.diskUsage : 0;
+          this.diskUtil = data.diskUtil ? data.diskUtil : 0;
+          this.diskTotal = data.diskTotal ? data.diskTotal : 0;
+          this.cloudResourceCnt = data.resourceCnt ? data.resourceCnt : 0;
+          this.nodeRunning = data.nodeRunning ? data.nodeRunning : 0;
+        })
+      );
   };
 }
 const dashboardStore = new Dashboard();

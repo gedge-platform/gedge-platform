@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "@/layout";
 import { Title } from "@/pages";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import CoreClusterListTab from "./TabList/CoreClusterListTab";
+// import CoreClusterListTab from "./TabList/CoreClusterListTab";
 import EdgeClusterListTab from "./TabList/EdgeClusterListTab";
 
 const Cluster = () => {

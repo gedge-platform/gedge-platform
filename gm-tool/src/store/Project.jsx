@@ -1,6 +1,6 @@
 import axios from "axios";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
-import { BASIC_AUTH, SERVER_URL2, SERVER_URL4 } from "../config";
+import { SERVER_URL } from "../config";
 import { getItem } from "@/utils/sessionStorageFn";
 import { swalError } from "../utils/swal-utils";
 
@@ -45,6 +45,12 @@ class Project {
   totalPages = 1;
   resultList = {};
   viewList = [];
+
+  currentEvent = 1;
+  totalEvents = 1;
+  resultEvent = {};
+  eventList = [];
+  eventLength = 0;
 
   constructor() {
     makeAutoObservable(this);
@@ -126,19 +132,22 @@ class Project {
     });
   };
 
-  loadProjectList = async (type = "user") => {
+  loadProjectList = async () => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
     await axios
-      .get(`${SERVER_URL4}/userProjects`)
+      .get(`${SERVER_URL}/userProjects?user=${id}`)
       .then((res) => {
         runInAction(() => {
-          const list = res.data.data.filter(
-            (item) => item.projectType === type
-          );
-          this.projectList = list;
-          this.totalElements = list.length;
+          // const list = res.data.data.filter(
+          //   (item) => item.projectType === type
+          // );
+          this.projectList = res.data.data;
+          this.totalElements = res.data.data.length;
         });
       })
       .then(() => {
+        console.log(this.projectList);
         this.convertList(this.projectList, this.setProjectList);
       })
       .then(() => {
@@ -148,7 +157,7 @@ class Project {
 
   loadProjectDetail = async (projectName) => {
     await axios
-      .get(`${SERVER_URL4}/userProjects/${projectName}`)
+      .get(`${SERVER_URL}/userProjects/${projectName}`)
       .then(({ data: { data } }) => {
         runInAction(() => {
           this.projectDetail = data;
@@ -174,12 +183,17 @@ class Project {
           // const temp = new Set(res.data.map((cluster) => cluster.clusterName));
           // this.clusterList = [...temp];
         });
+      })
+      .then(() => {
+        // this.eventLength = this.events.length;
+        // console.log(this.events);
+        // this.convertEventList(this.events, this.setEventList);
       });
   };
 
   loadProjectListInWorkspace = async (workspaceName) => {
     await axios
-      .get(`${SERVER_URL4}/userProjects?workspace=${workspaceName}`)
+      .get(`${SERVER_URL}/userProjects?workspace=${workspaceName}`)
       .then((res) => {
         runInAction(() => {
           this.projectListinWorkspace = res.data.data;
@@ -187,9 +201,12 @@ class Project {
       });
   };
 
-  loadSystemProjectList = async (type) => {
-    await axios.get(`${SERVER_URL4}/systemProjects`).then((res) => {
+  loadSystemProjectList = async () => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
+    await axios.get(`${SERVER_URL}/systemProjects?user=${id}`).then((res) => {
       runInAction(() => {
+        console.log(res);
         this.systemProjectList = res.data.data;
         this.totalElements = res.data.length;
       });
@@ -244,11 +261,11 @@ class Project {
     // //   workspaceName,
     // // };
     // axios
-    //   .post(`${SERVER_URL2}/projects`, body2)
+    //   .post(`${SERVER_URL}/projects`, body2)
     //   .then((res) => console.log(res))
     //   .catch((err) => console.error(err));
     axios
-      .post(`${SERVER_URL4}/projects`, body)
+      .post(`${SERVER_URL}/projects`, body)
       .then((res) => {
         console.log(res);
         if (res.status === 201) {
@@ -261,15 +278,90 @@ class Project {
       });
   };
 
-  deleteProject = (projectName, callback) => {
+  deleteProject = async (projectName, callback) => {
     axios
-      .delete(`${SERVER_URL4}/projects/${projectName}`)
+      .delete(`${SERVER_URL}/projects/${projectName}`)
       .then((res) => {
         if (res.status === 200)
           swalError("프로젝트가 삭제되었습니다.", callback);
       })
       .catch((err) => swalError("삭제에 실패하였습니다."));
   };
+
+  setCurrentEvent = (n) => {
+    runInAction(() => {
+      this.currentEvent = n;
+    });
+  };
+
+  goPrevEvent = () => {
+    runInAction(() => {
+      if (this.currentEvent > 1) {
+        this.currentEvent = this.currentEvent - 1;
+        this.setEventViewList(this.currentEvent - 1);
+      }
+    });
+  };
+
+  goNextEvent = () => {
+    runInAction(() => {
+      if (this.totalEvents > this.currentEvent) {
+        this.currentEvent = this.currentEvent + 1;
+        this.setEventViewList(this.currentEvent - 1);
+      }
+    });
+  };
+
+  // setTotalEvents = (n) => {
+  //   runInAction(() => {
+  //     this.totalEvents = n;
+  //   });
+  // };
+
+  // setEventViewList = (n) => {
+  //   runInAction(() => {
+  //     this.eventList = this.events[n];
+  //     console.log(this.eventList);
+  //   });
+  // };
+
+  // setEventList = (list) => {
+  //   runInAction(() => {
+  //     this.events = list;
+  //   });
+  // };
+
+  // convertEventList = (apiList, setFunc) => {
+  //   runInAction(() => {
+  //     let cnt = 1;
+  //     let totalCnt = 0;
+  //     let tempList = [];
+  //     let cntCheck = true;
+  //     this.resultEvent = {};
+
+  //     Object.entries(apiList).map(([_, value]) => {
+  //       cntCheck = true;
+  //       tempList.push(toJS(value));
+  //       cnt = cnt + 1;
+  //       if (cnt > 5) {
+  //         cntCheck = false;
+  //         cnt = 1;
+  //         this.resultEvent[totalCnt] = tempList;
+  //         totalCnt = totalCnt + 1;
+  //         tempList = [];
+  //       }
+  //     });
+
+  //     if (cntCheck) {
+  //       this.resultEvent[totalCnt] = tempList;
+  //       totalCnt = totalCnt === 0 ? 1 : totalCnt + 1;
+  //     }
+
+  //     this.setTotalEvents(totalCnt);
+  //     setFunc(this.resultEvent);
+  //     this.setEventViewList(0);
+  //   });
+  // };
 }
 
 const projectStore = new Project();

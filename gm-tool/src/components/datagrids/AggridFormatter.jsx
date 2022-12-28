@@ -1,4 +1,4 @@
-const converterCapacity = (capacity) => {
+const converterCapacity = capacity => {
   const unit = capacity.substring(capacity.length - 2);
   const value = capacity.substring(0, capacity.length - 2);
   if (unit === "Ki") {
@@ -8,7 +8,7 @@ const converterCapacity = (capacity) => {
   }
 };
 
-const drawStatus = (status) => {
+const drawStatus = status => {
   switch (status) {
     case "Bound":
     case "true":
@@ -43,14 +43,14 @@ const drawStatus = (status) => {
       // Purple
       return `<span class="status_ico status_05">${status}</span>`;
   }
-  switch (type) {
-    case "Normal":
-      // Green
-      return `<span class="status_ico status_01">${type}</span>`;
-    case "Warning":
-      // Red
-      return `<span class="status_ico status_04">${type}</span>`;
-  }
+  // switch (type) {
+  //   case "Normal":
+  //     // Green
+  //     return `<span class="status_ico status_01">${type}</span>`;
+  //   case "Warning":
+  //     // Red
+  //     return `<span class="status_ico status_04">${type}</span>`;
+  // }
 };
 
 export { converterCapacity, drawStatus };

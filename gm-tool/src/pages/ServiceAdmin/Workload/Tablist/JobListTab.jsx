@@ -4,33 +4,20 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import { observer } from "mobx-react";
 import Detail from "../JobDetail";
-import jobStore from "../../../../store/Job";
-import { drawStatus } from "../../../../components/datagrids/AggridFormatter";
-import moment from "moment";
+import { jobStore } from "@/store";
+import { drawStatus } from "@/components/datagrids/AggridFormatter";
+import { swalUpdate, swalError } from "@/utils/swal-utils";
 
 const JobListTab = observer(() => {
-  const [tabvalue, setTabvalue] = useState(0);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
+  const [open, setOpen] = useState(false);
+  const [reRun, setReRun] = useState(false);
+  const [jobName, setJobName] = useState("");
 
-  const { 
-    viewList,
-    jobList, 
-    jobDetail, 
-    totalElements, 
-    loadJobList, 
-    loadJobDetail,
-    currentPage,
-    totalPages,
-    goPrevPage,
-    goNextPage,
-   } = jobStore;
+  const { viewList, jobList, jobDetail, totalElements, loadJobList, loadJobDetail, deleteJob, currentPage, totalPages, goPrevPage, goNextPage } =
+    jobStore;
 
   const [columDefs] = useState([
     {
@@ -83,47 +70,69 @@ const JobListTab = observer(() => {
     },
   ]);
 
-  const handleClick = (e) => {
-    const fieldName = e.colDef.field;
+  const handleClick = e => {
+    setJobName(e.data.name);
     loadJobDetail(e.data.name, e.data.cluster, e.data.project);
   };
 
-  const history = useHistory();
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleDelete = () => {
+    if (jobName === "") {
+      swalError("Job을 선택해주세요!");
+    } else {
+      swalUpdate(jobName + "을 삭제하시겠습니까?", () => deleteJob(jobName, reloadData));
+    }
+    setJobName("");
+  };
+
+  const reloadData = () => {
+    setReRun(true);
+  };
 
   useEffect(() => {
     loadJobList();
-  }, []);
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
 
   return (
     <>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
-            reloadFunc={loadJobList}
-            isSearch={true}
-            isSelect={true}
-            keywordList={["이름"]}
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
           >
-            <CCreateButton>생성</CCreateButton>
+            <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
-
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  onCellClicked={handleClick}
-                  rowData={viewList}
-                  columnDefs={columDefs}
-                  isBottom={false}
-                  totalElements={totalElements}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                onCellClicked={handleClick}
+                rowData={viewList}
+                columnDefs={columDefs}
+                isBottom={false}
+                totalElements={totalElements}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+              />
+            </div>
           </div>
+          {/* TODO: CreateJob 팝업 작업 필요 */}
+          {/* <CreateJob type={"user"} open={open} onClose={handleClose} reloadFunc={reloadData} /> */}
         </PanelBox>
         <Detail job={jobDetail} />
       </CReflexBox>

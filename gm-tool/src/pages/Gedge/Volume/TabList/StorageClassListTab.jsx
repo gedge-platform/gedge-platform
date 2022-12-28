@@ -4,19 +4,13 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { useHistory } from "react-router";
 import { observer } from "mobx-react";
-import axios from "axios";
 import StorageClassDetail from "../StorageClassDetail";
-import volumeStore from "@/store/StorageClass";
 import ViewYaml from "../Dialog/ViewYaml";
-import {
-  converterCapacity,
-  drawStatus,
-} from "@/components/datagrids/AggridFormatter";
-import StorageClassStore from "../../../../store/StorageClass";
+import { converterCapacity, drawStatus } from "@/components/datagrids/AggridFormatter";
+import { StorageClassStore } from "@/store";
 
 const StorageClassListTab = observer(() => {
   const [tabvalue, setTabvalue] = useState(0);
@@ -94,7 +88,7 @@ const StorageClassListTab = observer(() => {
     },
   ]);
 
-  const handleOpen = (e) => {
+  const handleOpen = e => {
     let fieldName = e.colDef.field;
     loadStorageClass(e.data.name, e.data.cluster);
     loadStorageClassYaml(e.data.name, e.data.cluster, null, "storageclasses");

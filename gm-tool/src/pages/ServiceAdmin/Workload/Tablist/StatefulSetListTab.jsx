@@ -4,18 +4,16 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton } from "@/components/buttons";
-import { CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import { observer } from "mobx-react";
 import Detail from "../StatefulDetail";
-import statefulSetStore from "../../../../store/StatefulSet";
+import { statefulSetStore } from "@/store";
+import { swalUpdate, swalError } from "@/utils/swal-utils";
 
 const StatefulSetListTab = observer(() => {
-  const [tabvalue, setTabvalue] = useState(0);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
+  const [open, setOpen] = useState(false);
+  const [reRun, setReRun] = useState(false);
+  const [statefulSetName, setStatefulSetName] = useState("");
 
   const {
     statefulSetList,
@@ -23,6 +21,7 @@ const StatefulSetListTab = observer(() => {
     totalElements,
     loadStatefulSetList,
     loadStatefulSetDetail,
+    deleteStatefulSet,
     currentPage,
     totalPages,
     viewList,
@@ -64,47 +63,69 @@ const StatefulSetListTab = observer(() => {
     },
   ]);
 
-  const handleClick = (e) => {
-    const fieldName = e.colDef.field;
+  const handleClick = e => {
+    setStatefulSetName(e.data.name);
     loadStatefulSetDetail(e.data.name, e.data.cluster, e.data.project);
   };
 
-  const history = useHistory();
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleDelete = () => {
+    if (statefulSetName === "") {
+      swalError("StatefulSet을 선택해주세요!");
+    } else {
+      swalUpdate(statefulSetName + "을 삭제하시겠습니까?", () => deleteStatefulSet(statefulSetName, reloadData));
+    }
+    setStatefulSetName("");
+  };
+
+  const reloadData = () => {
+    setReRun(true);
+  };
 
   useEffect(() => {
     loadStatefulSetList();
-  }, []);
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
 
   return (
     <>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
-            reloadFunc={loadStatefulSetList}
-            isSearch={true}
-            isSelect={true}
-            keywordList={["이름"]}
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
           >
-            {/* <CCreateButton>생성</CCreateButton> */}
+            <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
-
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  onCellClicked={handleClick}
-                  rowData={viewList}
-                  columnDefs={columDefs}
-                  isBottom={false}
-                  totalElements={totalElements}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                onCellClicked={handleClick}
+                rowData={viewList}
+                columnDefs={columDefs}
+                isBottom={false}
+                totalElements={totalElements === 0 ? 0 : totalElements}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+              />
+            </div>
           </div>
+          {/* TODO: CreateStatefulSet 팝업 작업 필요 */}
+          {/* <CreateStatefulSet type={"user"} open={open} onClose={handleClose} reloadFunc={reloadData} /> */}
         </PanelBox>
         <Detail statefulSet={statefulDetail} />
       </CReflexBox>

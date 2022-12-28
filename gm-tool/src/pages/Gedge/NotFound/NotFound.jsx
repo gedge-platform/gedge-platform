@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
-import { getItem } from "../../../utils/sessionStorageFn";
+import { getItem } from "@/utils/sessionStorageFn";
 
 const Container = styled.div`
   width: 100vw;

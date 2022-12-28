@@ -1,6 +1,7 @@
 import axios from "axios";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
-import { BASIC_AUTH, SERVER_URL2 } from "../config";
+import { SERVER_URL } from "../config";
+import { getItem } from "../utils/sessionStorageFn";
 
 class DaemonSet {
   currentPage = 1;
@@ -53,7 +54,11 @@ class DaemonSet {
       if (this.currentPage > 1) {
         this.currentPage = this.currentPage - 1;
         this.setViewList(this.currentPage - 1);
-        this.loadDaemonSetDetail(this.viewList[0].name, this.viewList[0].cluster, this.viewList[0].project);
+        this.loadDaemonSetDetail(
+          this.viewList[0].name,
+          this.viewList[0].cluster,
+          this.viewList[0].project
+        );
       }
     });
   };
@@ -63,7 +68,11 @@ class DaemonSet {
       if (this.totalPages > this.currentPage) {
         this.currentPage = this.currentPage + 1;
         this.setViewList(this.currentPage - 1);
-        this.loadDaemonSetDetail(this.viewList[0].name, this.viewList[0].cluster, this.viewList[0].project);
+        this.loadDaemonSetDetail(
+          this.viewList[0].name,
+          this.viewList[0].cluster,
+          this.viewList[0].project
+        );
       }
     });
   };
@@ -88,18 +97,20 @@ class DaemonSet {
       let cntCheck = true;
       this.resultList = {};
 
-      Object.entries(apiList).map(([_, value]) => {
-        cntCheck = true;
-        tempList.push(toJS(value));
-        cnt = cnt + 1;
-        if (cnt > 10) {
-          cntCheck = false;
-          cnt = 1;
-          this.resultList[totalCnt] = tempList;
-          totalCnt = totalCnt + 1;
-          tempList = [];
-        }
-      });
+      apiList === null
+        ? "-"
+        : Object.entries(apiList).map(([_, value]) => {
+            cntCheck = true;
+            tempList.push(toJS(value));
+            cnt = cnt + 1;
+            if (cnt > 10) {
+              cntCheck = false;
+              cnt = 1;
+              this.resultList[totalCnt] = tempList;
+              totalCnt = totalCnt + 1;
+              tempList = [];
+            }
+          });
 
       if (cntCheck) {
         this.resultList[totalCnt] = tempList;
@@ -115,7 +126,7 @@ class DaemonSet {
   setPDaemonSetList = (list) => {
     runInAction(() => {
       this.pDaemonSetList = list;
-    })
+    });
   };
 
   setViewList = (n) => {
@@ -124,29 +135,40 @@ class DaemonSet {
     });
   };
 
-  loadDaemonSetList = async (type) => {
-    await axios.get(`${SERVER_URL2}/daemonsets`).then((res) => {
-      runInAction(() => {
-        const list = res.data.data.filter((item) => item.projectType === type);
-        this.daemonSetList = list;
-        // this.daemonSetDetail = list[0];
-        this.totalElements = list.length;
+  loadDaemonSetList = async () => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
+    await axios
+      .get(`${SERVER_URL}/daemonsets?user=${id}`)
+      .then((res) => {
+        runInAction(() => {
+          this.daemonSetList = res.data.data;
+          this.totalElements =
+            res.data.data === null ? 0 : res.data.data.length;
+        });
+      })
+      .then(() => {
+        this.convertList(this.daemonSetList, this.setPDaemonSetList);
       });
-    })
-    .then(() => {
-      this.convertList(this.daemonSetList, this.setPDaemonSetList);
-    })
-    this.loadDaemonSetDetail(
-      this.daemonSetList[0].name,
-      this.daemonSetList[0].cluster,
-      this.daemonSetList[0].project
-    );
+    this.totalElements === 0
+      ? ((this.daemonSetDetail = null),
+        (this.involvesData = null),
+        (this.pods = null),
+        (this.containers = null),
+        (this.services = null),
+        (this.label = null),
+        (this.annotations = null))
+      : this.loadDaemonSetDetail(
+          this.viewList[0].name,
+          this.viewList[0].cluster,
+          this.viewList[0].project
+        );
   };
 
   loadDaemonSetDetail = async (name, cluster, project) => {
     await axios
       .get(
-        `${SERVER_URL2}/daemonsets/${name}?cluster=${cluster}&project=${project}`
+        `${SERVER_URL}/daemonsets/${name}?cluster=${cluster}&project=${project}`
       )
       .then(({ data: { data, involvesData } }) => {
         runInAction(() => {
@@ -164,6 +186,16 @@ class DaemonSet {
           }
         });
       });
+  };
+
+  deleteDaemonSet = async (daemonsetName, callback) => {
+    axios
+      .delete(`${SERVER_URL}/daemonsets/${daemonsetName}`)
+      .then((res) => {
+        if (res.status === 201)
+          swalError("DaemonSet이 삭제되었습니다.", callback);
+      })
+      .catch((err) => swalError("삭제에 실패하였습니다."));
   };
 }
 

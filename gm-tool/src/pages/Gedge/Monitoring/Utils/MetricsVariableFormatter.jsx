@@ -24,6 +24,12 @@ const unixToTime = (unixTimestamp) => {
         )
     );
 };
+const unixToTime2 = (unixTimestamp) => {
+    const timestamp = new Date(unixTimestamp * 1000);
+    const date = new Date(unixTimestamp)
+
+    return date.toTimeString().split(" ")[0]
+};
 
 const stepConverter = (time) => {
     if (time < 1) {

@@ -1,22 +1,13 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { observer } from "mobx-react";
-import { randomString } from "@/utils/common-utils";
-import { CDialogNew } from "../../../../components/dialogs";
-import { swalError } from "../../../../utils/swal-utils";
-import { Projection } from "leaflet";
+import { CDialogNew } from "@/components/dialogs";
+import { swalError } from "@/utils/swal-utils";
 import VolumeBasicInformation from "./VolumeBasicInformation";
-import deploymentStore from "../../../../store/Deployment";
-import volumeStore from "../../../../store/Volume";
 import VolumeAdvancedSetting from "./VolumeAdvancedSetting";
 import VolumYamlPopup from "./VolumYamlPopup";
 import VolumePopup from "./VolumePopup";
-import projectStore from "../../../../store/Project";
-import schedulerStore from "../../../../store/Scheduler";
-import workspacestore from "../../../../store/WorkSpace";
-import volumeBasicInformation from "./VolumeBasicInformation";
-import { values } from "lodash";
-import StorageClassStore from "../../../../store/StorageClass";
+import { deploymentStore, volumeStore, projectStore, StorageClassStore } from "@/store";
 
 const Button = styled.button`
   background-color: #fff;
@@ -35,7 +26,7 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const CreateVolume = observer((props) => {
+const CreateVolume = observer(props => {
   const { open } = props;
   const [stepValue, setStepValue] = useState(1);
   const { setProjectListinWorkspace } = projectStore;
@@ -81,7 +72,7 @@ const CreateVolume = observer((props) => {
     },
   };
 
-  const onClickStepOne = (e) => {
+  const onClickStepOne = e => {
     console.log(e);
     if (volumeName === "") {
       swalError("Volume 이름을 입력해주세요");
@@ -122,7 +113,6 @@ const CreateVolume = observer((props) => {
   };
 
   const handleClose = () => {
-    props.reloadFunc && props.reloadFunc();
     props.onClose && props.onClose();
     setProjectListinWorkspace();
     setStepValue(1);
@@ -145,6 +135,8 @@ const CreateVolume = observer((props) => {
   const CreateVolume = () => {
     // for문으로 복수의 클러스터이름 보내게
     createVolume(require("json-to-pretty-yaml").stringify(template));
+    handleClose();
+    props.reloadFunc && props.reloadFunc();
     // setSelectClusters();
   };
 
@@ -175,7 +167,7 @@ const CreateVolume = observer((props) => {
               }}
             >
               <Button onClick={handleClose}>취소</Button>
-              <ButtonNext onClick={(e) => onClickStepOne(e)}>다음</ButtonNext>
+              <ButtonNext onClick={e => onClickStepOne(e)}>다음</ButtonNext>
             </div>
           </div>
         </>
@@ -230,9 +222,7 @@ const CreateVolume = observer((props) => {
               }}
             >
               <Button onClick={() => setStepValue(2)}>이전</Button>
-              <ButtonNext onClick={() => CreateVolume()}>
-                Schedule Apply
-              </ButtonNext>
+              <ButtonNext onClick={() => CreateVolume()}>Schedule Apply</ButtonNext>
             </div>
           </div>
         </>
@@ -241,15 +231,7 @@ const CreateVolume = observer((props) => {
   };
 
   return (
-    <CDialogNew
-      id="myDialog"
-      open={open}
-      maxWidth="md"
-      title={"Create Volume"}
-      onClose={handleClose}
-      bottomArea={false}
-      modules={["custom"]}
-    >
+    <CDialogNew id="myDialog" open={open} maxWidth="md" title={"Create Volume"} onClose={handleClose} bottomArea={false} modules={["custom"]}>
       {stepOfComponent()}
     </CDialogNew>
   );

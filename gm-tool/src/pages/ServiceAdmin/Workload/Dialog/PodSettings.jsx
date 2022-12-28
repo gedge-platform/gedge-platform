@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { CTextField } from "@/components/textfields";
 import { observer } from "mobx-react";
-import deploymentStore from "../../../../store/Deployment";
-import podStore from "../../../../store/Pod";
+import { podStore } from "@/store";
 
 const PodSettings = observer(() => {
   const {

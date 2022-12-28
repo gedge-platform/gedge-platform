@@ -4,27 +4,20 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import { observer } from "mobx-react";
 import VolumeDetail from "../VolumeDetail";
 import volumeStore from "@/store/Volume";
 import ViewYaml from "../Dialog/ViewYaml";
-import {
-  converterCapacity,
-  drawStatus,
-} from "@/components/datagrids/AggridFormatter";
+import { converterCapacity, drawStatus } from "@/components/datagrids/AggridFormatter";
 import { SearchV1 } from "@/components/search/SearchV1";
 import CreateVolume from "../Dialog/CreateVolume";
 
 const VolumeListTab = observer(() => {
-  const [tabvalue, setTabvalue] = useState(0);
   const [open, setOpen] = useState(false);
+  const [reRun, setReRun] = useState(false);
+  const [volumeName, setVolumeName] = useState("");
   const [openYaml, setOpenYaml] = useState(false);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
 
   const {
     pVolume,
@@ -33,6 +26,7 @@ const VolumeListTab = observer(() => {
     loadPVolumes,
     loadPVolume,
     loadVolumeYaml,
+    deleteVolume,
     getYamlFile,
     currentPage,
     totalPages,
@@ -46,7 +40,7 @@ const VolumeListTab = observer(() => {
       headerName: "Name",
       field: "name",
       filter: true,
-      getQuickFilterText: (params) => {
+      getQuickFilterText: params => {
         return params.value.name;
       },
     },
@@ -108,8 +102,9 @@ const VolumeListTab = observer(() => {
     },
   ]);
 
-  const handleOpen = (e) => {
+  const handleClick = e => {
     let fieldName = e.colDef.field;
+    setVolumeName(e.data.name);
     loadPVolume(e.data.name, e.data.cluster);
     loadVolumeYaml(e.data.name, e.data.cluster, null, "persistentvolumes");
     if (fieldName === "yaml") {
@@ -125,14 +120,7 @@ const VolumeListTab = observer(() => {
     setOpenYaml(false);
   };
 
-  const history = useHistory();
-
-  useLayoutEffect(() => {
-    loadPVolumes();
-  }, []);
-
-  const handleCreateOpen = () => {
-    // setWorkspace("");
+  const handleOpen = () => {
     setOpen(true);
   };
 
@@ -140,46 +128,57 @@ const VolumeListTab = observer(() => {
     setOpen(false);
   };
 
+  const handleDelete = () => {
+    if (volumeName === "") {
+      swalError("Volume을 선택해주세요!");
+    } else {
+      swalUpdate(volumeName + "를 삭제하시겠습니까?", () => deleteVolume(volumeName, reloadData));
+    }
+    setVolumeName("");
+  };
+
+  const reloadData = () => {
+    setReRun(true);
+  };
+
+  useLayoutEffect(() => {
+    loadPVolumes();
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
+
   return (
     <>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
-          // reloadFunc={loadPVolumes}
-          // isSearch={true}
-          // isSelect={true}
-          // keywordList={["이름"]}
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
           >
-            {/* <CCreateButton onClick={handleCreateOpen}>생성</CCreateButton> */}
+            {/* <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton> */}
           </CommActionBar>
 
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  onCellClicked={handleOpen}
-                  rowData={viewList}
-                  columnDefs={columDefs}
-                  isBottom={false}
-                  totalElements={totalElements}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                onCellClicked={handleClick}
+                rowData={viewList}
+                columnDefs={columDefs}
+                isBottom={false}
+                totalElements={totalElements}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+              />
+            </div>
           </div>
-          <ViewYaml
-            open={openYaml}
-            yaml={getYamlFile}
-            onClose={handleCloseYaml}
-          />
-          <CreateVolume
-            open={open}
-            onClose={handleClose}
-            reloadFunc={loadPVolumes}
-          />
+          <ViewYaml open={openYaml} yaml={getYamlFile} onClose={handleCloseYaml} />
+          {/* <CreateVolume open={open} onClose={handleClose} reloadFunc={reloadData} /> */}
         </PanelBox>
         <VolumeDetail pVolume={pVolume} metadata={pVolumeMetadata} />
       </CReflexBox>

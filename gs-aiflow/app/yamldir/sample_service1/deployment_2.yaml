@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploytest2
+  labels:
+    app: dptest2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dptest2
+  template:
+    metadata:
+      labels:
+        app: dptest2
+    spec:
+      containers:
+      - name: dptestnginx2
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80

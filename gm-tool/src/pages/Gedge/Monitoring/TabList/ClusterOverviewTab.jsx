@@ -15,13 +15,9 @@ import {
   CSelectButtonM,
   CIconButton,
 } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
 import { observer } from "mobx-react";
-import moment from "moment";
-import axios from "axios";
-import styled from "styled-components";
-import monitoringStore from "../../../../store/Monitoring";
+import dayjs from "dayjs";
+import { monitoringStore } from "@/store";
 import {
   stepConverter,
   unixCurrentTime,
@@ -323,7 +319,7 @@ const ClusterOverview = observer(() => {
           </CSelectButtonM>
         </div>
         <div className="date">
-          {moment(new Date()).format("YYYY-MM-DD")}
+          {dayjs(new Date()).format("YYYY-MM-DD")}
           <CIconButton
             onClick={calledMetrics}
             icon="refresh"

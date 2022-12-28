@@ -4,35 +4,23 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import { observer } from "mobx-react";
 import Detail from "../PodDetail";
-import podStore from "../../../../store/Pod";
+import { podStore } from "@/store";
 import { dateFormatter } from "@/utils/common-utils";
 import CreatePod from "../Dialog/CreatePod";
-import { drawStatus } from "../../../../components/datagrids/AggridFormatter";
+import { drawStatus } from "@/components/datagrids/AggridFormatter";
+import { swalUpdate, swalError } from "@/utils/swal-utils";
 
 const PodListTab = observer(() => {
   const [open, setOpen] = useState(false);
-  const [tabvalue, setTabvalue] = useState(0);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
+  const [reRun, setReRun] = useState(false);
+  const [podName, setPodName] = useState("");
 
-  const {
-    podList,
-    podDetail,
-    totalElements,
-    loadPodList,
-    loadPodDetail,
-    currentPage,
-    totalPages,
-    goPrevPage,
-    goNextPage,
-    viewList,
-  } = podStore;
+  const { podList, podDetail, totalElements, loadPodList, loadPodDetail, deletePod, currentPage, totalPages, goPrevPage, goNextPage, viewList } =
+    podStore;
+
   const [columDefs] = useState([
     {
       headerName: "파드 이름",
@@ -80,16 +68,9 @@ const PodListTab = observer(() => {
     },
   ]);
 
-  const handleCreateOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleClick = (e) => {
-    const fieldName = e.colDef.field;
+  const handleClick = e => {
+    console.log("e is ", e.data.name);
+    setPodName(e.data.name);
     const data = e.data.status;
     if (data === "Failed") {
       return;
@@ -97,47 +78,64 @@ const PodListTab = observer(() => {
     loadPodDetail(e.data.name, e.data.cluster, e.data.project);
   };
 
-  const history = useHistory();
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleDelete = () => {
+    if (podName === "") {
+      swalError("Pod를 선택해주세요!");
+    } else {
+      swalUpdate(podName + "를 삭제하시겠습니까?", () => deletePod(podName, reloadData));
+    }
+    setPodName("");
+  };
+
+  const reloadData = () => {
+    setReRun(true);
+  };
 
   useEffect(() => {
     loadPodList();
-  }, []);
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
 
   return (
     <>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
-            reloadFunc={loadPodList}
-            isSearch={true}
-            isSelect={true}
-            keywordList={["이름"]}
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
           >
-            <CCreateButton onClick={handleCreateOpen}>생성</CCreateButton>
+            <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  onCellClicked={handleClick}
-                  rowData={viewList}
-                  columnDefs={columDefs}
-                  isBottom={false}
-                  totalElements={totalElements}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                onCellClicked={handleClick}
+                rowData={viewList}
+                columnDefs={columDefs}
+                isBottom={false}
+                totalElements={totalElements}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+              />
+            </div>
           </div>
-          <CreatePod
-            open={open}
-            onClose={handleClose}
-            reloadFunc={loadPodList}
-          />
+          <CreatePod open={open} onClose={handleClose} reloadFunc={reloadData} />
         </PanelBox>
         <Detail pod={podDetail} />
       </CReflexBox>

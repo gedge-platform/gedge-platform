@@ -1,5 +1,5 @@
 # GEdge-Platform
-[![Generic badge](https://img.shields.io/badge/release-2.0-green.svg)](https://github.com/gedge-platform/gedge-platform/releases/tag/1.0)
+[![Generic badge](https://img.shields.io/badge/release-3.0-green.svg)](https://github.com/gedge-platform/gedge-platform/releases/tag/3.0)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ***
 GEdge-Platform is a cloud edge computing platform for ultra low-latency services at the edge of the network.
@@ -8,16 +8,18 @@ It can supports ultra-responsive service experiences by rapidly processing massi
 For the Edge AI service, it provides real-time, distribued, high-reliability and cost-optimal AI computing support at the edge through the cloud edge collaboration, cluster management and intelligent scheduling of multi-tier clusters.
 
 ## Contents
-- [About](#about)
-- [Advantages](#advantages)
-- [Architecture](#architecture)
-- [Components](#components)
-- [Current Features](#current-features)
-- [Getting Started](#getting-started)
-- [TODO](#todo)
-- [Contributing](#contributing)
-- [Community](#commnunity)
-- [License](#license)
+- [GEdge-Platform](#gedge-platform)
+  - [Contents](#contents)
+  - [About](#about)
+  - [Advantages](#advantages)
+  - [Architecture](#architecture)
+  - [Components](#components)
+  - [Current Features](#current-features)
+  - [Getting Started](#getting-started)
+  - [TODO](#todo)
+  - [Contributing](#contributing)
+  - [Community](#community)
+  - [License](#license)
 
 ## About
 

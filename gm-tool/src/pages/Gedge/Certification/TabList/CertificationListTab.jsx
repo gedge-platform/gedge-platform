@@ -1,36 +1,26 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import CommActionBar from "@/components/common/CommActionBar";
-import { AgGrid } from "@/components/datagrids";
-import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
-import Layout from "@/layout";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton } from "@/components/buttons";
-import { CIconButton } from "@/components/buttons";
-import { CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import { observer } from "mobx-react";
-import { Title } from "@/pages";
-import certificationStore from "../../../../store/Certification";
-import Terminal from "../Dialog/Terminal";
-import CreateCluster from "../Dialog/CreateCluster";
+import { certificationStore } from "@/store";
 import CreateCertification from "../Dialog/CreateCertification";
+import { swalUpdate, swalError } from "@/utils/swal-utils";
+import { AgGrid2 } from "@/components/datagrids/AgGrid2";
 
 const CertificationListTab = observer(() => {
-  const currentPageTitle = Title.Certification;
   const [open, setOpen] = useState(false);
-  const [tabvalue, setTabvalue] = useState(0);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
-  const [openTerminal, setOpenTerminal] = useState(false);
-  const {
-    loadCredentialList,
+  const [open2, setOpen2] = useState(false);
+  const [certName, setCertName] = useState("");
 
+  const {
+    deleteCredential,
+    loadCredentialList,
     credential,
     clusterDetail,
     clusterList,
-    loadClusterList,
+    loadEdgeClusterList,
     loadCluster,
     currentPage,
     totalPages,
@@ -42,98 +32,68 @@ const CertificationListTab = observer(() => {
 
   const [columDefs] = useState([
     {
-      headerName: "CredentialName",
-      field: "CredentialName",
+      headerName: "이름",
+      field: "name",
       filter: true,
     },
     {
-      headerName: "DomainName",
-      field: "DomainName",
+      headerName: "타입",
+      field: "type",
       filter: true,
-      cellRenderer: function ({ data: { KeyValueInfoList } }) {
-        return `<span>${KeyValueInfoList[0].Value}</span>`;
-      },
     },
     {
-      headerName: "IdentityEndpoint",
-      field: "IdentityEndpoint",
+      headerName: "도메인",
+      field: "domain",
       filter: true,
-      cellRenderer: function ({ data: { KeyValueInfoList } }) {
-        if (KeyValueInfoList[1])
-          return `<span>${KeyValueInfoList[1].Value}</span>`;
-        else return `<span>no data</span>`;
-      },
     },
     {
-      headerName: "Password",
-      field: "Password",
+      headerName: "테넌트 ID",
+      field: "project",
       filter: true,
-      cellRenderer: function ({ data: { KeyValueInfoList } }) {
-        if (KeyValueInfoList[2])
-          return `<span>${KeyValueInfoList[2].Value}</span>`;
-        else return `<span>no data</span>`;
-      },
     },
     {
-      headerName: "ProjectID",
-      field: "ProjectID",
+      headerName: "URL",
+      field: "endpoint",
       filter: true,
-      cellRenderer: function ({ data: { KeyValueInfoList } }) {
-        if (KeyValueInfoList[3])
-          return `<span>${KeyValueInfoList[3].Value}</span>`;
-        else return `<span>no data</span>`;
-      },
     },
     {
-      headerName: "Username",
-      field: "Username",
+      headerName: "username",
+      field: "username",
       filter: true,
-      cellRenderer: function ({ data: { KeyValueInfoList } }) {
-        if (KeyValueInfoList[4])
-          return `<span>${KeyValueInfoList[4].Value}</span>`;
-        else return `<span>no data</span>`;
-      },
     },
     {
-      headerName: "ProviderName",
-      field: "ProviderName",
+      headerName: "password",
+      field: "password",
       filter: true,
     },
-    // {
-    //   headerName: "생성날짜",
-    //   field: "created_at",
-    //   filter: "agDateColumnFilter",
-    //   filterParams: agDateColumnFilter(),
-    //   minWidth: 150,
-    //   maxWidth: 200,
-    //   cellRenderer: function (data) {
-    //     return `<span>${dateFormatter(data.value)}</span>`;
-    //   },
-    // },
-    // {
-    //   headerName: "",
-    //   field: "terminal",
-    //   minWidth: 100,
-    //   maxWidth: 100,
-    //   cellRenderer: function () {
-    //     // return `<span class="state_ico_new terminal" onClick></span> `;
-    //     return `<button class="tb_volume_yaml" onClick>Terminal</button>`;
-    //   },
-    //   cellStyle: { textAlign: "center" },
-    // },
+    {
+      headerName: "access_id",
+      field: "access_id",
+      filter: true,
+    },
+    {
+      headerName: "access_token",
+      field: "access_token",
+      filter: true,
+    },
+    {
+      headerName: "Zone",
+      field: "zone",
+      filter: true,
+    },
+    {
+      headerName: "생성날짜",
+      field: "created_at",
+      filter: true,
+    },
   ]);
 
-  const history = useHistory();
-
-  const handleClick = (e) => {
-    let fieldName = e.colDef.field;
-    loadCluster(e.data.clusterName);
-    if (fieldName === "terminal") {
-      handleOpenTerminal();
-    }
+  const handleClick = e => {
+    console.log("e is ", e.data.name);
+    setCertName(e.data.name);
   };
 
-  const handleOpen = (e) => {
+  const handleOpen = () => {
     setOpen(true);
   };
 
@@ -141,37 +101,31 @@ const CertificationListTab = observer(() => {
     setOpen(false);
   };
 
-  const handleOpenTerminal = () => {
-    setOpenTerminal(true);
-  };
-
-  const handleCloseTerminal = () => {
-    setOpenTerminal(false);
+  const handleDelete = () => {
+    if (certName === "") {
+      swalError("인증을 선택해주세요!");
+      return;
+    } else {
+      swalUpdate("삭제하시겠습니까?", () => deleteCredential(certName, loadCredentialList));
+    }
+    setCertName("");
   };
 
   useLayoutEffect(() => {
-    // loadClusterList("core");
     loadCredentialList();
   }, []);
 
   return (
-    // con/so/le.log(CredentialName),
     <CReflexBox>
       <PanelBox>
-        <CommActionBar
-        // reloadFunc={() => loadClusterList("core")}
-        // isSearch={true}
-        // isSelect={true}
-        // keywordList={["이름"]}
-        >
+        <CommActionBar>
           <CCreateButton onClick={handleOpen}>생성</CCreateButton>
-          {/* <CSelectButton items={[]}>{"All Cluster"}</CSelectButton> */}
+          <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
         </CommActionBar>
 
         <div className="tabPanelContainer">
-          {/* <CTabPanel value={tabvalue} index={0}> */}
           <div className="grid-height2">
-            <AgGrid
+            <AgGrid2
               rowData={viewList}
               columnDefs={columDefs}
               isBottom={false}
@@ -183,14 +137,8 @@ const CertificationListTab = observer(() => {
               goPrevPage={goPrevPage}
             />
           </div>
-          {/* </CTabPanel> */}
         </div>
-        {/* <Terminal
-          open={openTerminal}
-          // yaml={getYamlFile}
-          onClose={handleCloseTerminal}
-        /> */}
-        <CreateCertification open={open} onClose={handleClose} />
+        <CreateCertification open={open} onClose={handleClose} reloadFunc={loadCredentialList} />
       </PanelBox>
     </CReflexBox>
   );

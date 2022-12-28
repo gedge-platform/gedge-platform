@@ -1,8 +1,8 @@
 import axios from "axios";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
-import { BASIC_AUTH, SERVER_URL2, SERVER_URL4 } from "../config";
+import { SERVER_URL } from "../config";
 import { swalError } from "../utils/swal-utils";
-
+import { getItem } from "../utils/sessionStorageFn";
 class User {
   userList = [];
   userDetail = {};
@@ -10,7 +10,6 @@ class User {
   //   id: "",
   //   role: "",
   // };
-
   totalElements = 0;
   currentPage = 1;
   totalPages = 1;
@@ -21,7 +20,7 @@ class User {
     makeAutoObservable(this);
   }
 
-  setUser = (user) => {
+  setUser = user => {
     runInAction(() => {
       this.user = user;
       this.role = user.role;
@@ -48,13 +47,13 @@ class User {
     });
   };
 
-  setCurrentPage = (n) => {
+  setCurrentPage = n => {
     runInAction(() => {
       this.currentPage = n;
     });
   };
 
-  setTotalPages = (n) => {
+  setTotalPages = n => {
     runInAction(() => {
       this.totalPages = n;
     });
@@ -92,13 +91,13 @@ class User {
     });
   };
 
-  setUserList = (list) => {
+  setUserList = list => {
     runInAction(() => {
       this.userList = list;
     });
   };
 
-  setViewList = (n) => {
+  setViewList = n => {
     runInAction(() => {
       this.viewList = this.userList[n];
     });
@@ -106,8 +105,8 @@ class User {
 
   loadUserList = async () => {
     await axios
-      .get(`${SERVER_URL4}/members`)
-      .then((res) => {
+      .get(`${SERVER_URL}/members`)
+      .then(res => {
         runInAction(() => {
           this.userList = res.data;
           this.totalElements = res.data.length;
@@ -122,11 +121,12 @@ class User {
       });
   };
 
-  loadUserDetail = async (memberId) => {
-    await axios.get(`${SERVER_URL4}/members/${memberId}`).then((res) => {
+  loadUserDetail = async memberId => {
+    await axios.get(`${SERVER_URL}/members/${memberId}`).then(res => {
       runInAction(() => {
         this.userDetail = res.data;
       });
+      console.log(this.userDetail);
     });
   };
 
@@ -135,17 +135,41 @@ class User {
       ...data,
       enabled: true,
     };
-    return await axios
-      .post(`${SERVER_URL4}/members`, body)
-      .then((res) => {
+    // return
+    await axios
+      .post(`${SERVER_URL}/members`, body)
+      .then(res => {
+        console.log(res);
         runInAction(() => {
           if (res.status === 201) {
-            swalError("멤버가 생성되었습니다.", callback);
+            swalError("사용자가 생성되었습니다.", callback);
             return true;
           }
         });
       })
-      .catch((err) => false);
+      .catch(err => false);
+  };
+  updateUser = async data => {
+    const body = data;
+    const { id } = getItem("user");
+    // return
+    await axios
+      .put(`${SERVER_URL}/members/${id}`, body)
+      .then(res => {
+        runInAction(() => {});
+      })
+      .catch(err => false);
+  };
+
+  deleteUser = async (userName, callback) => {
+    axios
+      .delete(`${SERVER_URL}/members/${userName}`)
+      .then(res => {
+        if (res.status === 200) swalError("사용자를 삭제하였습니다.", callback);
+      })
+      .catch(err => {
+        swalError("삭제에 실패하였습니다.");
+      });
   };
 }
 

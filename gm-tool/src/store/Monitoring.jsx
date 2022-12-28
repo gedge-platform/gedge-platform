@@ -1,6 +1,6 @@
 import axios from "axios";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
-import { BASIC_AUTH, SERVER_URL2, MONITORING_URL } from "../config";
+import { BASIC_AUTH, SERVER_URL, MONITORING_URL } from "../config";
 import {
   ClusterMetricTypes,
   TargetTypes,
@@ -74,6 +74,7 @@ class Monitoring {
         return `${MONITORING_URL}/pod?start=${start}&end=${end}&step=${step}&cluster_filter=${clusterFilter}&namespace_filter=${options[0]}&metric_filter=${metricFilter}`;
       case TargetTypes.POD:
         return `${MONITORING_URL}/pod?start=${start}&end=${end}&step=${step}&cluster_filter=${clusterFilter}&namespace_filter=${options[0]}&pod_filter=${options[1]}&metric_filter=${metricFilter}`;
+
       default:
         break;
     }
@@ -99,10 +100,12 @@ class Monitoring {
             index < unixCurrentTime();
             index = index + 60 * 5
           ) {
+            console.log(clusterMetric);
             clusterMetric.metrics.push({
               time: unixToTime(index),
               value: 0,
             });
+            console.log(array);
             array.push(clusterMetric);
           }
 
@@ -123,10 +126,10 @@ class Monitoring {
 
   loadClusterNames = async (callback) => {
     await axios
-      .get(`${SERVER_URL2}/clusters`)
+      .get(`${SERVER_URL}/clusters`)
       .then((res) => {
         runInAction(() => {
-          this.clusterNames = res.data?.map((item) => item.clusterName);
+          this.clusterNames = res.data.data?.map((item) => item.clusterName);
           this.clusterName = this.clusterNames[0];
         });
       })
@@ -149,8 +152,6 @@ class Monitoring {
       )
       .then((res) => {
         this.coPieCPU = this.convertResponseToMonit(res);
-        console.log(res);
-        // console.log(this.coPieCPU[2]?.metrics);
       });
   };
 

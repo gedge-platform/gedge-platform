@@ -1,10 +1,37 @@
 # Changelog
 
+- __[v3.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v30-release)__
 - __[v2.5 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v25-release)__
 - __[v2.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v20-release)__
 - __[v1.5 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v15-release)__
 - __[v1.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v10-release)__
 
+
+## v3.0 Release
+
+### GS-Engine
+- gse_api_server
+  - bug fix
+- gse_infra_interface
+  - 파일 및 디렉토리 구조 변경
+  - 공유 스토리지(Ceph) 관련 설정 기능 추가
+  - Swagger 기반 API 확인 기능 추가
+  - K8s Pod 형태의 infra_interface 구성
+  - bug fix
+### GM-Center
+- gm-center 기능 고도화
+  - OpenAPI 3.0 update
+  - Swagger 기능 추가
+  - 쿠버네티스 모니터링 추가 및 수정
+  - 대시보드 API 추가
+  - VM 생성 및 삭제 기능 추가
+  - Cluster Health check scheduler 기능 추가
+### GM-Tool
+- gm-tool 화면 고도화
+- Platform Admin에 스토리지 대시보드 화면 추가
+- Platform Admin에 클라우드 대시보드 화면 추가
+- Service Admin에 지도(pod ) 대시보드 화면 추가
+- Platform Admin에 클라우드 인증 정보 및 VM 생성 및 삭제 기능 추가
 
 ## v2.5 Release
 

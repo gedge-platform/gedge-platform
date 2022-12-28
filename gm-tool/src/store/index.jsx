@@ -1,0 +1,27 @@
+// Gedege PA
+export { default as addressStore } from "./Address";
+export { default as certificationStore } from "./Certification";
+export { default as claimStore } from "./Claim";
+export { default as clusterStore } from "./Cluster";
+export { default as ComponentStore } from "./ComponentManage";
+export { default as configmapsStore } from "./Configmaps";
+export { default as cronJobStore } from "./CronJob";
+export { default as daemonSetStore } from "./DaemonSet";
+export { default as dashboardStore } from "./Dashboard";
+export { default as deploymentStore } from "./Deployment";
+export { default as jobStore } from "./Job";
+export { default as monitoringStore } from "./Monitoring";
+export { default as platformProjectStore } from "./PlatformProject";
+export { default as podStore } from "./Pod";
+export { default as projectStore } from "./Project";
+export { default as requestStatusStore } from "./RequestStatus";
+export { default as schedulerStore } from "./Scheduler";
+export { default as secretStore } from "./Secret";
+export { default as serviceStore } from "./Service";
+export { default as serviceAccountStore } from "./ServiceAccount";
+export { default as serviceAdminDashboardStore } from "./ServiceAdminDashboard";
+export { default as statefulSetStore } from "./StatefulSet";
+export { default as StorageClassStore } from "./StorageClass";
+export { default as userStore } from "./UserStore";
+export { default as volumeStore } from "./Volume";
+export { default as workspaceStore } from "./WorkSpace";

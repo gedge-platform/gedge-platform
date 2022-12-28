@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { observer } from "mobx-react";
-import { CDialogNew } from "../../../../components/dialogs";
+import { CDialogNew } from "@/components/dialogs";
 import FormControl from "@material-ui/core/FormControl";
 import { CTextField } from "@/components/textfields";
 import styled from "styled-components";
-import clusterStore from "../../../../store/Cluster";
+import { clusterStore } from "@/store";
 
 const Button = styled.button`
   background-color: #fff;
@@ -23,7 +23,7 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const CreateCluster = observer((props) => {
+const CreateCluster = observer(props => {
   const { open } = props;
   const { loadClusterList, clusterList } = clusterStore;
 
@@ -39,15 +39,7 @@ const CreateCluster = observer((props) => {
   useEffect(() => {}, []);
 
   return (
-    <CDialogNew
-      id="myDialog"
-      open={open}
-      maxWidth="md"
-      title={`Create Cluster`}
-      onClose={handleClose}
-      bottomArea={false}
-      modules={["custom"]}
-    >
+    <CDialogNew id="myDialog" open={open} maxWidth="md" title={`Create Cluster`} onClose={handleClose} bottomArea={false} modules={["custom"]}>
       <table className="tb_data_new tb_write">
         <tbody>
           <tr>
@@ -69,14 +61,7 @@ const CreateCluster = observer((props) => {
               <span className="requried">*</span>
             </th>
             <td>
-              <CTextField
-                type="text"
-                placeholder="Cluster Name"
-                className="form_fullWidth"
-                name="clusterName"
-                onChange={onChange}
-                value={""}
-              />
+              <CTextField type="text" placeholder="Cluster Name" className="form_fullWidth" name="clusterName" onChange={onChange} value={""} />
             </td>
           </tr>
           <tr>
@@ -101,14 +86,7 @@ const CreateCluster = observer((props) => {
               <span className="requried">*</span>
             </th>
             <td>
-              <CTextField
-                type="text"
-                placeholder="Token"
-                className="form_fullWidth"
-                name="token"
-                onChange={onChange}
-                value={""}
-              />
+              <CTextField type="text" placeholder="Token" className="form_fullWidth" name="token" onChange={onChange} value={""} />
             </td>
           </tr>
         </tbody>

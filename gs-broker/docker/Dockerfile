@@ -24,14 +24,14 @@ WORKDIR /message-broker
 COPY . .
 RUN mv config /etc/rabbitmq
 
-WORKDIR /message-broker/rabbitmq-server-3.8.28
+WORKDIR /message-broker/broker-server
 
 RUN make run-broker
 
-WORKDIR /message-broker/rabbitmq-server-3.8.28/sbin
+WORKDIR /message-broker/broker-server/sbin
 
-RUN ./rabbitmq-plugins enable --offline rabbitmq_management rabbitmq_mqtt rabbitmq_stomp
+RUN ./rabbitmq-plugins enable --offline rabbitmq_management rabbitmq_mqtt rabbitmq_stomp rabbitmq_web_stomp rabbitmq_web_mqtt
 
-EXPOSE 5672 15672 1883 61613
+EXPOSE 5672 15672 1883 61613 12345 9001
 
 CMD ["./rabbitmq-server"]

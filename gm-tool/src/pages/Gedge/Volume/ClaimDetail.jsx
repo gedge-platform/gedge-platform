@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from "react";
-import CommActionBar from "@/components/common/CommActionBar";
-import { CIconButton, CSelectButton } from "@/components/buttons";
 import { PanelBox } from "@/components/styles/PanelBox";
-import { swalConfirm } from "@/utils/swal-utils";
-import { CScrollbar } from "@/components/scrollbars";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { AgGrid } from "@/components/datagrids";
-import LogDialog from "../../Template/Dialog/LogDialog";
-import { CDatePicker } from "@/components/textfields/CDatePicker";
 import { observer } from "mobx-react";
-import { toJS } from "mobx";
 import ReactJson from "react-json-view";
 import { isValidJSON } from "@/utils/common-utils";
 import EventAccordion from "@/components/detail/EventAccordion";
-import claimStore from "../../../store/Claim";
+import { claimStore } from "@/store";
 import styled from "styled-components";
 
 const TableTitle = styled.p`
@@ -77,7 +69,7 @@ const ClaimDetail = observer(({ pvClaim1, metadata }) => {
       <tr>
         <th className="tb_volume_detail_th">{key}</th>
         <td>{value}</td>
-      </tr>
+      </tr>,
     );
   });
 
@@ -89,17 +81,12 @@ const ClaimDetail = observer(({ pvClaim1, metadata }) => {
           <th style={{ width: "20%" }}>{key}</th>
           <td>
             {isValidJSON(value) ? (
-              <ReactJson
-                src={JSON.parse(value)}
-                theme="summerfruit"
-                displayDataTypes={false}
-                displayObjectSize={false}
-              />
+              <ReactJson src={JSON.parse(value)} theme="summerfruit" displayDataTypes={false} displayObjectSize={false} />
             ) : (
               value
             )}
           </td>
-        </tr>
+        </tr>,
       );
     });
   }

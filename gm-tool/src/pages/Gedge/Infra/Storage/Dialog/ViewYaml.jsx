@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
-import { CDialogNew } from "../../../../../components/dialogs";
+import { CDialogNew } from "@/components/dialogs";
 import { swalUpdate } from "@/utils/swal-utils";
 import FormControl from "@material-ui/core/FormControl";
 import { CTextField } from "@/components/textfields";
@@ -18,7 +18,7 @@ const Button = styled.button`
   border-radius: 4px;
 `;
 
-const ViewDialog = observer((props) => {
+const ViewDialog = observer(props => {
   const { open, yaml } = props;
   const { getYamlFile } = volumeStore;
   const handleClose = () => {
@@ -50,15 +50,7 @@ const ViewDialog = observer((props) => {
   };
 
   return (
-    <CDialogNew
-      id="myDialog"
-      open={open}
-      maxWidth="md"
-      title={"StorageClass Yaml"}
-      onClose={handleClose}
-      bottomArea={false}
-      modules={["custom"]}
-    >
+    <CDialogNew id="myDialog" open={open} maxWidth="md" title={"StorageClass Yaml"} onClose={handleClose} bottomArea={false} modules={["custom"]}>
       {ViewOfComponent()}
     </CDialogNew>
   );

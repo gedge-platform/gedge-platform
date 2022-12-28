@@ -1,9 +1,10 @@
 import axios from "axios";
-import { makeAutoObservable, runInAction } from "mobx";
-import { SERVER_URL3, REQUEST_URL2 } from "../config";
+import { makeAutoObservable, runInAction, toJS } from "mobx";
+import { SERVER_URL, REQUEST_URL2 } from "../config";
 import clusterStore from "./Cluster";
 import * as FormData from "form-data";
 import deploymentStore from "./Deployment";
+import { getItem } from "../utils/sessionStorageFn";
 
 class Scheduler {
   totalElements = 0;
@@ -11,14 +12,108 @@ class Scheduler {
   totalPages = 1;
   resultList = {};
   viewList = [];
+  yamlList = [];
 
   constructor() {
     makeAutoObservable(this);
   }
 
+  setYamlList = (list) => {
+    runInAction(() => {
+      this.yamlList = list;
+    });
+  };
+
+  setViewList = (n) => {
+    runInAction(() => {
+      this.viewList = this.yamlList[n];
+    });
+  };
+
+  goPrevPage = () => {
+    runInAction(() => {
+      if (this.currentPage > 1) {
+        this.currentPage = this.currentPage - 1;
+        this.setViewList(this.currentPage - 1);
+      }
+    });
+  };
+
+  goNextPage = () => {
+    runInAction(() => {
+      if (this.totalPages > this.currentPage) {
+        this.currentPage = this.currentPage + 1;
+        this.setViewList(this.currentPage - 1);
+      }
+    });
+  };
+
+  setCurrentPage = (n) => {
+    runInAction(() => {
+      this.currentPage = n;
+    });
+  };
+
+  setTotalPages = (n) => {
+    runInAction(() => {
+      this.totalPages = n;
+    });
+  };
+
+  convertList = (apiList, setFunc) => {
+    runInAction(() => {
+      let cnt = 1;
+      let totalCnt = 0;
+      let tempList = [];
+      let cntCheck = true;
+      this.resultList = {};
+
+      Object.entries(apiList).map(([_, value]) => {
+        cntCheck = true;
+        tempList.push(toJS(value));
+        cnt = cnt + 1;
+        if (cnt > 20) {
+          cntCheck = false;
+          cnt = 1;
+          this.resultList[totalCnt] = tempList;
+          totalCnt = totalCnt + 1;
+          tempList = [];
+        }
+      });
+
+      if (cntCheck) {
+        this.resultList[totalCnt] = tempList;
+        totalCnt = totalCnt === 0 ? 1 : totalCnt + 1;
+      }
+
+      this.setTotalPages(totalCnt);
+      setFunc(this.resultList);
+      this.setViewList(0);
+    });
+  };
+
+  loadYamlList = async () => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
+    await axios
+      .get(`${SERVER_URL}/pods?user=${id}`)
+      .then((res) => {
+        runInAction(() => {
+          console.log(res);
+
+          this.yamlList = res.data.data;
+          this.totalElements =
+            res.data.data === null ? 0 : res.data.data.length;
+        });
+      })
+      .then(() => {
+        this.convertList(this.yamlList, this.setYamlList);
+      });
+  };
+
   postWorkload = (requestId, workspace, project, type) => {
     axios
-      .post(SERVER_URL3, {
+      .post(SERVER_URL, {
         request_id: requestId,
         workspaceName: workspace,
         projectName: project,
@@ -44,7 +139,8 @@ class Scheduler {
     formData.append("clusters", JSON.stringify(clusters));
 
     axios
-      .post(`http://101.79.4.15:32527/yaml`, formData)
+      // .post(`http://101.79.4.15:32527/yaml`, formData)
+      .post(`http://101.79.1.173:8012/yaml`, formData)
       .then(function (response) {
         if (response.status === 200) {
           const popup = window.open(

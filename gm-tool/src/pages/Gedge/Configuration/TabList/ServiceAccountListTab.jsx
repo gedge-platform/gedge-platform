@@ -4,11 +4,10 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
+import { CTabPanel } from "@/components/tabs";
 import { useHistory } from "react-router";
 import { observer } from "mobx-react";
-import serviceAccountStore from "../../../../store/ServiceAccount";
+import { serviceAccountStore } from "@/store";
 import ServiceAccountsDetail from "../ServiceAccountsDetail";
 
 const ServiceAccountListTab = observer(() => {
@@ -65,7 +64,7 @@ const ServiceAccountListTab = observer(() => {
     },
   ]);
 
-  const handleClick = (e) => {
+  const handleClick = e => {
     const fieldName = e.colDef.field;
     loadServiceAccountTabList(e.data.name, e.data.cluster, e.data.namespace);
   };

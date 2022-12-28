@@ -9,40 +9,15 @@ import offAPILogo from "@/images/ico-action/api_icon_normal.png";
 import onAPILogo from "@/images/ico-action/api_icon_select.png";
 import offScheduleLogo from "@/images/ico-action/schedule_icon_normal.png";
 import onScheduleLogo from "@/images/ico-action/schedule_icon_select.png";
-import {
-  COPieChartCPU,
-  COPieChartDisk,
-  COPieChartMemory,
-  COPieChartPod,
-  COPieChartETC,
-} from "../MonitChart/ClusterOverviewChart";
-import {
-  CCreateButton,
-  CSelectButton,
-  CSelectButtonM,
-} from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { COPieChartCPU, COPieChartDisk, COPieChartMemory, COPieChartPod, COPieChartETC } from "../MonitChart/ClusterOverviewChart";
 import { observer } from "mobx-react";
-import moment from "moment";
-import axios from "axios";
-import styled from "styled-components";
 import monitoringStore from "@/store/Monitoring";
-import {
-  stepConverter,
-  unixCurrentTime,
-  unixStartTime,
-  combinationMetrics,
-} from "../../Utils/MetricsVariableFormatter";
 
 const COButtonCPU = observer(({ isOn, onClick }) => {
   const { coPieCPU } = monitoringStore;
 
   return (
-    <div
-      onClick={onClick}
-      className={isOn ? "on-tab1-button" : "off-tab1-button"}
-    >
+    <div onClick={onClick} className={isOn ? "on-tab1-button" : "off-tab1-button"}>
       <div
         className="tab1-button-circle-graph-area"
         style={{
@@ -56,9 +31,7 @@ const COButtonCPU = observer(({ isOn, onClick }) => {
         <div className="tab1-button-value-area">
           <p className="tab1-button-value-majer">
             {coPieCPU[1]?.metrics[coPieCPU[1]?.metrics.length - 1].value}
-            <span className="tab1-button-value-minor">
-              /{coPieCPU[0]?.metrics[coPieCPU[0]?.metrics.length - 1].value}
-            </span>
+            <span className="tab1-button-value-minor">/{coPieCPU[0]?.metrics[coPieCPU[0]?.metrics.length - 1].value}</span>
           </p>
         </div>
       </div>
@@ -70,10 +43,7 @@ const COButtonMemory = observer(({ isOn, onClick }) => {
   const { coPieMemory } = monitoringStore;
 
   return (
-    <div
-      onClick={onClick}
-      className={isOn ? "on-tab1-button" : "off-tab1-button"}
-    >
+    <div onClick={onClick} className={isOn ? "on-tab1-button" : "off-tab1-button"}>
       <div
         className="tab1-button-circle-graph-area"
         style={{
@@ -87,13 +57,7 @@ const COButtonMemory = observer(({ isOn, onClick }) => {
         <div className="tab1-button-value-area">
           <p className="tab1-button-value-majer">
             {coPieMemory[1]?.metrics[coPieMemory[1]?.metrics.length - 1].value}
-            <span className="tab1-button-value-minor">
-              /
-              {
-                coPieMemory[0]?.metrics[coPieMemory[0]?.metrics.length - 1]
-                  .value
-              }
-            </span>
+            <span className="tab1-button-value-minor">/{coPieMemory[0]?.metrics[coPieMemory[0]?.metrics.length - 1].value}</span>
           </p>
         </div>
       </div>
@@ -105,10 +69,7 @@ const COButtonDisk = observer(({ isOn, onClick }) => {
   const { coPieDisk } = monitoringStore;
 
   return (
-    <div
-      onClick={onClick}
-      className={isOn ? "on-tab1-button" : "off-tab1-button"}
-    >
+    <div onClick={onClick} className={isOn ? "on-tab1-button" : "off-tab1-button"}>
       <div
         className="tab1-button-circle-graph-area"
         style={{
@@ -122,9 +83,7 @@ const COButtonDisk = observer(({ isOn, onClick }) => {
         <div className="tab1-button-value-area">
           <p className="tab1-button-value-majer">
             {coPieDisk[1]?.metrics[coPieDisk[1]?.metrics.length - 1].value}
-            <span className="tab1-button-value-minor">
-              /{coPieDisk[0]?.metrics[coPieDisk[0]?.metrics.length - 1].value}
-            </span>
+            <span className="tab1-button-value-minor">/{coPieDisk[0]?.metrics[coPieDisk[0]?.metrics.length - 1].value}</span>
           </p>
         </div>
       </div>
@@ -136,10 +95,7 @@ const COButtonPod = observer(({ isOn, onClick }) => {
   const { coPiePod } = monitoringStore;
 
   return (
-    <div
-      onClick={onClick}
-      className={isOn ? "on-tab1-button" : "off-tab1-button"}
-    >
+    <div onClick={onClick} className={isOn ? "on-tab1-button" : "off-tab1-button"}>
       <div
         className="tab1-button-circle-graph-area"
         style={{
@@ -153,9 +109,7 @@ const COButtonPod = observer(({ isOn, onClick }) => {
         <div className="tab1-button-value-area">
           <p className="tab1-button-value-majer">
             {coPiePod[1]?.metrics[coPiePod[1]?.metrics.length - 1].value}
-            <span className="tab1-button-value-minor">
-              /{coPiePod[0]?.metrics[coPiePod[0]?.metrics.length - 1].value}
-            </span>
+            <span className="tab1-button-value-minor">/{coPiePod[0]?.metrics[coPiePod[0]?.metrics.length - 1].value}</span>
           </p>
         </div>
       </div>
@@ -165,10 +119,7 @@ const COButtonPod = observer(({ isOn, onClick }) => {
 
 const COButtonAPILatency = observer(({ isOn, onClick }) => {
   return (
-    <div
-      onClick={onClick}
-      className={isOn ? "on-tab1-button" : "off-tab1-button"}
-    >
+    <div onClick={onClick} className={isOn ? "on-tab1-button" : "off-tab1-button"}>
       <div
         className="tab1-button-circle-graph-area"
         style={{
@@ -180,9 +131,7 @@ const COButtonAPILatency = observer(({ isOn, onClick }) => {
       <div className="tab1-button-key-value-area">
         <div className="tab1-button-key-area">API Server</div>
         <div className="tab1-button-value-area">
-          <span className="tab1-button-value-minor-bottom">
-            Request/ Latency
-          </span>
+          <span className="tab1-button-value-minor-bottom">Request/ Latency</span>
         </div>
       </div>
     </div>
@@ -191,10 +140,7 @@ const COButtonAPILatency = observer(({ isOn, onClick }) => {
 
 const COButtonAPIRate = observer(({ isOn, onClick }) => {
   return (
-    <div
-      onClick={onClick}
-      className={isOn ? "on-tab1-button" : "off-tab1-button"}
-    >
+    <div onClick={onClick} className={isOn ? "on-tab1-button" : "off-tab1-button"}>
       <div
         className="tab1-button-circle-graph-area"
         style={{
@@ -215,10 +161,7 @@ const COButtonAPIRate = observer(({ isOn, onClick }) => {
 
 const COButtonSchedulerAttempts = observer(({ isOn, onClick }) => {
   return (
-    <div
-      onClick={onClick}
-      className={isOn ? "on-tab1-button" : "off-tab1-button"}
-    >
+    <div onClick={onClick} className={isOn ? "on-tab1-button" : "off-tab1-button"}>
       <div
         className="tab1-button-circle-graph-area"
         style={{
@@ -230,9 +173,7 @@ const COButtonSchedulerAttempts = observer(({ isOn, onClick }) => {
       <div className="tab1-button-key-value-area">
         <div className="tab1-button-key-area">Scheduler</div>
         <div className="tab1-button-value-area">
-          <span className="tab1-button-value-minor-bottom">
-            Scheduling Attempts
-          </span>
+          <span className="tab1-button-value-minor-bottom">Scheduling Attempts</span>
         </div>
       </div>
     </div>
@@ -241,10 +182,7 @@ const COButtonSchedulerAttempts = observer(({ isOn, onClick }) => {
 
 const COButtonSchedulerRate = observer(({ isOn, onClick }) => {
   return (
-    <div
-      onClick={onClick}
-      className={isOn ? "on-tab1-button" : "off-tab1-button"}
-    >
+    <div onClick={onClick} className={isOn ? "on-tab1-button" : "off-tab1-button"}>
       <div
         className="tab1-button-circle-graph-area"
         style={{
@@ -259,9 +197,7 @@ const COButtonSchedulerRate = observer(({ isOn, onClick }) => {
           Scheduler
         </div>
         <div className="tab1-button-value-area">
-          <span className="tab1-button-value-minor-bottom">
-            Scheduling Rate
-          </span>
+          <span className="tab1-button-value-minor-bottom">Scheduling Rate</span>
         </div>
       </div>
     </div>

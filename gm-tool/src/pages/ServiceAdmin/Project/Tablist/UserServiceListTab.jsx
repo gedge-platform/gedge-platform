@@ -4,21 +4,17 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton } from "@/components/buttons";
-import { CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import { observer } from "mobx-react";
 import Detail from "../Detail";
-import projectStore from "../../../../store/Project";
+import { projectStore } from "@/store";
 import CreateProject from "../Dialog/CreateProject";
-import { swalUpdate } from "../../../../utils/swal-utils";
+import { swalUpdate, swalError } from "@/utils/swal-utils";
 
 const UserServiceListTab = observer(() => {
   const [open, setOpen] = useState(false);
-  const [tabvalue, setTabvalue] = useState(0);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
+  const [reRun, setReRun] = useState(false);
+  const [userProjectName, setUserProjectName] = useState("");
 
   const {
     projectDetail,
@@ -50,7 +46,7 @@ const UserServiceListTab = observer(() => {
       field: "selectCluster",
       filter: true,
       cellRenderer: function ({ data: { selectCluster } }) {
-        return `<span>${selectCluster.map((item) => item.clusterName)}</span>`;
+        return `<span>${selectCluster.map(item => item.clusterName)}</span>`;
       },
     },
     {
@@ -62,18 +58,23 @@ const UserServiceListTab = observer(() => {
       },
     },
     {
-      headerName: "삭제",
-      field: "delete",
-      minWidth: 100,
-      maxWidth: 100,
-      cellRenderer: function () {
-        return `<span class="state_ico_new delete"></span>`;
+      headerName: "생성날짜",
+      field: "created_at",
+      filter: "agDateColumnFilter",
+      filterParams: agDateColumnFilter(),
+      minWidth: 150,
+      maxWidth: 200,
+      cellRenderer: function (data) {
+        return `<span>${dateFormatter(data.value)}</span>`;
       },
-      cellStyle: { textAlign: "center", cursor: "pointer" },
     },
   ]);
 
-  const history = useHistory();
+  const handleClick = e => {
+    console.log("e is ", e.data.projectName);
+    setUserProjectName(e.data.projectName);
+  };
+
   const handleOpen = () => {
     setOpen(true);
   };
@@ -82,60 +83,60 @@ const UserServiceListTab = observer(() => {
     setOpen(false);
   };
 
-  const handleClick = ({ data: { projectName }, colDef: { field } }) => {
-    if (field === "delete") {
-      swalUpdate("삭제하시겠습니까?", () =>
-        deleteProject(projectName, loadProjectList)
-      );
-      return;
+  const handleDelete = () => {
+    if (userProjectName === "") {
+      swalError("프로젝트를 선택해주세요!");
+    } else {
+      swalUpdate(userProjectName + "를 삭제하시겠습니까?", () => deleteProject(userProjectName, reloadData));
     }
-    loadProjectDetail(projectName);
+    setUserProjectName("");
+  };
+
+  const reloadData = () => {
+    setReRun(true);
   };
 
   useEffect(() => {
     loadProjectList("user");
-  }, []);
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
 
   return (
-    <>
+    <div style={{ height: 900 }}>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
-          // reloadFunc={loadProjectList}
-          // isSearch={true}
-          // isSelect={true}
-          // keywordList={["이름"]}
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
           >
             <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  onCellClicked={handleClick}
-                  rowData={viewList}
-                  columnDefs={columDefs}
-                  isBottom={false}
-                  totalElements={totalElements}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                onCellClicked={handleClick}
+                rowData={viewList}
+                columnDefs={columDefs}
+                isBottom={false}
+                totalElements={totalElements}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+              />
+            </div>
           </div>
-          <CreateProject
-            reloadFunc={() => loadProjectList()}
-            type={"user"}
-            open={open}
-            onClose={handleClose}
-          />
+          <CreateProject type={"user"} open={open} onClose={handleClose} reloadFunc={reloadData} />
         </PanelBox>
         <Detail project={projectDetail} />
       </CReflexBox>
-    </>
+    </div>
   );
 });
 export default UserServiceListTab;

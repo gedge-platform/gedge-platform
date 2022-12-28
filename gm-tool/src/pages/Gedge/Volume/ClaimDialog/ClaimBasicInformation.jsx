@@ -3,12 +3,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { CTextField } from "@/components/textfields";
 import FormControl from "@material-ui/core/FormControl";
-import claimStore from "../../../../store/Claim";
-import deploymentStore from "../../../../store/Deployment";
-import projectStore from "../../../../store/Project";
-import StorageClassStore from "../../../../store/StorageClass";
-import workspacestore from "../../../../store/WorkSpace";
-import volumeStore from "../../../../store/Volume";
+import { claimStore, deploymentStore, projectStore, StorageClassStore, workspaceStore, volumeStore } from "@/store";
 
 const Button = styled.button`
   background-color: #fff;
@@ -27,15 +22,13 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const ClaimBasicInformation = observer((props) => {
-  const { loadWorkSpaceList, workSpaceList, loadWorkspaceDetail, projectList } =
-    workspacestore;
+const ClaimBasicInformation = observer(props => {
+  const { loadWorkSpaceList, workSpaceList, loadWorkspaceDetail, projectList } = workspaceStore;
 
   const [projectEnable, setProjectEnable] = useState(true);
   const [clusterEnable, setClusterEnable] = useState(true);
   const [storageClassEnable, setStorageClassEnable] = useState(true);
-  const { selectClusterInfo, setSelectClusterInfo, loadProjectDetail } =
-    projectStore;
+  const { selectClusterInfo, setSelectClusterInfo, loadProjectDetail } = projectStore;
   const { setWorkspace } = deploymentStore;
 
   // const {setSelectClusters} = volumeStore;
@@ -53,14 +46,9 @@ const ClaimBasicInformation = observer((props) => {
     setSelectClusters,
   } = claimStore;
 
-  const {
-    setSelectStorageClass,
-    loadStorageClassName,
-    setStorageClass,
-    storageClassNameData,
-  } = StorageClassStore;
+  const { setSelectStorageClass, loadStorageClassName, setStorageClass, storageClassNameData } = StorageClassStore;
 
-  const onChange = async (e) => {
+  const onChange = async e => {
     const { value, name } = e.target;
     if (name === "claimName") {
       setClaimName(value);
@@ -155,10 +143,8 @@ const ClaimBasicInformation = observer((props) => {
               <FormControl className="form_fullWidth">
                 <select name="workspace" onChange={onChange}>
                   <option value={""}>Select Workspace</option>
-                  {workSpaceList.map((item) => (
-                    <option value={item.workspaceName}>
-                      {item.workspaceName}
-                    </option>
+                  {workSpaceList.map(item => (
+                    <option value={item.workspaceName}>{item.workspaceName}</option>
                   ))}
                 </select>
               </FormControl>
@@ -171,16 +157,10 @@ const ClaimBasicInformation = observer((props) => {
             </th>
             <td>
               <FormControl className="form_fullWidth">
-                <select
-                  disabled={projectEnable}
-                  name="project"
-                  onChange={onChange}
-                >
+                <select disabled={projectEnable} name="project" onChange={onChange}>
                   <option value={""}>Select Project</option>
-                  {projectList.map((project) => (
-                    <option value={project.projectName}>
-                      {project.projectName}
-                    </option>
+                  {projectList.map(project => (
+                    <option value={project.projectName}>{project.projectName}</option>
                   ))}
                 </select>
               </FormControl>
@@ -200,22 +180,16 @@ const ClaimBasicInformation = observer((props) => {
                     <th>타입</th>
                     <th>IP</th>
                   </tr>
-                  {selectClusterInfo.map(
-                    ({ clusterName, clusterType, clusterEndpoint }) => (
-                      <tr>
-                        <td style={{ textAlign: "center" }}>
-                          <input
-                            type="checkbox"
-                            name="selectClusters"
-                            onChange={(e) => checkCluster(e, clusterName)}
-                          />
-                        </td>
-                        <td>{clusterName}</td>
-                        <td>{clusterType}</td>
-                        <td>{clusterEndpoint}</td>
-                      </tr>
-                    )
-                  )}
+                  {selectClusterInfo.map(({ clusterName, clusterType, clusterEndpoint }) => (
+                    <tr>
+                      <td style={{ textAlign: "center" }}>
+                        <input type="checkbox" name="selectClusters" onChange={e => checkCluster(e, clusterName)} />
+                      </td>
+                      <td>{clusterName}</td>
+                      <td>{clusterType}</td>
+                      <td>{clusterEndpoint}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </td>
@@ -227,18 +201,10 @@ const ClaimBasicInformation = observer((props) => {
             </th>
             <td>
               <FormControl className="form_fullWidth">
-                <select
-                  disabled={storageClassEnable}
-                  name="selectStorageClass"
-                  onChange={onChange}
-                >
+                <select disabled={storageClassEnable} name="selectStorageClass" onChange={onChange}>
                   <option value={""}>Select StorageClass</option>
                   {storageClassNameData
-                    ? storageClassNameData.map((storageClass) => (
-                        <option value={storageClass.name}>
-                          {storageClass.name}
-                        </option>
-                      ))
+                    ? storageClassNameData.map(storageClass => <option value={storageClass.name}>{storageClass.name}</option>)
                     : ""}
                 </select>
               </FormControl>

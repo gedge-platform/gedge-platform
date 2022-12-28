@@ -4,7 +4,7 @@ import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { observer } from "mobx-react";
 import styled from "styled-components";
 import { dateFormatter } from "@/utils/common-utils";
-import platformProjectStore from "../../../store/PlatformProject";
+import { platformProjectStore } from "@/store";
 import "@grapecity/wijmo.styles/wijmo.css";
 import EventAccordion from "@/components/detail/EventAccordion";
 
@@ -51,14 +51,7 @@ const Label = styled.span`
 `;
 
 const Detail = observer(() => {
-  const {
-    platformDetail,
-    labels,
-    annotations,
-    events,
-    resource,
-    resourceUsage,
-  } = platformProjectStore;
+  const { labels, annotations, events, resource, resourceUsage, detailInfo, platformProjectDetail } = platformProjectStore;
 
   const [open, setOpen] = useState(false);
   const [tabvalue, setTabvalue] = useState(0);
@@ -82,27 +75,27 @@ const Detail = observer(() => {
         <CTab label="Metadata" />
         <CTab label="Events" />
       </CTabs>
-      {/* <CTabPanel value={tabvalue} index={0}>
+      <CTabPanel value={tabvalue} index={0}>
         <div className="tb_container">
           <table className="tb_data" style={{ tableLayout: "fixed" }}>
             <tbody>
               <tr>
-                <th className="tb_workload_detail_th">Name</th>
-                <td>{platformDetail.Name}</td>
-                <th className="tb_workload_detail_th">Cluster</th>
-                <td>{platformDetail.clusterName}</td>
+                <th className="tb_workload_detail_th">Project Name</th>
+                <td>{platformProjectDetail.projectName}</td>
+                <th className="tb_workload_detail_th">Cluster Name</th>
+                <td>{detailInfo.clusterName}</td>
               </tr>
               <tr>
                 <th>Status</th>
-                <td>{platformDetail.status}</td>
+                <td>{platformProjectDetail.status}</td>
                 <th>Created</th>
-                <td>{dateFormatter(platformDetail.created_at)}</td>
+                <td>{dateFormatter(platformProjectDetail.created_at)}</td>
               </tr>
               <tr>
                 <th>CPU Usage</th>
-                <td>{resourceUsage.namespace_cpu}</td>
+                <td>{resourceUsage.namespace_cpu !== null ? resourceUsage.namespace_cpu : 0}</td>
                 <th>Memory Usage</th>
-                <td>{resourceUsage.namespace_memory}</td>
+                <td>{resourceUsage.namespace_memory !== null ? resourceUsage.namespace_memory : 0}</td>
               </tr>
             </tbody>
           </table>
@@ -114,6 +107,8 @@ const Detail = observer(() => {
             <tbody>
               <tr>
                 <th className="tb_workload_detail_th">Deployment</th>
+                <td>{resource.namespace_count}</td>
+                <th className="tb_workload_detail_th">Deployment</th>
                 <td>{resource.deployment_count}</td>
                 <th className="tb_workload_detail_th">Pod</th>
                 <td>{resource.pod_count}</td>
@@ -121,14 +116,18 @@ const Detail = observer(() => {
               <tr>
                 <th>Service</th>
                 <td>{resource.service_count}</td>
+                <th>Job</th>
+                <td>{resource.job_count}</td>
                 <th>CronJob</th>
                 <td>{resource.cronjob_count}</td>
               </tr>
               <tr>
-                <th>Job</th>
-                <td>{resource.job_count}</td>
+                <th>Daemonset</th>
+                <td>{resource.daemonset_count}</td>
+                <th>Statefulset</th>
+                <td>{resource.statefulset_count}</td>
                 <th>Volume</th>
-                <td>{resource.volume_count}</td>
+                <td>{resource.pv_count}</td>
               </tr>
             </tbody>
           </table>
@@ -172,7 +171,7 @@ const Detail = observer(() => {
       </CTabPanel>
       <CTabPanel value={tabvalue} index={3}>
         <EventAccordion events={events} />
-      </CTabPanel> */}
+      </CTabPanel>
     </PanelBox>
   );
 });

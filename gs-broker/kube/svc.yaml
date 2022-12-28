@@ -29,5 +29,15 @@ spec:
     protocol: TCP
     targetPort: 61613
     nodePort: 31014
+  - port: 12345
+    name: web-stomp
+    protocol: TCP
+    targetPort: 12345
+    nodePort: 31015
+  - port: 9001
+    name: web-mqtt
+    protocol: TCP
+    targetPort: 9001
+    nodePort: 31016
   selector:
     app: message-broker

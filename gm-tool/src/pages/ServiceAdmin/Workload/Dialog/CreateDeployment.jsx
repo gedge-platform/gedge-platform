@@ -3,19 +3,12 @@ import styled from "styled-components";
 import { observer } from "mobx-react";
 import DeploymentBasicInformation from "./DeploymentBasicInformation";
 import DeploymentPodSettins from "./DeploymentPodSettins";
-import deploymentStore from "../../../../store/Deployment";
+import { deploymentStore, projectStore, schedulerStore, volumeStore, StorageClassStore } from "@/store";
 import DeploymentYaml from "./DeploymentYaml";
 import DeploymentPopup from "./DeploymentPopup";
-import projectStore from "../../../../store/Project";
-import workspacesStore from "../../../../store/WorkSpace";
-import { randomString } from "@/utils/common-utils";
-import { CDialogNew } from "../../../../components/dialogs";
-import schedulerStore from "../../../../store/Scheduler";
-import { swalError } from "../../../../utils/swal-utils";
+import { CDialogNew } from "@/components/dialogs";
+import { swalError } from "@/utils/swal-utils";
 import DeploymentVolumeSetting from "./DeploymentVolumeSetting";
-import volumeStore from "../../../../store/Volume";
-import StorageClassStore from "../../../../store/StorageClass";
-import claimStore from "../../../../store/Claim";
 import DeploymentVolumeYaml from "./DeploymentVolumeYaml";
 
 const Button = styled.button`
@@ -37,7 +30,7 @@ const ButtonNext = styled.button`
   /* box-shadow: 0 8px 16px 0 rgb(35 45 65 / 28%); */
 `;
 
-const CreateDeployment = observer((props) => {
+const CreateDeployment = observer(props => {
   const { open } = props;
   const [stepValue, setStepValue] = useState(1);
   const [size, setSize] = useState("md");
@@ -60,15 +53,7 @@ const CreateDeployment = observer((props) => {
     setContentVolume,
   } = deploymentStore;
 
-  const {
-    setVolumeName,
-    setAccessMode,
-    setVolumeCapacity,
-    volumeCapacity,
-    volumeName,
-    selectClusters,
-    accessMode,
-  } = volumeStore;
+  const { setVolumeName, setAccessMode, setVolumeCapacity, volumeCapacity, volumeName, selectClusters, accessMode } = volumeStore;
 
   const { setStorageClass, selectStorageClass } = StorageClassStore;
 
@@ -209,7 +194,6 @@ const CreateDeployment = observer((props) => {
   };
 
   const handleClose = () => {
-    props.reloadFunc && props.reloadFunc();
     props.onClose && props.onClose();
     setProjectListinWorkspace();
     setStepValue(1);
@@ -268,6 +252,8 @@ const CreateDeployment = observer((props) => {
 
   const createDeployment = () => {
     postDeploymentGM(require("json-to-pretty-yaml").stringify(template));
+    handleClose();
+    props.reloadFunc && props.reloadFunc();
   };
 
   // useEffect는 component가 rendeing될 때마다 특정 작업을 실행할 수 있도록하는 Hook
@@ -422,15 +408,7 @@ const CreateDeployment = observer((props) => {
   };
 
   return (
-    <CDialogNew
-      id="myDialog"
-      open={open}
-      maxWidth="md"
-      title={"Create Deployment"}
-      onClose={handleClose}
-      bottomArea={false}
-      modules={["custom"]}
-    >
+    <CDialogNew id="myDialog" open={open} maxWidth="md" title={"Create Deployment"} onClose={handleClose} bottomArea={false} modules={["custom"]}>
       {stepOfComponent()}
     </CDialogNew>
   );

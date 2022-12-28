@@ -9,7 +9,7 @@ import "@/styles/ag-custom.scss";
 
 ModuleRegistry.register(ClientSideRowModelModule);
 
-const AgGrid = (props) => {
+const AgGrid = props => {
   const {
     rowData,
     columnDefs,
@@ -35,14 +35,14 @@ const AgGrid = (props) => {
       gridApi.sizeColumnsToFit();
     }
   }, [rowData]);
-  const onGridReady = (params) => {
+  const onGridReady = params => {
     setGridApi(params.api);
     // setGridColumnApi(params.columnApi);
   };
-  const onFirstDataRendered = (params) => {
+  const onFirstDataRendered = params => {
     params.api.sizeColumnsToFit();
   };
-  const onGridSizeChanged = (params) => {
+  const onGridSizeChanged = params => {
     const gridWidth = document.getElementById("my-grid").offsetWidth;
     const columnsToShow = [];
     const columnsToHide = [];
@@ -72,12 +72,18 @@ const AgGrid = (props) => {
     setDetail(tempArr[0].id);
   };
   return (
-    <div id="my-grid" className="grid-wrapper ag-theme-alpine">
+    <div
+      id="my-grid"
+      className="grid-wrapper ag-theme-alpine"
+      // style={{ height: 410 }}
+    >
       <AgGridReact
         defaultColDef={defaultColDef}
         onGridReady={onGridReady}
         onFirstDataRendered={onFirstDataRendered}
         onGridSizeChanged={onGridSizeChanged}
+        overlayLoadingTemplate={'<span class="ag-overlay-loading-center">No Data</span>'}
+        overlayNoRowsTemplate={'<span style="padding: 10px; border: 2px solid #444; background: lightgoldenrodyellow">Data Loading....</span>'}
         rowData={rowData}
         columnDefs={columnDefs}
         autoWidth={autoWidth}
@@ -88,14 +94,7 @@ const AgGrid = (props) => {
         onCellClicked={onCellClicked}
         onSelectionChanged={onSelectionChanged}
       />
-      <div
-        id="pagination"
-        style={
-          showPagination && pagination
-            ? { display: "block" }
-            : { display: "none" }
-        }
-      >
+      <div id="pagination" style={showPagination && pagination ? { display: "block" } : { display: "none" }}>
         <div className="paging-wrap">
           <div>
             {/* <select className="btn_comm">
@@ -103,7 +102,7 @@ const AgGrid = (props) => {
                             <option value="20">20건</option>
                             <option value="50">50건</option>
                         </select> */}
-            <span>총 {totalElements ? totalElements : 1}건</span>
+            <span>총 {totalElements !== 0 ? totalElements : 0}건</span>
             {/* <span> | {rowPerPage * currentPage - rowPerPage}~{rowPerPage * currentPage}건</span> */}
           </div>
           {isBottom ? (

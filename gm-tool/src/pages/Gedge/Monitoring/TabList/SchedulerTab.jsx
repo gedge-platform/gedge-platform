@@ -2,23 +2,12 @@ import React, { useState, useEffect, PureComponent } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import { PanelBoxM } from "@/components/styles/PanelBoxM";
 import { SchedulerAreaChart } from "./MonitChart/SchedulerChart";
-import {
-  CCreateButton,
-  CSelectButton,
-  CSelectButtonM,
-} from "@/components/buttons";
+import { CCreateButton, CSelectButton, CSelectButtonM } from "@/components/buttons";
 import { CIconButton } from "@/components/buttons";
 import { observer } from "mobx-react";
-import moment from "moment";
-import monitoringStore from "../../../../store/Monitoring";
-import {
-  stepConverter,
-  unixCurrentTime,
-  unixStartTime,
-  combinationMetrics,
-  LastTimeList,
-  IntervalList,
-} from "../Utils/MetricsVariableFormatter";
+import dayjs from "dayjs";
+import { monitoringStore } from "@/store";
+import { stepConverter, unixCurrentTime, unixStartTime, combinationMetrics, LastTimeList, IntervalList } from "../Utils/MetricsVariableFormatter";
 
 import { ClusterMetricTypes, TargetTypes } from "../Utils/MetricsVariables";
 
@@ -44,7 +33,7 @@ const Scheduler = observer(() => {
     loadRealAllMetrics,
   } = monitoringStore;
 
-  const clusterNameActionList = clusterNames.map((item) => {
+  const clusterNameActionList = clusterNames.map(item => {
     return {
       name: item,
       onClick: () => {
@@ -55,7 +44,7 @@ const Scheduler = observer(() => {
     };
   });
 
-  const lastTimeActionList = LastTimeList.map((item) => {
+  const lastTimeActionList = LastTimeList.map(item => {
     return {
       name: item.name,
       onClick: () => {
@@ -66,7 +55,7 @@ const Scheduler = observer(() => {
     };
   });
 
-  const intervalTimeActionList = IntervalList.map((item) => {
+  const intervalTimeActionList = IntervalList.map(item => {
     return {
       name: item.name,
       onClick: () => {
@@ -78,11 +67,7 @@ const Scheduler = observer(() => {
   });
 
   const calledMetrics = () => {
-    loadAllMetrics(
-      TargetTypes.CLUSTER,
-      unixCurrentTime(),
-      ClusterMetricTypes.SCHEDULER_ALL
-    );
+    loadAllMetrics(TargetTypes.CLUSTER, unixCurrentTime(), ClusterMetricTypes.SCHEDULER_ALL);
   };
 
   const playCalledMetrics = () => {
@@ -90,12 +75,8 @@ const Scheduler = observer(() => {
     console.log(play);
     setPlayMetrics(
       setInterval(() => {
-        loadRealAllMetrics(
-          TargetTypes.CLUSTER,
-          unixCurrentTime(),
-          combinationMetrics(ClusterMetricTypes.SCHEDULER_ALL)
-        );
-      }, 5000)
+        loadRealAllMetrics(TargetTypes.CLUSTER, unixCurrentTime(), combinationMetrics(ClusterMetricTypes.SCHEDULER_ALL));
+      }, 5000),
     );
   };
 
@@ -116,18 +97,13 @@ const Scheduler = observer(() => {
     <PanelBoxM>
       <div className="panelTitBar panelTitBar_clear">
         <div className="tit">
-          <span style={{ marginRight: "10px", color: "white " }}>
-            Select Cluster
-          </span>
-          <CSelectButtonM
-            className="none_transform"
-            items={clusterNameActionList}
-          >
+          <span style={{ marginRight: "10px", color: "white " }}>Select Cluster</span>
+          <CSelectButtonM className="none_transform" items={clusterNameActionList}>
             {clusterName}
           </CSelectButtonM>
         </div>
         <div className="date">
-          {moment(new Date()).format("YYYY-MM-DD")}
+          {dayjs(new Date()).format("YYYY-MM-DD")}
           <CIconButton
             onClick={calledMetrics}
             icon="refresh"
@@ -139,20 +115,11 @@ const Scheduler = observer(() => {
           ></CIconButton>
         </div>
       </div>
-      <PanelBox
-        className="panel_graph"
-        style={{ height: "100%", margin: "5px 0 5px 0" }}
-      >
+      <PanelBox className="panel_graph" style={{ height: "100%", margin: "5px 0 5px 0" }}>
         <div className="panelTitBar panelTitBar_clear">
-          <div
-            className="tit"
-            style={{ color: "white ", display: "flex", alignItems: "center" }}
-          >
+          <div className="tit" style={{ color: "white ", display: "flex", alignItems: "center" }}>
             <span style={{ marginRight: "10px", color: "white " }}>Last :</span>
-            <CSelectButtonM
-              className="none_transform"
-              items={lastTimeActionList}
-            >
+            <CSelectButtonM className="none_transform" items={lastTimeActionList}>
               {lastTime.name}
             </CSelectButtonM>
             <span
@@ -164,10 +131,7 @@ const Scheduler = observer(() => {
             >
               Interval :
             </span>
-            <CSelectButtonM
-              className="none_transform"
-              items={intervalTimeActionList}
-            >
+            <CSelectButtonM className="none_transform" items={intervalTimeActionList}>
               {interval.name}
             </CSelectButtonM>
             <div
@@ -177,19 +141,8 @@ const Scheduler = observer(() => {
                 justifyContent: "right",
               }}
             >
-              <CIconButton
-                onClick={playCalledMetrics}
-                icon="play"
-                type="btn1"
-                tooltip="Play"
-                isPlay={play}
-              ></CIconButton>
-              <CIconButton
-                onClick={stopCalledMetrics}
-                icon="pause"
-                type="btn1"
-                tooltip="Pause"
-              ></CIconButton>
+              <CIconButton onClick={playCalledMetrics} icon="play" type="btn1" tooltip="Play" isPlay={play}></CIconButton>
+              <CIconButton onClick={stopCalledMetrics} icon="pause" type="btn1" tooltip="Pause"></CIconButton>
             </div>
           </div>
         </div>
@@ -200,13 +153,8 @@ const Scheduler = observer(() => {
               width: "100%",
             }}
           >
-            <div
-              className="tab2-chart"
-              style={{ width: "100%", margin: "5px 0 5px 0" }}
-            >
-              <SchedulerAreaChart
-                value={ClusterMetricTypes.SCHEDULER_ATTEMPTS_TOTAL}
-              />
+            <div className="tab2-chart" style={{ width: "100%", margin: "5px 0 5px 0" }}>
+              <SchedulerAreaChart value={ClusterMetricTypes.SCHEDULER_ATTEMPTS_TOTAL} />
             </div>
           </div>
         </div>
@@ -217,13 +165,8 @@ const Scheduler = observer(() => {
               width: "100%",
             }}
           >
-            <div
-              className="tab2-chart"
-              style={{ width: "100%", margin: "5px 0 5px 0" }}
-            >
-              <SchedulerAreaChart
-                value={ClusterMetricTypes.SCHEDULER_FAIL_TOTAL}
-              />
+            <div className="tab2-chart" style={{ width: "100%", margin: "5px 0 5px 0" }}>
+              <SchedulerAreaChart value={ClusterMetricTypes.SCHEDULER_FAIL_TOTAL} />
             </div>
           </div>
         </div>
@@ -234,13 +177,8 @@ const Scheduler = observer(() => {
               width: "100%",
             }}
           >
-            <div
-              className="tab2-chart"
-              style={{ width: "100%", margin: "5px 0 5px 0" }}
-            >
-              <SchedulerAreaChart
-                value={ClusterMetricTypes.SCHEDULER_LATENCY}
-              />
+            <div className="tab2-chart" style={{ width: "100%", margin: "5px 0 5px 0" }}>
+              <SchedulerAreaChart value={ClusterMetricTypes.SCHEDULER_LATENCY} />
             </div>
           </div>
         </div>

@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import FormControl from "@material-ui/core/FormControl";
 import { CTextField } from "@/components/textfields";
 import { observer } from "mobx-react";
-import deploymentStore from "../../../../store/Deployment";
+import { deploymentStore } from "@/store";
 
 const HeaderContainer = styled.div`
   width: 320px;

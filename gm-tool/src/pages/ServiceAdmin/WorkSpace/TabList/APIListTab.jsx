@@ -4,21 +4,18 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton } from "@/components/buttons";
-import { CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import { observer } from "mobx-react";
-import workspacesStore from "@/store/WorkSpace";
+import workspaceStore from "@/store/WorkSpace";
 import CreateWorkSpace from "@/pages/Gedge/WorkSpace/Dialog/CreateWorkSpace";
-import { swalUpdate } from "@/utils/swal-utils";
+import { swalUpdate, swalError } from "@/utils/swal-utils";
 import Detail from "../Detail";
+import { AgGrid2 } from "@/components/datagrids/AgGrid2";
 
 const WorkspaceListTab = observer(() => {
   const [open, setOpen] = useState(false);
-  const [tabvalue, setTabvalue] = useState(0);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
+  const [reRun, setReRun] = useState(false);
+  const [workspaceName, setWorkspaceName] = useState("");
 
   const {
     workSpaceList,
@@ -32,7 +29,7 @@ const WorkspaceListTab = observer(() => {
     goPrevPage,
     goNextPage,
     currentPage,
-  } = workspacesStore;
+  } = workspaceStore;
 
   const [columDefs] = useState([
     {
@@ -50,7 +47,7 @@ const WorkspaceListTab = observer(() => {
       field: "memberName",
       filter: true,
       cellRenderer: function ({ data: { selectCluster } }) {
-        return `<span>${selectCluster.map((item) => item.clusterName)}</span>`;
+        return `<span>${selectCluster.map(item => item.clusterName)}</span>`;
       },
     },
     {
@@ -58,94 +55,86 @@ const WorkspaceListTab = observer(() => {
       field: "memberName",
       filter: true,
     },
-    // {
-    //   headerName: "생성날짜",
-    //   field: "created_at",
-    //   filter: "agDateColumnFilter",
-    //   filterParams: agDateColumnFilter(),
-    //   minWidth: 150,
-    //   maxWidth: 200,
-    //   cellRenderer: function (data) {
-    //     return `<span>${dateFormatter(data.value)}</span>`;
-    //   },
-    // },
     {
-      headerName: "삭제",
-      field: "delete",
-      minWidth: 100,
-      maxWidth: 100,
-      cellRenderer: function () {
-        return `<span class="state_ico_new delete"></span>`;
+      headerName: "생성날짜",
+      field: "created_at",
+      filter: "agDateColumnFilter",
+      filterParams: agDateColumnFilter(),
+      minWidth: 150,
+      maxWidth: 200,
+      cellRenderer: function (data) {
+        return `<span>${dateFormatter(data.value)}</span>`;
       },
-      cellStyle: { textAlign: "center", cursor: "pointer" },
     },
   ]);
 
-  const history = useHistory();
+  const handleClick = e => {
+    console.log("e is ", e.data.workspaceName);
+    setWorkspaceName(e.data.workspaceName);
+  };
+
   const handleOpen = () => {
     setOpen(true);
-  };
-  const handleClick = async ({
-    data: { workspaceName },
-    colDef: { field },
-  }) => {
-    if (field === "delete") {
-      swalUpdate("삭제하시겠습니까?", () =>
-        deleteWorkspace(workspaceName, loadWorkSpaceList)
-      );
-    }
-    loadWorkspaceDetail(workspaceName);
   };
 
   const handleClose = () => {
     setOpen(false);
   };
 
+  const handleDelete = () => {
+    if (workspaceName === "") {
+      swalError("워크스페이스를 선택해주세요!");
+    } else {
+      swalUpdate(workspaceName + "를 삭제하시겠습니까?", () => deleteWorkspace(workspaceName, reloadData));
+    }
+    setWorkspaceName("");
+  };
+
+  const reloadData = () => {
+    setReRun(true);
+  };
+
   useEffect(() => {
     loadWorkSpaceList();
-  }, []);
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
 
   return (
-    <>
+    <div style={{ height: 900 }}>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
-            reloadFunc={loadWorkSpaceList}
-            isSearch={true}
-            isSelect={true}
-            keywordList={["이름"]}
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
           >
             <CCreateButton onClick={handleOpen}>생성</CCreateButton>
-            {/* <CSelectButton items={[]}>{"All Cluster"}</CSelectButton> */}
+            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  onCellClicked={handleClick}
-                  rowData={viewList}
-                  columnDefs={columDefs}
-                  isBottom={false}
-                  totalElements={totalElements}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                onCellClicked={handleClick}
+                rowData={viewList}
+                columnDefs={columDefs}
+                isBottom={false}
+                totalElements={totalElements}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+              />
+            </div>
           </div>
-          <CreateWorkSpace
-            reloadFunc={loadWorkSpaceList}
-            type={"user"}
-            open={open}
-            onClose={handleClose}
-          />
+          <CreateWorkSpace type={"user"} open={open} onClose={handleClose} reloadFunc={reloadData} />
         </PanelBox>
         <Detail workSpace={workSpaceDetail} />
       </CReflexBox>
-    </>
+    </div>
   );
 });
 export default WorkspaceListTab;

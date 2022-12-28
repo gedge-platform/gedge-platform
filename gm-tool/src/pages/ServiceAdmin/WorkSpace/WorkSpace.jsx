@@ -17,9 +17,9 @@ const WorkSpace = () => {
     <Layout currentPageTitle="워크스페이스">
       <CTabs type="tab1" value={tabvalue} onChange={handleTabChange}></CTabs>
       <div className="tabPanelContainer">
-        <CTabPanel value={tabvalue} index={0}>
-          <WorkspaceListTab />
-        </CTabPanel>
+        {/* <CTabPanel value={tabvalue} index={0}> */}
+        <WorkspaceListTab />
+        {/* </CTabPanel> */}
       </div>
     </Layout>
   );

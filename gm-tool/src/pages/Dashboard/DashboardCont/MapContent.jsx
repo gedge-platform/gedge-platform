@@ -1,63 +1,73 @@
 import React, { useEffect, useRef, useLayoutEffect, useState } from "react";
 import L from "leaflet";
 import { observer } from "mobx-react";
-import { address } from "react-dom-factories";
-import { runInAction } from "mobx";
 import axios from "axios";
-import dashboardStore from "../../../store/Dashboard";
-import { forEach } from "lodash";
-import { SERVER_URL4 } from "../../../config";
+import { dashboardStore } from "@/store";
+import { SERVER_URL } from "@/config";
 
 const MapContent = observer(() => {
-  const { loadMapInfo, pointArr } = dashboardStore;
+  const {
+    clusterName,
+    edgeNodeRunning,
+    setClusterName,
+    loadEdgeZoneDetailDashboard,
+    loadEdgeZoneDashboard,
+    mapZoom,
+  } = dashboardStore;
+
   const mapRef = useRef(null);
   const [data, setData] = useState("");
   const [dataEdgeInfo, setDataEdgeInfo] = useState("");
+  const [dataStatus, setDataStatus] = useState("");
+  const [nodeDatas, setNodeDatas] = useState(clusterName);
 
   useEffect(async () => {
-    const result = await axios(`${SERVER_URL4}/totalDashboard`);
-    const dataEdgeInfo = Object.values(result.data).map((val) => val.edgeInfo);
-    setDataEdgeInfo(dataEdgeInfo);
-    const dataPoint = dataEdgeInfo.map((item) =>
-      Object.values(item).map((val) => val.point)
+    // 지도 데이터
+    const result = await axios(`${SERVER_URL}/totalDashboard`);
+    const edgeInfoTemp = result.data.data.edgeInfo;
+    const nodeRunning = result.data.data.nodeRunning;
+
+    const clusterNameData = edgeInfoTemp.map((item) => item.clusterName);
+    // console.log("clusterNameData", clusterNameData);
+    const clusterNameInNode = nodeRunning.filter(
+      (item, i) => item.cluster == clusterNameData[i]
     );
+
+    // for (let i = 0; clusterNameInNode.length > 0; i++) {}
+
+    // console.log("clusterNameInNode", clusterNameInNode);
+
+    // 엣지존, 클라우드 대시보드의 클러스터 이름
+    setClusterName(clusterNameData[0]);
+    setDataEdgeInfo(edgeInfoTemp);
+    const dataPoint = edgeInfoTemp.map((item) => item.point);
+    const dataStatus = edgeInfoTemp.map((item) => item.status);
     setData(dataPoint);
+    setDataStatus(dataStatus);
 
-    // const addressData = dataEdgeInfo[0].map((info) =>
-    //   Object.entries(info).map(([key, value]) => [key, value])
-    // ); //[Array(8), Array(8)]
-
-    // const addressTmp = addressData.map((item) => item[1]); //[Array(2), Array(2)]
-    // console.log(addressTmp);
-
-    // const addressList = Object.values(addressTmp).map((val) => val[1]); //['서울시 중구 을지로 100', '서울시 중구 을지로100']
-    // const addressArr = Object.values(addressList);
-    // console.log(
-    //   Object.entries(addressList).map(([key, value]) => [key, value])
-    // );
+    // nodeRunning 데이터
+    // loadEdgeZoneDashboard();
+    // loadEdgeZoneDetailDashboard();
+    console.log(
+      nodeRunning.filter((item) => item.cluster === clusterNameData[0])
+    );
 
     //지도
     mapRef.current = L.map("map", mapParams);
-    // ${dataEdgeInfo[0].map((item) => item.address)}
 
-    const marker = dataPoint.map((item) => {
-      item.map((point, i) => {
-        L.marker([point.y, point.x], {
-          icon: CustomIcon("green"),
-        })
-          .addTo(mapRef.current)
-          .bindPopup(
-            `
-              <div class="leaflet-popup-title">
-              ${dataEdgeInfo[0].map((item) => item.address)[i]}
+    const marker = dataPoint.map((point, i) => {
+      L.marker([point.y, point.x], { icon: CustomIcon("green") })
+        .addTo(mapRef.current)
+        .bindPopup(
+          `
+          <div class="leaflet-popup-title">
+              ${edgeInfoTemp.map((item) => item.address)[i]}
              </div>
              <div class="leaflet-popup-table">
                <table>
                  <tr>
                    <th>Cluster</th>
-                   <td>${
-                     dataEdgeInfo[0].map((item) => item.clusterName)[i]
-                   }</td>
+                   <td>${edgeInfoTemp.map((item) => item.clusterName)[i]}</td>
                  </tr>
                  <tr>
                    <th rowspan="3">Status</th>
@@ -65,8 +75,10 @@ const MapContent = observer(() => {
                      <div class="box run">
                        <span class="tit">
                         Ready 
-                       </span>
-                       <span>7</span>
+                       </span>${"ddd"}
+                       <span>
+
+                         </span>
                      </div>
                    </td>
                  </tr>
@@ -76,62 +88,15 @@ const MapContent = observer(() => {
                        <span class="tit">
                       Not Ready 
                      </span>
-                     <span>2</span>
+                     <span>0</span>
                      </div>
                    </td>
                  </tr>
                </table>
              </div>
              `
-          );
-      });
+        );
     });
-    //좌표
-    // const marker =  dataPoint.map((item) => {
-    //   item.map((point) => {
-    //     L.marker([point.y, point.x], {
-    //       icon: CustomIcon("green"),
-    //     })
-    //       .addTo(mapRef.current)
-    //       .bindPopup(
-    //         `
-    //           <div class="leaflet-popup-title">
-    //           ${dataEdgeInfo[0].itme.address}
-    //          </div>
-    //          <div class="leaflet-popup-table">
-    //            <table>
-    //              <tr>
-    //                <th>Cluster</th>
-    //                <td>AZURE</td>
-    //              </tr>
-    //              <tr>
-    //                <th rowspan="3">Status</th>
-    //                <td>
-    //                  <div class="box run">
-    //                    <span class="tit">실행</span><span>7</span>
-    //                  </div>
-    //                </td>
-    //              </tr>
-    //              <tr>
-    //                <td>
-    //                  <div class="box stop">
-    //                    <span class="tit">중지</span><span>2</span>
-    //                  </div>
-    //                </td>
-    //              </tr>
-    //              <tr>
-    //                <td>
-    //                  <div class="box pause">
-    //                    <span class="tit">일시중지</span><span>1</span>
-    //                  </div>
-    //                </td>
-    //              </tr>
-    //            </table>
-    //          </div>
-    //          `
-    //       );
-    //   });
-    // });
   }, []);
 
   // useEffect(() => {
@@ -291,9 +256,8 @@ const MapContent = observer(() => {
   };
 
   const mapParams = {
-    // center: [37.481, 126.893],
-    center: [37.5537586, 126.9809696],
-    zoom: 12,
+    center: [37.5587619, 126.974145],
+    zoom: mapZoom, // store에 저장
     zoomControl: true,
     maxBounds: L.latLngBounds(L.latLng(-150, -240), L.latLng(150, 240)),
     layers: [MAP_TILE],

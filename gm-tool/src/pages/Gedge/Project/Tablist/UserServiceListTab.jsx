@@ -4,14 +4,13 @@ import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton } from "@/components/buttons";
 import { CTabPanel } from "@/components/tabs";
 import { useHistory } from "react-router";
 import { observer } from "mobx-react";
 import Detail from "../Detail";
-import projectStore from "../../../../store/Project";
+import { projectStore } from "@/store";
 import CreateProject from "../Dialog/CreateProject";
-import { swalUpdate } from "../../../../utils/swal-utils";
+import { swalUpdate, swalError } from "@/utils/swal-utils";
 
 const UserServiceListTab = observer(() => {
   const [open, setOpen] = useState(false);
@@ -50,7 +49,7 @@ const UserServiceListTab = observer(() => {
       field: "selectCluster",
       filter: true,
       cellRenderer: function ({ data: { selectCluster } }) {
-        return `<span>${selectCluster.map((item) => item.clusterName)}</span>`;
+        return `<span>${selectCluster.map(item => item.clusterName)}</span>`;
       },
     },
     {
@@ -95,9 +94,7 @@ const UserServiceListTab = observer(() => {
 
   const handleClick = ({ data: { projectName }, colDef: { field } }) => {
     if (field === "delete") {
-      swalUpdate("삭제하시겠습니까?", () =>
-        deleteProject(projectName, loadProjectList)
-      );
+      swalUpdate("삭제하시겠습니까?", () => deleteProject(projectName, loadProjectList));
       return;
     }
     loadProjectDetail(projectName);
@@ -137,12 +134,7 @@ const UserServiceListTab = observer(() => {
               </div>
             </CTabPanel>
           </div>
-          <CreateProject
-            reloadFunc={() => loadProjectList()}
-            type={"user"}
-            open={open}
-            onClose={handleClose}
-          />
+          <CreateProject reloadFunc={() => loadProjectList()} type={"user"} open={open} onClose={handleClose} />
         </PanelBox>
         <Detail project={projectDetail} />
       </CReflexBox>

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
-import { BASIC_AUTH, SERVER_URL2 } from "../config";
+import { SERVER_URL } from "../config";
 import { getItem } from "../utils/sessionStorageFn";
 
 class Pod {
@@ -16,6 +16,7 @@ class Pod {
   viewList = [];
   pPodList = [];
   podList = [];
+  yamlListInPod = [];
   podDetail = {};
   totalElements = 0;
   label = {};
@@ -188,59 +189,44 @@ class Pod {
     });
   };
 
-  yamlList = (apiList, setFunc) => {
-    runInAction(() => {
-      let cnt = 1;
-      let totalCnt = 0;
-      let tempList = [];
-      let cntCheck = true;
-      this.resultYListList = {};
-
-      Object.entries(apiList).map(([_, value]) => {
-        cntCheck = true;
-        tempList.push(toJS(value));
-        cnt = cnt + 1;
-        if (cnt > 21) {
-          cntCheck = false;
-          cnt = 1;
-          this.resultYList[totalCnt] = tempList;
-          totalCnt = totalCnt + 1;
-          tempList = [];
-        }
-      });
-
-      if (cntCheck) {
-        this.resultYList[totalCnt] = tempList;
-        totalCnt = totalCnt === 0 ? 1 : totalCnt + 1;
-      }
-
-      this.setTotalPages(totalCnt);
-      setFunc(this.resultYList);
-      this.setYViewList(0);
-    });
-  };
-
   setPPodList = (list) => {
     runInAction(() => {
-      this.pPodList = list;
-    });
-  };
-
-  setYViewList = (n) => {
-    runInAction(() => {
-      this.viewYList = this.pPodList[n];
+      this.PodList = list;
     });
   };
 
   setViewList = (n) => {
     runInAction(() => {
-      this.viewList = this.pPodList[n];
+      this.viewList = this.PodList[n];
     });
+  };
+
+  loadPodList = async () => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
+    await axios
+      .get(`${SERVER_URL}/pods?user=${id}`)
+      .then((res) => {
+        runInAction(() => {
+          this.podList = res.data.data;
+          this.podDetail = this.podList[0];
+          this.totalElements =
+            res.data.data === null ? 0 : res.data.data.length;
+        });
+      })
+      .then(() => {
+        this.convertList(this.podList, this.setPPodList);
+      });
+    this.loadPodDetail(
+      this.viewList[0].name,
+      this.viewList[0].cluster,
+      this.viewList[0].project
+    );
   };
 
   loadPodDetail = async (name, cluster, project) => {
     await axios
-      .get(`${SERVER_URL2}/pods/${name}?cluster=${cluster}&project=${project}`)
+      .get(`${SERVER_URL}/pods/${name}?cluster=${cluster}&project=${project}`)
       .then(({ data: { data, involvesData } }) => {
         runInAction(() => {
           this.podDetail = data;
@@ -264,31 +250,6 @@ class Pod {
           }
         });
       });
-  };
-
-  loadPodList = async () => {
-    await axios
-      .get(`${SERVER_URL2}/pods`)
-      .then((res) => {
-        runInAction(() => {
-          const { user } = getItem("user");
-          const list = res.data.data.filter((item) => item.user !== user);
-          // const list = res.data.data.filter((item) => item.projectType === type);
-          this.podList = list;
-          this.podDetail = list[0];
-          this.totalElements = list.length;
-          this.totalYElements = list.length;
-        });
-      })
-      .then(() => {
-        this.convertList(this.podList, this.setPPodList);
-        this.yamlList(this.podList, this.setPPodList);
-      });
-    this.loadPodDetail(
-      this.podList[0].name,
-      this.podList[0].cluster,
-      this.podList[0].project
-    );
   };
 
   setPodName = (podName) => {
@@ -348,6 +309,16 @@ class Pod {
   };
 
   createPod = async () => {};
+
+
+  deletePod = async (podName, callback) => {
+    axios
+      .delete(`${SERVER_URL}/pods/${podName}`)
+      .then(res => {
+        if (res.status === 201) swalError("Pod가 삭제되었습니다.", callback);
+      })
+      .catch(err => swalError("삭제에 실패하였습니다."));
+  };  
 }
 
 const podStore = new Pod();

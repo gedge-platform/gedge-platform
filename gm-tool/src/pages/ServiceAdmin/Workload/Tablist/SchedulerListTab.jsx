@@ -1,38 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { PanelBox } from "@/components/styles/PanelBox";
 import CommActionBar from "@/components/common/CommActionBar";
 import { AgGrid } from "@/components/datagrids";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { CReflexBox } from "@/layout/Common/CReflexBox";
-import { CCreateButton, CSelectButton } from "@/components/buttons";
-import { CTabs, CTab, CTabPanel } from "@/components/tabs";
-import { useHistory } from "react-router";
+import { CCreateButton } from "@/components/buttons";
 import { observer } from "mobx-react";
-import Detail from "../PodDetail";
-import podStore from "../../../../store/Pod";
-import CreatePod from "../Dialog/CreatePod";
-import { drawStatus } from "../../../../components/datagrids/AggridFormatter";
+import { schedulerStore } from "@/store";
+import { drawStatus } from "@/components/datagrids/AggridFormatter";
 import CreateScheduler from "../Dialog/CreateScheduler";
+import { PanelBox } from "@/components/styles/PanelBox";
 
 const SchedulerListTab = observer(() => {
   const [open, setOpen] = useState(false);
-  const [tabvalue, setTabvalue] = useState(0);
-  const handleTabChange = (event, newValue) => {
-    setTabvalue(newValue);
-  };
+  const [reRun, setReRun] = useState(false);
 
-  const {
-    podList,
-    podDetail,
-    totalYElements,
-    loadPodList,
-    loadPodDetail,
-    currentYPage,
-    totalYPages,
-    viewYList,
-    goPrevPage,
-    goNextPage,
-  } = podStore;
+  const { loadYamlList, yamlList, totalElements, currentPage, totalPages, goPrevPage, goNextPage, viewList } = schedulerStore;
+
   const [columDefs] = useState([
     {
       headerName: "파드 이름",
@@ -80,7 +63,12 @@ const SchedulerListTab = observer(() => {
     },
   ]);
 
-  const handleCreateOpen = () => {
+  // const handleClick = (e) => {
+  //   const fieldName = e.colDef.field;
+  //   loadPodDetail(e.data.name, e.data.cluster, e.data.project);
+  // };
+
+  const handleOpen = () => {
     setOpen(true);
   };
 
@@ -88,47 +76,46 @@ const SchedulerListTab = observer(() => {
     setOpen(false);
   };
 
-  const handleClick = (e) => {
-    const fieldName = e.colDef.field;
-    loadPodDetail(e.data.name, e.data.cluster, e.data.project);
+  const reloadData = () => {
+    setReRun(true);
   };
 
-  const history = useHistory();
-
   useEffect(() => {
-    loadPodList();
-  }, []);
+    loadYamlList();
+    return () => {
+      setReRun(false);
+    };
+  }, [reRun]);
 
   return (
     <>
       <CReflexBox>
         <PanelBox>
-          <CommActionBar isSearch={true} isSelect={true} keywordList={["이름"]}>
-            <CCreateButton onClick={handleCreateOpen}>Load YAML</CCreateButton>
+          <CommActionBar
+            reloadFunc={reloadData}
+            // isSearch={true}
+            // isSelect={true}
+            // keywordList={["이름"]}
+          >
+            <CCreateButton onClick={handleOpen}>Load YAML</CCreateButton>
           </CommActionBar>
 
           <div className="tabPanelContainer">
-            <CTabPanel value={tabvalue} index={0}>
-              <div className="grid-height2">
-                <AgGrid
-                  onCellClicked={handleClick}
-                  rowData={viewYList}
-                  columnDefs={columDefs}
-                  isBottom={false}
-                  totalElements={totalYElements}
-                  totalPages={totalYPages}
-                  currentPage={currentYPage}
-                  goNextPage={goNextPage}
-                  goPrevPage={goPrevPage}
-                />
-              </div>
-            </CTabPanel>
+            <div className="grid-height2">
+              <AgGrid
+                // onCellClicked={handleClick}
+                rowData={viewList}
+                columnDefs={columDefs}
+                isBottom={false}
+                totalElements={totalElements}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                goNextPage={goNextPage}
+                goPrevPage={goPrevPage}
+              />
+            </div>
           </div>
-          <CreateScheduler
-            open={open}
-            onClose={handleClose}
-            reloadFunc={loadPodList}
-          />
+          <CreateScheduler open={open} onClose={handleClose} reloadFunc={reloadData} />
         </PanelBox>
       </CReflexBox>
     </>
