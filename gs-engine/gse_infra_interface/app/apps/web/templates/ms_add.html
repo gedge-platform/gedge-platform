@@ -1,0 +1,300 @@
+{% extends "common.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/ms_add.css')}}">
+{% endblock %}
+{% block content %}
+        <main id="content">
+            <div id="content_header">
+                <img src="{{url_for('static', filename='assets/img/tab-ms-add-ico/ico-add-ms.png')}}">
+                <span id="content_title">Add Micro Service</span>
+            </div>
+            <div class="content_div_line"></div>
+
+            <div id="ms_add" class="ms_add_container">
+                <form id="ms_add_form" class="form-group">
+                    <div class="d-flex align-items-center ms_add_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>Cluster</span>
+                        <div class="d-flex align-items-centers">
+                            <div class="dropdown">
+                                <input class="dropdown-toggle ms_add_cluster_dropdown" data-bs-toggle="dropdown" aria-expanded="false" placeholder="Selected Cluster" data-value="" name="cluster_name" readonly />
+                                <ul class="dropdown-menu ms_add_cluster_dropdown_menu">
+                                    {% for cluster in param.cluster_list %}
+                                        {% if cluster.status == "COMPLATE" %}
+                                    <li><a class="dropdown-item" href="#" onclick="ms_add_dropdown_menu_item_click_event(event, this)" value="{{ cluster.cluster_name }}">{{ cluster.cluster_name }}</a></li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center ms_add_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>Name</span>
+                        <div class="d-flex align-items-center">
+                            <input class="form-control common_text_input ms_add_data_input" type="text" id="ms_pod_name_input" name="name" placeholder="POD/Service  Name&Label">
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center ms_add_content">
+                            <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                            <span>Replicas</span>
+                            <div class="d-flex align-items-center">
+                                <input class="form-control common_text_input ms_add_data_input shout" type="number" id="ms_replicas" name="replicas" placeholder="replica">
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center ms_add_content_second">
+                            <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                            <span class="ms_add_sub_title_fixed_text">Type</span>
+                            <div class="d-flex align-items-center">
+                                <div class="dropdown">
+                                    <input class="dropdown-toggle ms_add_type_dropdown" data-bs-toggle="dropdown" aria-expanded="false" placeholder="Selected Type" data-value="" name="service_type" readonly />
+                                    <ul class="dropdown-menu ms_add_type_dropdown_menu">
+                                        <li><a class="dropdown-item" href="#" onclick="ms_add_type_dropdown_menu_item_click_event(event, this)" value="">None</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="ms_add_type_dropdown_menu_item_click_event(event, this)" value="ClusterIP">ClusterIP</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="ms_add_type_dropdown_menu_item_click_event(event, this)" value="Loadbalancer">Loadbalancer</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="ms_add_type_dropdown_menu_item_click_event(event, this)" value="NodePort">NodePort</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="ms_add_type_dropdown_menu_item_click_event(event, this)" value="ExternalName">ExternalName</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container_info_box_list">
+                        <div class="container_info_box" id="container_info_box">
+                            <div class="d-flex align-items-center ms_add_content">
+                                <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                                <span>Image</span>
+                                <div class="d-flex align-items-center">
+                                    <input class="form-control common_text_input ms_add_data_input" type="text" id="ms_pod_image" name="pod_image" placeholder="Image">
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center ms_add_content">
+                                <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                                <span>Computing Resource</span>
+                                <div class="ms_add_computing_resource_data">
+                                    <div class="d-flex">
+                                        <div class="d-flex flex-column ms_add_computing_resource_ind_data">
+                                            <div class="d-flex align-items-center ms_add_computing_resource_ind_title">
+                                                <img src="{{url_for('static', filename='assets/img/cpu-ico/ico-cpu.png')}}">
+                                                <span>CPU</span>
+                                            </div>
+                                            <div class="d-flex flex-column">
+                                                <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                                    <span>Allocatable</span>
+                                                    <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_cpu_allocatable_input" readonly>
+                                                </div>
+                                                <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                                    <span>Limit</span>
+                                                    <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_cpu_limit_input" name="cpu_limit">
+                                                </div>
+                                                <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                                    <span>Request</span>
+                                                    <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_cpu_request_input" name="cpu_request">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-column ms_add_computing_resource_ind_data">
+                                            <div class="d-flex align-items-center ms_add_computing_resource_ind_title">
+                                                <img src="{{url_for('static', filename='assets/img/memory-ico/ico-memory.png')}}">
+                                                <span>Memory</span>
+                                                <span> (GB)</span>
+                                            </div>
+                                            <div class="d-flex flex-column">
+                                                <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                                    <span>Allocatable</span>
+                                                    <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_memory_allocatable_input" readonly>
+                                                </div>
+                                                <div class="d-flex flex-column">
+                                                    <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                                        <span>Limit</span>
+                                                        <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_memory_limit_input" name="mem_limit">
+                                                    </div>
+                                                    <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                                        <span>Request</span>
+                                                        <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_memory_request_input" name="mem_request">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-column ms_add_computing_resource_ind_data">
+                                            <div class="d-flex align-items-center ms_add_computing_resource_ind_title">
+                                                <img src="{{url_for('static', filename='assets/img/gpu-ico/ico-gpu.png')}}">
+                                                <span>GPU</span>
+                                            </div>
+                                            <div class="d-flex flex-column">
+                                                <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                                    <span>Allocatable</span>
+                                                    <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_gpu_allocatable_input" readonly>
+                                                </div>
+                                                <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                                    <span>Limit</span>
+                                                    <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_gpu_limit_input" name="gpu_limit">
+                                                </div>
+                                                <div class="d-flex align-items-center ms_add_computing_resource_data_container">
+                                                    <span>Request</span>
+                                                    <input class="form-control common_text_input ms_add_computing_resource_data_input" type="text" id="ms_add_computing_resource_gpu_request_input" name="gpu_request">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center ms_add_content">
+                                <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                                <span>Network Resource</span>
+                                <div class="network_cnis_container">
+                                    <div class="d-flex align-items-center">
+                                        <span class="resource_input_title">SR_IOV</span>
+                                        <div class="d-flex align-items-center resource_input_div_input_title">
+                                            <span>(</span>
+                                            <span id="select_sriov_cnt">0</span>
+                                            <span>/</span>
+                                            <span id="alctb_sriov">-</span>
+                                            <span>)</span>
+                                        </div>
+                                    </div>
+                                    </span>
+                                    <div id="nic_list">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="table_cell_left_radius" style="width: 60px;"></th>
+                                                    <th style="width: 95px;">플러그인</th>
+                                                    <th style="width: 205px;">NIC 명</th>
+                                                    <th style="width: 150px;">Type</th>
+                                                    <th class="table_cell_right_radius" style="width: 177px;">Subnet</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="nic_list_tbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div id="network_list"></div>
+                            </div>
+
+                            <!-- <div class="d-flex align-items-center ms_add_content">
+                                <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                                <span>Env</span>
+                                <div class="d-flex align-items-center">
+                                    <input class="form-control common_text_input ms_add_data_input" type="text" id="ms_pod_env" name="pod_env" placeholder="Env">
+                                </div>
+                            </div> -->
+        
+                            <div class="d-flex align-items-center ms_add_content">
+                                <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                                <span>Command</span>
+                                <div class="d-flex align-items-center">
+                                    <input class="form-control common_text_input ms_add_data_input" type="text" id="ms_pod_command" name="pod_command" placeholder="Command">
+                                </div>
+                            </div>
+        
+                            <div class="d-flex align-items-center ms_add_content">
+                                <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                                <span>Args</span>
+                                <div class="d-flex align-items-center">
+                                    <input class="form-control common_text_input ms_add_data_input" type="text" id="ms_pod_args" name="pod_args" placeholder="Args">
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center ms_add_content">
+                                <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                                <span>Ports</span>
+                                <div class="ms_add_ports">
+                                    <div class="d-flex justify-content-around align-items-center service_port_container" id="ms_port_inputs">
+                                        <div class="d-flex align-items-center ms_add_port_data_container">
+                                            <span>Protocol</span>
+                                            <div class="dropdown">
+                                                <input class="dropdown-toggle ms_add_port_protocol_type_dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-value="TCP" name="pod_port_protocol" value="TCP" readonly />
+                                                <ul class="dropdown-menu ms_add_port_protocol_type_dropdown_menu">
+                                                    <li><a class="dropdown-item" href="#" onclick="service_port_type_dropdown_menu_item_click_event(event, this)" value="TCP">TCP</a></li>
+                                                    <li><a class="dropdown-item" href="#" onclick="service_port_type_dropdown_menu_item_click_event(event, this)" value="UDP">UDP</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center ms_add_port_data_container">
+                                            <span>Container Port</span>
+                                            <input class="form-control common_text_input ms_add_port_data_input ms_add_port_container_port" type="number">
+                                        </div>
+                                        <div class="d-flex align-items-center ms_add_port_data_container">
+                                            <span>External Port</span>
+                                            <input class="form-control common_text_input ms_add_port_data_input ms_add_port_external_port" type="number">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center port_btns">
+                                    <div class="d-flex align-items-center justify-content-center common_create_button port_btn" onclick="port_add_btn_click_event()">
+                                        <img src="{{url_for('static', filename='assets/img/list-add-ico/ico-table-add-item.png')}}">
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-center common_create_button port_btn" onclick="port_del_btn_click_event()">
+                                        <img src="{{url_for('static', filename='assets/img/list-except-ico/ico-table-except-item.png')}}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center ms_add_content">
+                                <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                                <span>Storage Resource</span>
+                                <div class="network_cnis_container">
+                                    <div id="nic_list">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="table_cell_left_radius" style="width: 60px;"></th>
+                                                    <th style="width: 300px;">PVC 명</th>
+                                                    <th class="table_cell_right_radius" style="width: 300px;">용량</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="pvc_list_tbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <input id="select_pvc_name" type="hidden" name="pvc_name"/>
+                            </div>
+
+                            <div class="d-flex align-items-center ms_add_content">
+                                <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                                <span>MountPath</span>
+                                <div class="d-flex align-items-center">
+                                    <input class="form-control common_text_input ms_add_data_input" type="text" id="ms_pod_mount_path" name="pod_mountpath" placeholder="Mount Path">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    
+                    <!-- <div class="d-flex align-items-center ms_add_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>uS YAML Edit</span>
+                        <div class="d-flex align-items-center">
+                            <textarea class="form-control ms_add_yaml_edit_data_textarea" cols="500" rows="35" name="yaml_data" id="ms_add_yaml_edit_text_area">{{ param.yaml_data }}</textarea>
+                        </div>
+                    </div> -->
+                </form>
+            </div>
+        </main>
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="d-flex justify-content-center align-items-center">
+                <button class="btn d-flex justify-content-center align-items-center common_create_button ms_add_confirm_button" onclick="ms_add_click_event(event,this)" type="button">
+                    <span>Add Pod</span>
+                    <img src="{{url_for('static', filename='assets/img/list-add-ico/ico-table-add-item.png')}}">
+                </button>
+            </div>
+            <div class="d-flex justify-content-center align-items-center">
+                <button class="btn d-flex justify-content-center align-items-center common_create_button ms_service_add_confirm_button" onclick="service_add_click_event(event,this)" type="button">
+                    <span>Add Service</span>
+                    <img src="{{url_for('static', filename='assets/img/list-add-ico/ico-table-add-item.png')}}">
+                </button>
+            </div>
+        </div>
+{% endblock %}
+
+{% block script %}
+    <script src="{{url_for('static', filename='assets/js/ms_add.js')}}"></script>
+{% endblock %}

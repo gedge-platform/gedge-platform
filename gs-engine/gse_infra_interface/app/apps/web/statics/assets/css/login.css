@@ -1,0 +1,94 @@
+.login-containter {
+  min-height: 100vh;
+}
+
+.login-dialog {
+  max-width: 492px;
+  height: 570px;
+  padding: 82px 71px 105px;
+  border: solid 1px #dfdfdf;
+  border-radius: 10px;
+}
+
+.login-icon {
+  margin-bottom: 66px;
+}
+
+.login-input {
+  width: 350px;
+  height: 45px;
+  border-radius: 8px;
+  border: solid 1px #dfdfdf;
+  margin-bottom: 20px;
+}
+
+.login-input:focus-within {
+  border: solid 1px #058379!important;
+}
+
+.login-input-icon {
+  width: 44px;
+  height: 43px;
+  padding: 11px;
+  border-right: solid 1px #dfdfdf;
+}
+
+.login-input-text {
+  width: 100%;
+  height: 43px;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  background-color: #f8f8f9;
+  padding-left: 15px;
+  font-family: 'NotoSansKR-Regula';
+  font-size: 16px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #4b4b4b;
+}
+
+.login-input-text:focus {
+  background-color: #f5faf4!important;
+}
+
+.form-check.login-remember-checkbox {
+  margin-right: auto;
+}
+
+.login-button {
+  width: 350px;
+  height: 50px;
+  border-radius: 25px;
+  border: none;
+  background-color: #05b762;
+  margin-top: 28px;
+  font-size: 18px;
+  font-family: 'NotoSansKR-BoldR';
+  color: #f9f9f9;
+}
+
+.login-button:hover {
+  background-color: #05b762!important;
+  color: #f9f9f9!important;
+}
+
+.login-button:active {
+  background-color: #058379!important;
+}
+
+.login-invaild {
+  visibility: hidden;
+  width: 100%;
+  margin-top: 26px;
+  font-size: 14px;
+  font-family: 'NotoSansKR-Regula';
+  color: #dc3545;
+}
+
+.error-img {
+  padding-right: 7px;
+}
+

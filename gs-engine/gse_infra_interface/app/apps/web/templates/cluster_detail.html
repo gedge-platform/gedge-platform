@@ -1,0 +1,179 @@
+{% extends "common.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{url_for('static', filename='assets/css/cluster_detail.css')}}">
+{% endblock %}
+{% block content %}
+        <main id="content">
+            <div id="content_header">
+                <img src="{{url_for('static', filename='assets/img/tab-cluster-list-ico/ico-cluster.png')}}">
+                <span id="content_title">Cluster Detail</span>
+            </div>
+            <div class="content_div_line"></div>
+            <div id="cluster_detail" class="cluster_detail_container">
+                
+                <div class="d-flex align-items-center cluster_detail_content">
+                    <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                    <span>Cluster</span>
+                    <div class="d-flex align-items-centers">
+                        <div class="dropdown">
+                            <input class="dropdown-toggle select_cluster_dropdown" data-bs-toggle="dropdown" aria-expanded="false" placeholder="Selected Cluster" data-value="" name="cluster_name" readonly />
+                            <ul class="dropdown-menu select_cluster_dropdown_menu">
+                                {% for cluster in param.cluster_list %}
+                                    {% if cluster.status == "COMPLATE" %}
+                                    <li><a class="dropdown-item" href="#" onclick="cluster_detail_dropdown_menu_item_click_event(event, this)" value="{{ cluster.cluster_name }}">{{ cluster.cluster_name }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <form id="create_nic_form">
+                        <div class="cluster_detail_content">
+                            <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                            <span>CNI 설정</span>
+                            <div class="d-flex">
+                                <div class="nic_list_div">
+                                    <div style="margin-top: 20px;">
+                                        <button class="btn common_cancel_button" type="button" onclick="del_nic()">삭제</button>
+                                    </div>
+                                    <div id="nic_list">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="table_cell_left_radius" style="width: 60px;"></th>
+                                                    <th style="width: 80px;">플러그인</th>
+                                                    <th style="width: 210px;">NIC 명</th>
+                                                    <th style="width: 150px;">Type</th>
+                                                    <th class="table_cell_right_radius" style="width: 152px;text-align: left;">Subnet</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="nic_list_tbody"></tbody>
+                                        </table>
+                                        <input id="select_cni_name" type="hidden" name="select_cni_name"/>
+                                        <input id="select_cni_type" type="hidden" name="select_cni_type"/>
+                                    </div>
+                                </div>
+                                <div id="nic_add_div">
+                                    <div id="plugin_div" class="d-flex align-items-center">
+                                        <span class="nic_add_title">플러그인</span>
+                                        <div class="d-flex align-items-center justify-content-around cni_type_data">
+                                            <div class="d-flex align-items-center common_radio_container">
+                                                <div class="form-check d-flex align-items-center">
+                                                    <input class="form-check-input d-none common_radio_input" type="radio" id="cni_type_radio_multus" checked="" value="multus" name="cni_type">
+                                                    <label class="form-check-label common_radio_label" for="cni_type_radio_multus"></label>
+                                                </div>
+                                                <span>Multus</span>
+                                            </div>
+                                            <div class="d-flex align-items-center common_radio_container">
+                                                <div class="form-check d-flex align-items-center">
+                                                    <input class="form-check-input d-none common_radio_input" type="radio" id="cni_type_radio_sriov" value="sriov" name="cni_type">
+                                                    <label class="form-check-label common_radio_label" for="cni_type_radio_sriov"></label>
+                                                </div>
+                                                <span>SR-IOV</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input class="form-control" type="hidden" id="plugin_nm" name="plugin_nm" value="multus">
+                                    <hr>
+                                    <div id="nic_type_div">
+                                        <span class="nic_add_title">Type</span>
+                                        <div class="dropdown">
+                                            <input class="dropdown-toggle cni_ipm_type_dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-value="host-local" value="host-local" name="cni_ipm_type" readonly/>
+                                            <ul class="dropdown-menu cni_ipm_type_dropdown_menu">
+                                                <li><a class="dropdown-item" href="#" onclick="set_dropdown_item_value('cni_ipm_type_dropdown', this)" value="host-local">host-local</a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="set_dropdown_item_value('cni_ipm_type_dropdown', this)" value="whereabouts">whereabouts</a></li>
+                                            </ul>
+                                        </div>
+                                        <input class="form-control" type="hidden" id="nic_type" name="nic_type" value="host-local"></div>
+                                    <div id="nic_subnet_div">
+                                        <span class="nic_add_title">Subnet</span>
+                                        <input class="form-control common_text_input cni_ipm_subnet_text_input" type="text" id="nic_subnet" name="nic_subnet">
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <button class="btn common_create_button" type="button" onclick="create_nic()">생성하기</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <hr class="clsuter_detail_line">
+                <div class="pvc_table_container">
+                    <form id="create_pvc_form">
+                        <div class="cluster_detail_content">
+                            <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                            <span>PVC 설정</span>
+                            <div class="d-flex">
+                                <div class="pvc_list_div">
+                                    <div style="margin-top: 20px;">
+                                        <button class="btn common_cancel_button" type="button" onclick="del_pvc()">삭제</button>
+                                    </div>
+                                    <div id="pvc_list">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="table_cell_left_radius" style="width: 60px;"></th>
+                                                    <th style="width: 200px;">PVC 명</th>
+                                                    <th style="width: 200px;">용량</th>
+                                                    <th class="table_cell_right_radius" style="width: 200px;">StorageClass</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="pvc_list_tbody"></tbody>
+                                        </table>
+                                    </div>
+                                    <input id="select_pvc_name" type="hidden" name="pvc_name"/>
+                                </div>
+                                <div id="pvc_add_div">
+                                    <span class="nic_add_title">StorageClass</span>
+                                    <div class="dropdown">
+                                        <input class="dropdown-toggle pvc_strgclass_dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-value="" value="" name="strgclass_name" readonly/>
+                                        <ul class="dropdown-menu pvc_strgclass_dropdown_menu" id="pvc_strgclass_dropdown_menu">
+
+                                        </ul>
+                                    </div>
+                                    <div id="pvc_size">
+                                        <span class="nic_add_title">Size(Gi)</span>
+                                        <input class="form-control common_text_input cni_ipm_subnet_text_input" type="number" id="pvc_size" name="pvc_size">
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <button class="btn common_create_button" type="button" onclick="create_pvc()">생성하기</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 클러스터 초기화 부분 -->
+                <!-- <div>
+                    <div class="d-flex align-items-center cluster_detail_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>NIC</span>
+                    </div>
+                    <div>
+                        
+                    </div>
+                </div>
+
+                <div>
+                    <div class="d-flex align-items-center cluster_detail_content">
+                        <img src="{{url_for('static', filename='assets/img/list-bul-purple-solid-ico/ico-bul-purple-solid.png')}}">
+                        <span>Storage</span>
+                    </div>
+                    <div>
+
+                    </div>
+                </div> -->
+
+            </div>
+            
+        </main>
+        
+{% endblock %}
+
+{% block script %}
+    <script src="{{url_for('static', filename='assets/js/cluster_detail.js')}}"></script>
+{% endblock %}

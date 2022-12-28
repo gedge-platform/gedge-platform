@@ -1,0 +1,265 @@
+::-webkit-scrollbar {
+  width: 10.5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #e9ebf6;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-track-piece:start, ::-webkit-scrollbar-track-piece:end {
+  background-color: #f8f8f8;
+  border-radius: 2px;
+}
+
+.ms_detail {
+  margin: 29px 0 0 60px;
+}
+
+.ms_detail_pod_list, .svc_detail_list {
+  width: 240px;
+  height: 240px;
+  margin: 0 30px 40px 0;
+  padding: 10px 6px 0 20px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 4px 0 rgba(152, 171, 217, 0.1);
+  background-color: #fff;
+}
+
+.ms_detail_pod_list_pod_name, .svc_detail_list_name {
+  width: 180px;
+  height: 30px;
+  margin: 5px 26px 5px 0;
+  padding-left: 10px;
+  font-family: 'NotoSansKR-Medium';
+  font-size: 14px;
+  font-weight: 500;
+  color: #5a6370;
+  cursor: pointer;
+}
+
+.ms_detail_pod_list_pod_name:hover, .ms_detail_pod_list_pod_name:active,
+.svc_detail_list_name:hover, .svc_detail_list_name:active {
+  border-radius: 3px;
+  background-color: #bac1cc;
+  color: #fff;
+}
+
+.ms_detail_pod_list_scroll {
+  overflow-y: auto;
+  height:220px;
+}
+
+.ms_detail_pod_info, .svc_detail_info {
+  width: 730px;
+}
+
+.ms_detail_pod_info > div:first-child , .svc_detail_info > div>:first-child {
+  margin-left: 10px;
+}
+
+.svc_detail_info > div:last-child {
+  margin-top: 40px;
+}
+
+.ms_detail_head_text > img {
+  margin-right: 10px;
+}
+
+.ms_detail_head_text > span {
+  font-family: 'NotoSansKR-Medium';
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.47px;
+  color: #5c6066;
+}
+
+.ms_detail_name_input {
+  width: 220px;
+  height: 40px;
+  margin: 20px 25px 0 0;
+}
+
+.ms_detail_name_input:active,
+.ms_detail_name_input:focus {
+  box-shadow: 2px 2px 4px 0 rgba(152, 171, 217, 0.1);
+  border: solid 1px #fff;
+}
+
+.ms_detail_computing_resource_data {
+  width: 730px;
+  height: 130px;
+  margin-top: 20px;
+  border-radius: 5px;
+  border: solid 1px #e1e2e6;
+  background-color: #edeff2;
+}
+
+.ms_detail_computing_resource_ind_data {
+  width: 242px;
+}
+
+.ms_detail_computing_resource_ind_bar{
+  border-left: solid 1px #dcdde0;
+}
+
+.ms_detail_computing_resource_ind_title {
+  margin: 0 0 20px 0;
+}
+.ms_detail_computing_resource_ind_title > span {
+  padding-left: 10px;
+  font-size: 14px;
+  font-family: NotoSansKR-Medium;
+  color: #5a6370;
+}
+
+.ms_detail_computing_resource_data_containers{
+  margin-left: 10px;
+}
+
+.ms_detail_computing_resource_data_containers > div:last-child {
+  margin-left: 43px;
+}
+
+.ms_detail_computing_resource_data_info_text {
+  font-family: NotoSansKR-Regula;
+  font-size: 12px;
+  line-height: 1.08;
+  color: #6d6f73;
+}
+
+.ms_detail_computing_resource_data_input {
+  margin-left: 10px;
+  font-family: NotoSansKR-Medium;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  color: #2eb767;
+}
+
+
+.ms_detail_result_box > span,
+.ms_detail_pod_log_box > span {
+  margin-left: 7px;
+  font-family: NotoSansKR-Medium;
+  font-size: 15px;
+  color:#5c6066;
+}
+
+.ms_detail_data_textarea {
+  width: 1000px;
+  margin-top: 24px;
+  font-family: 'NotoSansKR-Regula';
+  font-size: 11px;
+  color: #6d6f73;
+}
+
+.ms_detail_pod_log_box {
+  margin-top: 33px;
+}
+
+.ms_detail_delete_button {
+  width: 165px;
+}
+
+.ms_detail_btn_container > div:first-child{
+  margin-right: 15px;
+}
+
+/* Modal CSS */
+.ms_detail_modal_container {
+  width: 420px;
+  border-radius: 30px;
+  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.2);
+  border: solid 1px #d0d4d9;
+  background-color: #fff;
+}
+
+.ms_detail_modal_main_text_container {
+  margin: 12px 0 21px 0;
+}
+
+.ms_detail_modal_main_pod_name_text {
+  margin-right: 2px;
+  font-family: NotoSansKR-Medium;
+  font-size: 18px;
+  color: #2eb767;
+}
+
+.ms_detail_modal_main_fixed_text {
+  margin: 12px 0 21px 0;
+  font-family: NotoSansKR-Medium;
+  font-size: 18px;
+  color: #45484d;
+}
+
+.ms_detail_modal_sub_fixed_text {
+  font-family: NotoSansKR-Regula;
+  font-size: 14px;
+  color: #595959;
+}
+
+.ms_detail_modal_cancel_button {
+  width: 200px;
+  height: 40px;
+  border-radius: 10px;
+  box-shadow: 1px 2px 4px 0 rgba(172, 183, 191, 0.3);
+  border: solid 1px #d5dbe3;
+  background-color: #fff;
+  font-family: NotoSansKR-Medium;
+  font-size: 16px;
+  color: #8a9399;
+}
+
+.ms_detail_modal_cancel_button:active {
+  background-color: #f7f7f7;
+  color: #8a9399;
+}
+
+.ms_detail_modal_delete_button {
+  width: 130px;
+  height: 40px;
+  margin-left: 10px;
+  border-radius: 10px;
+  box-shadow: 1px 4px 8px 0 rgba(36, 183, 101, 0.3);
+  background-color: #2eb767;
+  font-family: NotoSansKR-Medium;
+  font-size: 16px;
+  color: #fff;
+}
+
+.ms_detail_modal_delete_button:hover {
+  background-color: #43c47a;
+  color: #fff;
+}
+
+.ms_detail_modal_delete_button:active {
+  background-color: #2cb267;
+  color: #fff;
+}
+
+.ms_detail_modal_delete_button:disabled {
+  background-color: #89d4aa;
+  color: #fff;
+}
+
+.ms_detail_kiali_error_container {
+  width: 1000px;
+  height: 500px;
+  margin-top: 24px;
+  border-radius: 12px;
+  background-color: #edeff2;
+  font-size: 15px;
+  color: #6d6f73;
+}
+
+.delete_button_container {
+  padding-bottom: 50px;
+}
+
+.ms_detail_kiali_container {
+  width: 1000px;
+  height: 500px;
+  border: 0;
+  margin-top: 24px;
+}

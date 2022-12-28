@@ -1,0 +1,168 @@
+#cluster_detail {
+    margin-left: 60px;
+    margin-top: 25px;
+}
+
+.select_cluster_dropdown, .cni_ipm_type_dropdown, .pvc_strgclass_dropdown {
+    min-width: 280px;
+}
+  
+.select_cluster_dropdown_menu, .cni_ipm_type_dropdown_menu, .pvc_strgclass_dropdown_menu {
+    min-width: 280px;
+}
+
+.cluster_detail_content {
+    margin-bottom: 15px;
+}
+
+.cluster_detail_content > img:first-child {
+    height: 20px;
+    margin: 0 10px 0 0;
+    object-fit: contain;
+}
+
+.cluster_detail_content > span:nth-child(2) {
+    min-width: 100px;
+    margin: 0 10px 0 0;
+    font-family: 'NotoSansKR-Medium';
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.47px;
+    color: #5c6066;
+}
+
+
+/* CNI,PVC  Table */
+
+.nic_list_div, .pvc_list_div {
+    width: 700px;
+    margin-top: 10px;
+    margin-right: 10px;
+  }
+  
+#nic_list thead th, #pvc_list thead th {
+    font-family: 'NotoSansKR-Medium';
+    font-size: 13px;
+    font-weight: 500;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #f5f8ff;
+    border: none;
+    text-align: center;
+}
+  
+#nic_list thead tr, #pvc_list thead tr {
+    box-shadow: 2px 2px 4px 0 rgba(98, 133, 217, 0.1);
+    background-color: #9fa5ae;
+    border-radius: 6px;
+    height: 40px;
+}
+  
+#nic_list tbody tr, #pvc_list tbody tr {
+    box-shadow: 2px 2px 4px 0 rgba(98, 133, 217, 0.1);
+    background-color: #ffffff;
+    height: 40px;
+    text-align: center;
+}
+  
+#nic_list table, #pvc_list table {
+    border-spacing: 0 5px;
+}
+  
+#nic_list, #pvc_list {
+    margin-top: 20px;
+}
+
+#nic_list tbody, #pvc_list tbody {
+    display: block;
+    height: 302px;
+    overflow-y: auto;
+}
+  
+#nic_list thead, #pvc_list thead {
+    display: block;
+}
+  
+#nic_list tbody::-webkit-scrollbar, #pvc_list tbody::-webkit-scrollbar {
+    width: 10.5px;
+}
+  
+#nic_list tbody::-webkit-scrollbar-track, #pvc_list tbody::-webkit-scrollbar-track {
+    height: 10px;
+}
+  
+#nic_list tbody::-webkit-scrollbar-thumb, #pvc_list tbody::-webkit-scrollbar-thumb {
+    background-color: #e9ebf6;
+    border-radius: 2px;
+}
+  
+#nic_list tbody::-webkit-scrollbar-track-piece:start, #nic_list tbody::-webkit-scrollbar-track-piece:end,
+#pvc_list tbody::-webkit-scrollbar-track-piece:start, #pvc_list tbody::-webkit-scrollbar-track-piece:end {
+    margin-top: 17px;
+    background-color: #f8f8f8;
+    border-radius: 2px;
+    margin-bottom: 17px;
+}
+
+#nic_add_div, #pvc_add_div {
+    width: 339px;
+    min-height: 260px;
+    margin-left: 20px;
+    padding: 20px 27px;
+    border-radius: 20px;
+    border: solid 2px #cfd8e6;
+}
+
+#nic_add_div hr {
+    width: 280px;
+    height: 1px;
+    border-top: solid 1px #cfd8e6;
+    margin: 0;
+    margin-top: 17px;
+}
+  
+#nic_add_div > div, #pvc_add_div > div {
+    margin-top: 19px;
+}
+
+#nic_list_tbody, #pvc_list_tbody {
+    height: 200px !important;
+}
+  
+  
+
+/*  */
+.cni_type_data {
+    margin-left: auto;
+}
+
+
+.cni_ipm_subnet_text_input {
+    min-width: 280px;
+}
+
+.nic_add_title {
+    margin-bottom: 8px;
+    font-family: 'NotoSansKR-Medium';
+    font-size: 14px;
+    font-weight: 500;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #5a6370;
+    width: 80px;
+}
+
+.pvc_table_container {
+    margin-top: 25px;
+}
+
+.clsuter_detail_line {
+    width: auto;
+    height: 2px!important;
+    border-top: solid 1px #cfd8e6;
+    margin: 25px 7px 0 0;
+}

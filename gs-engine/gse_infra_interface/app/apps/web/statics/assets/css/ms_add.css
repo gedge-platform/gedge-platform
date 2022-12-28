@@ -1,0 +1,299 @@
+.ms_add_container {
+  margin-left: 60px;
+}
+
+.ms_add_content, .ms_add_content_second {
+  margin-bottom: 15px;
+}
+
+.ms_add_content > img:first-child {
+  height: 20px;
+  margin: 0 10px 0 0;
+  object-fit: contain;
+}
+
+.ms_add_content > span:nth-child(2) {
+  min-width: 200px;
+  margin: 0 10px 0 0;
+  font-family: 'NotoSansKR-Medium';
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.47px;
+  color: #5c6066;
+}
+
+.ms_add_content_second > img:first-child {
+  height: 20px;
+  margin: 0 10px 0 140px;
+  object-fit: contain;
+}
+
+.ms_add_content_second > span:nth-child(2) {
+  margin-right: 30px;
+  font-family: 'NotoSansKR-Medium';
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.47px;
+  color: #5c6066;
+}
+
+.ms_add_cluster_dropdown, .ms_add_cluster_dropdown_menu {
+  min-width: 400px;
+}
+
+.ms_add_type_dropdown, .ms_add_type_dropdown_menu {
+  min-width: 200px;
+}
+
+.ms_add_port_protocol_type_dropdown, .ms_add_port_protocol_type_dropdown_menu {
+  min-width: 100px;
+  width: 100px;
+}
+
+.ms_add_port_protocol_type_dropdown {
+  margin-left: 20px;
+}
+
+.ms_add_node_type_data {
+  width: 400px;
+  height: 40px;
+  border-radius: 5px;
+  background-color: #edeff2;
+}
+
+.ms_add_node_type_data > div:first-child {
+  padding-left: 10px;
+}
+
+.ms_add_data_input {
+  width: 400px;
+}
+.ms_add_data_input.shout {
+  width: 200px;
+}
+
+.ms_add_computing_resource_data, .ms_add_ports, .network_cnis_container {
+  width: 760px;
+  border-radius: 5px;
+  border: solid 1px #e1e2e6;
+  background-color: #edeff2;
+}
+
+.ms_add_ports{
+  width: 680px;
+  padding: 10px;
+}
+
+.ms_add_computing_resource_ind_data {
+  width: 253px;;
+  padding: 20px 33px 23px 30px;
+}
+
+.ms_add_computing_resource_ind_data:not(:first-child) {
+  border-left: solid 1px #dcdde0;
+}
+
+.ms_add_computing_resource_ind_title {
+  margin-bottom: 20px;
+}
+
+.ms_add_computing_resource_ind_title > span:nth-child(2) {
+  margin-left: 10px;
+  font-family: NotoSansKR-Medium;
+  font-size: 14px;
+  color: #5a6370;
+}
+
+.ms_add_computing_resource_ind_title > span:nth-child(3) {
+  margin-left: 3px;
+  font-family: NotoSansKR-Regula;
+  font-size: 12px;
+  color: #9fa5ae;
+}
+
+.ms_add_computing_resource_data_container {
+  margin-bottom: 10px;
+}
+
+.ms_add_computing_resource_data_container > span {
+  padding-left: 10px;
+  font-family: 'NotoSansKR-Regula';
+  font-size: 13px;
+  color: #6d6f73;
+}
+
+.ms_add_computing_resource_data_input {
+  width: 90px;
+  height: 36px;
+  margin-left: auto;
+  padding: 0;
+  text-align: center;
+}
+
+.ms_add_port_data_container > span {
+  font-family: 'NotoSansKR-Regula';
+  font-size: 13px;
+  color: #6d6f73;
+}
+
+.ms_add_port_data_input {
+  width: 100px;
+  height: 36px;
+  margin-left: 20px;
+  padding: 0;
+  text-align: center;
+}
+
+.ms_add_yaml_edit_data_textarea {
+  width: 760px;
+  border: solid 1px #fff;
+  border-radius: 6px;
+  box-shadow: 2px 2px 4px 0 rgba(152, 171, 217, 0.1);
+  background-color: #fff;
+  font-size: 13px;
+  font-family: NotoSansKR-Regula;
+  color: #6d6f73;
+}
+
+.ms_add_confirm_button {
+  width: 165px;
+  margin: 50px 0;
+}
+
+.port_btns {
+  margin-left: 15px;
+}
+
+.port_btn { 
+  width: 40px;
+  height: 40px;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+#ms_port_inputs:not(:last-child){
+  margin-bottom: 10px;
+}
+
+.container_info_box {
+  padding-top: 15px;
+  border-top: solid 1px #e1e2e6;
+  border-bottom: solid 1px #e1e2e6;
+}
+
+.ms_service_add_confirm_button {
+  width: 165px;
+  margin: 50px 0 50px 15px;
+}
+
+/* Network */
+.network_cnis_container {
+  padding: 20px
+}
+
+.resource_input_title {
+  margin-right: 10px;
+  font-family: 'NotoSansKR-Medium';
+  font-size: 14px;
+  font-weight: 500;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #5a6370;
+}
+
+.resource_input_div_input_title {
+  width: 63px;
+  font-family: 'NotoSansKR-Medium';
+  font-size: 13px;
+  font-weight: 500;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #9fa5ae;
+}
+
+#nic_list {
+  margin-top: 10px;
+}
+
+#nic_list thead th {
+  font-family: 'NotoSansKR-Medium';
+  font-size: 13px;
+  font-weight: 500;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #f5f8ff;
+  border: none;
+}
+
+#nic_list thead tr {
+  box-shadow: 2px 2px 4px 0 rgba(98, 133, 217, 0.1);
+  background-color: #9fa5ae;
+  height: 40px;
+}
+
+#nic_list tbody tr {
+  box-shadow: 2px 2px 4px 0 rgba(98, 133, 217, 0.1);
+  background-color: #ffffff;
+  height: 40px;
+}
+
+#nic_list table {
+  border-spacing: 0 5px;
+}
+
+#nic_list tbody {
+  display: block;
+  height: 146px;
+  overflow-y: auto;
+}
+
+#nic_list thead {
+  display: block;
+}
+
+#nic_list tbody::-webkit-scrollbar {
+  width: 10.5px;
+}
+
+#nic_list tbody::-webkit-scrollbar-track {
+  height: 10px;
+}
+
+#nic_list tbody::-webkit-scrollbar-thumb {
+  background-color: #e9ebf6;
+  border-radius: 2px;
+}
+
+#nic_list tbody::-webkit-scrollbar-track-piece:start, #nic_list tbody::-webkit-scrollbar-track-piece:end {
+  margin-top: 17px;
+  background-color: #f8f8f8;
+  border-radius: 2px;
+  margin-bottom: 17px;
+}
+
+.nic_check_box {
+  display: none;
+}
+
+.nic_check_box + .nic_check_label {
+  width: 20px;
+  height: 20px;
+  background: url('../../assets/img/btn-checkbox-inactive/btn-checkbox-inactive.png') no-repeat;
+  object-fit: contain;
+}
+
+.nic_check_box:checked + .nic_check_label {
+  width: 20px;
+  height: 20px;
+  background: url('../../assets/img/btn-checkbox-active/btn-checkbox-active.png') no-repeat;
+  object-fit: contain;
+}
+
+
+
