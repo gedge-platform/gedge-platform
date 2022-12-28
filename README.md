@@ -34,7 +34,7 @@ For the Edge AI service, it provides real-time, distribued, high-reliability and
 - TBD
 
 ## Architecture
-![architecture](https://github.com/gedge-platform/gedge-platform/blob/master/docs/architecture.png)
+![image01](https://user-images.githubusercontent.com/29933947/209770011-9954a1f5-2834-4750-b9fa-555ed8272a4d.png)
 
 ## Components
 - GS : GEdge Service platform (Ultra low-latency Cloud Edge Service Platform)
