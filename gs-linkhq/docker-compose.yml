@@ -1,67 +1,41 @@
 version: "3.9"
 services:
-  env:
-    build: env
-    restart: always
+  vedge:
+    build: vedge
+    # restart: always
     environment:
       CONFIG_PATH: config.yaml
-      DEBUG: "true"
-      SILENT: "false"
-
-  task-db:
-    image: redis:7.0.4-bullseye
-    command:
-      - "--loglevel warning"
+      LOG_LEVEL: "debug"
 
   agent:
     build: agent
     depends_on:
-      - env
-      - task-db
+      - vedge
     links:
-      - env
-      - task-db
+      - vedge
     volumes:
       - ./weights:/etc/weights
-    restart: always
+    # restart: always
     deploy:
       resources:
         reservations:
           devices:
             - capabilities: [gpu]
     environment:
-      ENV_ADDRESS: env
+      ENV_ADDRESS: vedge
       ENV_PORT: 80
-      DEBUG: "true"
-      SILENT: "false"
+      LOG_LEVEL: "debug"
 
-  generator:
+  task-generator:
     build: task-generator
     depends_on:
       - agent
     links:
       - agent
-    restart: always
+    # restart: always
     environment:
-      LAMBDA: 1.0
-      TIME: 1.0
+      LAMBDA: 0.1
+      SPEED: 10
       AGENT_ADDRESS: agent
       AGENT_PORT: 80
-      DEBUG: "true"
-      SILENT: "false"
-
-#  test:
-#    build: test
-#    depends_on:
-#      - agent
-#      - env
-#    links:
-#      - agent
-#      - env
-#    environment:
-#      AGENT_ADDRESS: agent
-#      AGENT_PORT: 80
-#      ENV_ADDRESS: env
-#      ENV_PORT: 80
-
-
+      LOG_LEVEL: "debug"

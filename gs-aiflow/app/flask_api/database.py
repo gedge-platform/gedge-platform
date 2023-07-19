@@ -1,40 +1,63 @@
 import os
-import mysql.connector
+import sys
 
+import mysql.connector
 from flask_api.global_def import g_var
 
 
-def create_tables(dbcon=None):
-    mycon = mysql.connector.connect(
-        host='localhost',
-        user='admin',
-        password='admin',
-    )
+dbHost = os.getenv('DB_HOST', 'localhost')
+dbPort = os.getenv('DB_PORT', '3306')
+dbUser = os.getenv('DB_USER', 'admin')
+dbPass = os.getenv('DB_PASS', 'admin')
 
-    cursor = mycon.cursor()
-    cursor.execute('SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED')
-    cursor.execute(f'CREATE DATABASE IF NOT EXISTS {"aieyeflow"} CHARACTER SET utf8')
-    cursor.execute('USE aieyeflow')
-    mycon.commit()
+def create_tables(dbcon=None):
+    if dbcon is None:
+        try:
+            dbcon = mysql.connector.connect(
+                host=dbHost,
+                port=dbPort,
+                user=dbUser,
+                password=dbPass,
+            )
+        except:
+            print("CANT CONNECT DATABASE")
+            sys.exit(1)
+
+    cursor = dbcon.cursor()
+    cursor.execute(
+        'SHOW DATABASES'
+    )
+    rets = cursor.fetchall()
+
+    if ('aiflow',) in rets:
+        #return print("DATABASE ALREADY EXIST")
+        print("DATABASE ALREADY EXIST")
+    else:
+        cursor.execute('SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED')
+        cursor.execute(f'CREATE DATABASE IF NOT EXISTS {"aiflow"} CHARACTER SET utf8')
+    cursor.execute('USE aiflow')
+    dbcon.commit()
 
     import codecs
     with codecs.open(filename='./runtime_data/clusterDB.sql', mode='r', encoding='utf-8') as f:
         sqls = f.read()
-    cursor = mycon.cursor()
+    cursor = dbcon.cursor()
     rs = cursor.execute(sqls, multi=True)
     for r in rs:
         pass
-    mycon.commit()
+    dbcon.commit()
 
-    return print("SUCCESS CREATE DATABASE")
+    return print("SUCCESS SET DATABASE")
 
 
 def get_db_connection():
-    if not g_var.mycon:
+    if not g_var.mycon or not g_var.mycon.is_connected():
         g_var.mycon = mysql.connector.connect(
-            host='localhost',
-            database='aieyeflow',
-            user='admin', 
-            password='admin',
+            host=dbHost,
+            port=dbPort,
+            user=dbUser,
+            database='aiflow',
+            password=dbPass,
         )
+
     return g_var.mycon

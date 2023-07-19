@@ -6,7 +6,7 @@
 #sidemenu{
     width: 300px;
     height: 100%;
-    background-color:#5e5555
+    background-color:#404040
 }
 
 #sidemenu a{
@@ -22,18 +22,51 @@
 #sidemenu a:active{
     color:#ffffff
 }
-
-#image_aieyeflow{
-    display:block;
-    margin-left:auto;
-    margin-right:auto;
+.nav__link {
+    grid-template-columns: max-content max-content;
+    align-items: center;
+    column-gap: .75rem;
+    /* padding: .75rem; */
+    color: #FFFFFF;
+    border-radius: .5rem;
+    margin-bottom: 1rem;
+    transition: .3s;
+    width: 100%;
+    cursor: pointer;
 }
 
-#body{
+.nav__link:hover {
+    background-color: #0c5df4;
+}
 
+
+
+.pass_input input{
+    background-color: #F1F1F5;
+}
+
+#image_aieyeflow {
+    height: auto;
+}
+
+#body {
+    padding-left: 30px;
+    padding-right: 30px;
     display: flex;
     width: 100%;
-    overflow-y:hidden;
+    height: 100%;
+    overflow-y: hidden;
+
+    /* 색 */
+    --waiting_status: #2196f3;
+    --running_status: #23C723;
+    --succeeded_status: #005200;
+    --pending_status: orange;
+    --failed_status: red;
+    --train_task: #F5C9B2;
+    --validate_task: #9AC8F5;
+    --optimization_task: #CBF5DC;
+    --opt_validate_task: #BBBBBB;
 }
 #body_main{
     width: 100%;
@@ -41,14 +74,24 @@
 #monitor_main{
     width:100%;
 }
-
-#side{
-
+#html{
+    width: 100%;
+    height: 100%;
 }
-#image_aieyeflow{
-    width:280px;
 
+html,body{
+    height: 100%;
 }
+
+#root{
+    height: 100%;
+}
+
+#main_wrap{
+    height: 100%;
+    overflow-y:hidden;
+}
+
 
 .tableStyle{
     border: 1px solid black;
@@ -198,6 +241,11 @@
     flex:1;
 }
 
+#react_flow{
+    display:flex;
+    flex:1;
+}
+
 #deleteDeploymentContent select{
     width:100%;
     font-size:2em;
@@ -242,6 +290,10 @@
     text-align:right;
 }
 
+#reactflow_wrapper{
+    width: 100%;
+    height: 85%;
+}
 /* every */
 .formErrors{
     white-space:pre-wrap;
@@ -278,4 +330,230 @@
     padding: 10px;
     height:20rem;
     pointer-events: none;
+}
+
+#newflowchart{
+    padding: 10px;
+    height:20rem;
+}
+
+#node_info_wrapper{
+    width: 100%;
+}
+
+#unchanged_textarea{
+    resize: none;
+    width: 100%;
+}
+
+/* path {
+    fill: none;
+    stroke: black;
+  } */
+
+#sidemenu h1 {
+    padding-left: 24px;
+    border-bottom: 1px solid;
+}
+
+#components-layout-demo-top-side-2 .logo {
+    float: left;
+    width: 120px;
+    height: 31px;
+    margin: 16px 24px 16px 0;
+    background: rgba(255, 255, 255, 0.3);
+  }
+  
+  .ant-row-rtl #components-layout-demo-top-side-2 .logo {
+    float: right;
+    margin: 16px 0 16px 24px;
+  }
+/* #sidemenu h1:hover {
+    color: #0c5df4;
+} */
+.ant-table-tbody > tr.ant-table-row:hover > td {
+    background: lightgrey !important;
+}
+
+.ant-table-tbody > tr.ant-table-row > td {
+    padding: 8px;
+}
+
+/* 필수별표 label class required */
+  .required:after {
+    content:" *";
+    color: red;
+  }
+
+.project_detail_row{
+    min-height: 30px;
+}
+
+.project_detail_row .ant-col{
+    vertical-align: middle;
+    padding-left: 15px;
+    border: 1px solid lightgrey;
+}
+
+.project_detail_row h4{
+    margin: 5px 0;
+}
+
+
+.project_detail_col.head{
+    background-color: #DADADA;
+}
+
+.project_detail_col.data{
+    background-color: #FFFFFF;
+}
+
+#project_detail{
+  border: 1px solid black;
+}
+
+
+.dag_define_detail_row{
+    min-height: 30px;
+}
+
+.dag_define_detail_row .ant-col{
+    vertical-align: middle;
+    padding-left: 15px;
+    border: 1px solid lightgrey;
+}
+
+.dag_define_detail_row h4{
+    margin: 5px 0;
+}
+
+
+.dag_define_detail_col.head{
+    background-color: #DADADA;
+}
+
+.dag_define_detail_col.data{
+    background-color: #FFFFFF;
+}
+
+#dag_define_detail{
+  border: 1px solid black;
+}
+
+.content_box{
+    border-radius:20px;
+    background-color: #ffeeee;
+    padding:15px; 
+    color : #000000;
+    margin-top:20px;
+}
+
+/* .pod_node_border{
+    border-radius: 20px;
+    background-color: #FFFFFF;
+
+    padding: 6px;
+}
+.pod_node{
+    border-radius: 20px;
+    text-align: center;
+    vertical-align: middle;
+    min-height: 50px;
+    min-width: 130px;
+    font-weight: bold;
+} */
+
+.pod_node_border{
+    border-radius: 25px;
+    background-color: #FFFFFF;
+    padding: 6px;
+    width: 52px;
+    height: 52px;
+    margin: auto; 
+    position: relative;
+}
+.pod_node{
+    border-radius: 20px;
+    text-align: center;
+    vertical-align: middle;
+    position: absolute;
+    top: 6px; 
+    height: 40px;
+    width: 40px;
+    margin: auto;
+    font-weight: bold;
+}
+
+.node_text_wrapper{
+    width: 200px;
+    text-align: center;
+    overflow: hidden;
+    display: inline-block;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    font-weight: bold;
+    font-size: 23px;
+}
+
+.dag_status_color, .dag_task_color{
+    width:20px;
+    height:20px; 
+    border-radius:20px;
+    margin: 0 3px;
+}
+.dag_task_color{
+    border: #000000 solid 2px;
+}
+
+.dag_status_color.waiting{
+    background-color:var(--waiting_status); 
+}
+.dag_status_color.pending{
+    background-color:var(--pending_status); 
+}
+.dag_status_color.running{
+    background-color:var(--running_status); 
+}
+.dag_status_color.succeeded{
+    background-color:var(--succeeded_status); 
+}
+.dag_status_color.failed{
+    background-color:var(--failed_status); 
+}
+
+.dag_status_span{
+    margin: 0 3px;
+    font-weight:bold;
+}
+
+.dag_task_color.train{
+    background-color:var(--train_task); 
+}
+.dag_task_color.validate{
+    background-color:var(--validate_task); 
+}
+.dag_task_color.optimization{
+    background-color:var(--optimization_task); 
+}
+.dag_task_color.opt_validate{
+    background-color:var(--opt_validate_task); 
+}
+
+
+/* 로그인 */
+#login-form_ID{
+    height: 50px;
+    font-weight: bold;
+}
+
+#login-form_PW{
+    height: 40px;
+    font-weight: bold;
+}
+
+#login-form_Submit{
+    height: 50px;
+    font-weight: bold;
+    font-size: large;
+    border: 1px solid #999999;
 }

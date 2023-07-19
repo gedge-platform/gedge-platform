@@ -1,0 +1,43 @@
+/* 이벤트 검색 결과 레이어 */
+.layer_event {
+    width:80%;
+    width:500px;
+    width: auto;
+    /*min-width: 1280px;
+    min-height: 720px;*/
+    height: 83%;
+    height: auto;
+    position: fixed;
+    transform: translateX(-50%) translateY(-50%);
+	transition: opacity 0.5s ease, background 0.5s ease;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    max-height: 80%;
+    max-width: 50%;
+    top: 50%;
+    left:50%;
+    overflow: auto;
+
+    border: 1px solid #525151;
+    font-size:14px;
+    font-weight:normal;
+    z-index:100;
+}
+
+.layer_event .close {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
+
+.layer_event h3{
+    font-size: 20px;
+    font-weight: bold;
+    color: #5a4fef;
+    margin-bottom: 10px
+}

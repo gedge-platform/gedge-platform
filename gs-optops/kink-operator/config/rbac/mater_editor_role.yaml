@@ -1,0 +1,24 @@
+# permissions for end users to edit maters.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mater-editor-role
+rules:
+- apiGroups:
+  - odk.dudaji.com
+  resources:
+  - maters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - odk.dudaji.com
+  resources:
+  - maters/status
+  verbs:
+  - get

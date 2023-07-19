@@ -1,0 +1,20 @@
+# permissions for end users to view vk8s.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vk8s-viewer-role
+rules:
+- apiGroups:
+  - vk8s.skt.co.kr
+  resources:
+  - vk8s
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - vk8s.skt.co.kr
+  resources:
+  - vk8s/status
+  verbs:
+  - get

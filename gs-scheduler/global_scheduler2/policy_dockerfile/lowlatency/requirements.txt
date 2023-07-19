@@ -1,4 +1,0 @@
-Flask
-redis
-kafka-python
-kubernetes

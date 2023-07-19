@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gedge-cluster-agent-account
+  namespace: gedge-system-scheduler
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gedge-cluster-agent-node-role
+rules:
+- apiGroups: ["","extensions","apps","storage.k8s.io"]
+  resources: ["services","nodes","nodes/status","pods","deployments","replicasets","daemonsets","serviceaccounts","persistentvolumes","persistentvolumeclaims","storageclasses","namespaces"]
+  verbs: ['create', 'delete', 'deletecollection', 'get', 'list', 'patch', 'update', 'watch']
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gedge-cluster-agent-node-role-binding
+subjects:
+- kind: ServiceAccount
+  name: gedge-cluster-agent-account
+  namespace: gedge-system-scheduler
+roleRef:
+  kind: ClusterRole
+  name: gedge-cluster-agent-node-role
+  apiGroup: ""  
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gedge-cluster-agent-role
+rules:
+- apiGroups: ['rbac.authorization.k8s.io']
+  resources: ['clusterroles','clusterrolebindings']
+  verbs: ['create', 'delete', 'deletecollection', 'get', 'list', 'patch', 'update', 'watch']
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gedge-cluster-agent-role-binding
+subjects:
+- kind: ServiceAccount
+  name: gedge-cluster-agent-account
+  namespace: gedge-system-scheduler
+roleRef:
+  kind: ClusterRole
+  name: gedge-cluster-agent-role
+  apiGroup: ""  
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gedge-cluster-agent-scheduler-role-binding
+subjects:
+- kind: ServiceAccount
+  name: gedge-cluster-agent-account
+  namespace: gedge-system-scheduler
+roleRef:
+  kind: ClusterRole
+  name: system:kube-scheduler
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gedge-cluster-agent
+  namespace: gedge-system-scheduler
+spec:
+  serviceAccount: gedge-cluster-agent-account
+  containers:
+  - name: gedge-cluster-agent
+    image: dockereyes/gedge-cluster-agent
+    env:
+    - name: API_GATEWAY_HOST
+      valueFrom:
+        configMapKeyRef:
+          name: gedge-system-scheduler-configmap
+          key: api-gateway-host
+    - name: API_GATEWAY_PORT
+      valueFrom:
+        configMapKeyRef:
+          name: gedge-system-scheduler-configmap
+          key: api-gateway-port
+    - name: GCLUSTER_NAME
+      value: 'cs'  
+    - name: GCLUSTER_TYPE
+      value: 'baremetal'    
+    ports:
+    - containerPort: 5000

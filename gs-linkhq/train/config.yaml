@@ -1,9 +1,0 @@
-edges:
-  - name: edge1
-    frequency: 100.0
-
-  - name: edge2
-    frequency: 100.0
-
-  - name: edge3
-    frequency: 100.0

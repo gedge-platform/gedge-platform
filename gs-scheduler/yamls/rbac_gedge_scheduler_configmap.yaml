@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gedge-system-scheduler-configmap
+  namespace: gedge-system-scheduler
+data:
+  api-gateway-host: '129.254.202.42'
+  api-gateway-port: '31414'

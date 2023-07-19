@@ -1,13 +1,11 @@
-FROM python:3.9-slim-bullseye
+FROM python:3.11.3-slim-bullseye
 
-RUN apt update && \
-    apt install --no-install-recommends -y build-essential gcc && \
-    apt clean && rm -rf /var/lib/apt/lists/*
-
+RUN pip install --upgrade pip
 COPY requirements.txt /requirements.txt
-RUN pip install --no-cache-dir --user -r /requirements.txt
-COPY ./src /src
-WORKDIR /src
+RUN pip install --no-cache-dir -r /requirements.txt
+
+COPY ./src /srv
+WORKDIR /srv
 
 ENTRYPOINT ["python3", "run.py"]
 CMD ["-l", "1.0"]

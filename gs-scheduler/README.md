@@ -1,13 +1,21 @@
-# GE-Global Scheduler 3.0
+# GE-Global Scheduler 3.5
 
 ## For Multiple Edge Clusters and Cloud Cluster
 
 - Can Apply yaml for 3L Clusters (Edge Cluster / Near Edge Cluster / Cloud Cluster)  
-- Updated Center Management Cluster 
+- Updated Center Management Cluster
+
+## Add Gedge Configmap for platform services 
+
+- name is gedge-system-scheduler-configmap.yaml 
+- platform service server ip
+- platform service port
 
 ## Updated GEdge-Scheduler Main Core  
 
-- Add New Platform info POD at Center Management Cluster 
+- Add New Platform info POD at Center Management Cluster
+- Update kafka message module code
+- Add New topic for processing Rest API for resources of multiple cluster    
 - Changed to Run Front Server POD and GEdge Scheduler Policy PODs All at Once
 
 ![gedge_scheduler_system](./assets/gedge_scheduler_system.png)
@@ -16,14 +24,16 @@
 ## Updated GEdge-Scheduler Source Code for Multiple Users and Workspace, Project 
 
 - Add Newly Multiple Users
-- Workspace is created from Cluster Set ( User Selected Clusters) 
+  * Admin User/Normal User
+  * login management 
+- Workspace is created from Cluster Set ( User Selected Clusters)
+- User applitions is seperated by project    
 
 ![user_workspace_project](./assets/user_workspace_project.png)
 
-
-## Set 5 clusters for Developing System  
-- Set Three Edge Clusters 
-- Set One Cloud Cluster (not real cloud) 
+## Update Version clusters for Developing System  
+- Set K8S version 1.22.x
+- Support contaioner runtime are docker,containerd
 
 ![testing_system](./assets/testing_system.png)
 
@@ -31,5 +41,5 @@
 
 - (G)MostRequestedPriority for 3LT 
 - (G)LowLatencyPriority for 3LT
+- GSetClusters for 3LT
 - GSelectCluster for 3LT
-

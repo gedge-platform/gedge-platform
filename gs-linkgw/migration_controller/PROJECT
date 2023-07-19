@@ -1,0 +1,16 @@
+domain: etri.re.kr
+layout:
+- go.kubebuilder.io/v3
+projectName: livmigration
+repo: github.com/src/gedge.com/Livmigration
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: etri.re.kr
+  group: gedgemig
+  kind: Livmigration
+  path: github.com/src/gedge.com/Livmigration/api/v1
+  version: v1
+version: "3"

@@ -151,6 +151,7 @@ function Test(props) {
                     legendPosition: 'middle', // 글씨 위치
                     legendOffset: 40, // 글씨와 chart간 간격
                 }}
+                
                 axisLeft={{
                     tickSize: 5, // 값 설명하기 위해 튀어나오는 점 크기
                     tickPadding: 5, // tick padding

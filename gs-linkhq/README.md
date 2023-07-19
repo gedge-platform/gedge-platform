@@ -41,18 +41,16 @@ GS-LinkHQ consists of three subprojects
 
 ![development_workflow](./docs/develop_workflow.png)
 
-- [`simulator`](./simulator): Develop proposed methods first with simulator
+- [`vedge`](./vedge): Develop proposed methods first with simulator
   -  Virtual Cluster edge(Single cluster based edge) environment
     - Include resource map, network performance map, and offloading service(task) definition
-    - Use Q-Learning, DQN with intelligent technology
-- [`testbed`](./testbed): Develop and validate agents on testbed
-  - K8s based single cluster environment
+    - Use DQN, PPO with intelligent technology
 - [`agent`](./agent): Reinforcement learning agent developed with the above two projects
   - Real-world (`GEdge-Platform`) environment
 
 
 ### Requirements
-- Docker (or Nvidia Docker)
+- Nvidia Docker
 - Docker compose
 
 ### Usage

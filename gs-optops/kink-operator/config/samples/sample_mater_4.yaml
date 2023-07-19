@@ -1,0 +1,21 @@
+apiVersion: odk.dudaji.com/v1alpha1
+kind: Mater
+metadata:
+  name: sample4
+spec:
+  browserPort: 30003
+  nodes:
+  - name: sample-master4
+    image: dudaji/kink:v1.21-centos
+    role: master
+  - name: sample-worker4
+    image: dudaji/kink:v1.21-centos-gpu
+    resources:
+      requests:
+        gpu: 1
+      limits:
+        gpu: 1
+    role: worker
+  nfsServer: dudaji-disk.synology.me
+  nfsMountPath: /volume1/odk/local
+  kubeflow: false

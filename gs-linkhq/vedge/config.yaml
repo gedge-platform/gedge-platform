@@ -1,0 +1,15 @@
+edges:
+  - name: edge0
+    cpu: 32
+    memory: 64
+    gpu: 16
+
+  - name: edge1
+    cpu: 32
+    memory: 64
+    gpu: 16
+  
+  - name: edge2
+    cpu: 32
+    memory: 64
+    gpu: 16

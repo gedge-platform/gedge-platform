@@ -1,10 +1,83 @@
 # Changelog
 
+- __[v3.5 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v35-release)__
 - __[v3.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v30-release)__
 - __[v2.5 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v25-release)__
 - __[v2.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v20-release)__
 - __[v1.5 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v15-release)__
 - __[v1.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v10-release)__
+
+
+## v3.5 Release
+### GS-AIFLOW
+- 사용자 기능
+  - 프로젝트 관리
+  - 스토리지 관리
+  - DAG 구성 
+  - Task 런칭, 모니터링
+- 관리자 기능
+  - 사용자 관리
+  - 프로젝트 관리
+- backend
+  - GM-Center 연동
+### GS-LinkHQ
+- 성능 테스트용 코드 Dockerfile 마이그레이션
+  - [vedge](https://github.com/gedge-platform/gs-linkhq/tree/main/vedge)
+  - [agent](https://github.com/gedge-platform/gs-linkhq/tree/main/agent)
+  - [task-generator](https://github.com/gedge-platform/gs-linkhq/tree/main/task-generator)
+- Compose 파일 수정
+- 강화학습 모델 다양화
+  - DQN
+  - PPO
+- 컨테이너간 통신을 위한 API 작성
+- 정책 생성용 리소스 요구사항 추가
+  - CPU
+  - Memory
+  - GPU
+  - Deadline
+### GM-Center
+- gm-center 기능 고도화
+  - GS-Scheduler 연동
+  - 버그 수정 및 안정성 개선
+### GM-Tool
+- gm-tool 고도화
+  - Deployment 생성 기능 업데이트
+  - Pod 생성 기능 업데이트
+  - FasS 기능 추가
+### GM-Center
+- gm-center 기능 고도화
+  - GS-Scheduler 연동
+  - 버그 수정 및 안정성 개선
+### GM-Scheduler
+- 다중 엣지 클러스터와 클라우드 클러스터 고려
+  - 3L Clusters (Edge Cluster / Near Edge Cluster / Cloud Cluster)에 대한 yaml 파일 적용 기능 업데이트
+  - Center Management Cluster 업데이트
+- 플랫폼 서비스를 위한 Gedge Configmap 추가
+  - gedge-system-scheduler-configmap.yaml 추가
+  - platform service server ip 추가
+  - platform service port 추가
+- Gedge Scheduler 코어 업데이트
+  - Center Management Cluster에 새로운 Platform info Pod 추가
+  - kafka message module 코드 수정
+  - 멀티 클러스터 환경의 리소스에 대한 Rest API 처리 추가
+  - Front Server Pod와 GEdge Scheduler Policy Pod의 동시 실행 업데이트
+- 다중 유저, 워크스페이스, 프로젝트를 위한 코드 업데이트
+  - 다중 유저 기능 추가
+    - 관리자 계정 / 일반 유저 분리
+    - 로그인 관리 추가
+  - 사용자가 선택한 클러스터에 워크스페이스 생성
+  - 프로젝트 단위의 유저 어플리케이션 분리
+- 개발 시스템을 위한 클러스터 버전
+  - K8s의 버전을 1.22.x로 고정
+  - docker와 containerd를 런타임 환경에서 지원
+- 새로운 스케쥴러 정책 추가
+  - (G)MostRequestedPriority for 3LT
+  - (G)LowLatencyPriority for 3LT
+  - GSetClusters for 3LT
+  - GSelectCluster for 3LT
+### GS-Link
+- gs-linkgw 아키텍처 설명 
+- gs-linkgw 다중 클러스터 마이그레이션을 위한 제어기 프로그램 업로드 
 
 
 ## v3.0 Release

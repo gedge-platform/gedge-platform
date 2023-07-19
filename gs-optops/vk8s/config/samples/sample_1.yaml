@@ -1,0 +1,21 @@
+apiVersion: vk8s.skt.co.kr/v1alpha1
+kind: Vk8s
+metadata:
+  name: sample
+spec:
+  browserPort: 30000
+  nodes:
+  - name: sample-master
+    image: dudaji/kink:v1.20
+    role: master
+  - name: sample-worker
+    image: dudaji/kink:v1.20-gpu
+    role: worker
+    resources:
+      requests:
+        gpu: 1
+      limits:
+        gpu: 1
+  nfsServer: test.synology.me
+  nfsMountPath: /volume1/test
+  kubeflow: false

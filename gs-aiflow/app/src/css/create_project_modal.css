@@ -1,0 +1,19 @@
+#create_project_modal{
+  max-height: 600px;
+  padding-right: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#create_project_modal .ant-row{
+  min-height:40px;
+  align-items: center;
+}
+
+#create_project_modal .ant-row > label{
+ font-weight: bold; 
+}
+
+#create_project_modal .ant-col > input{
+  width: 100%;
+}

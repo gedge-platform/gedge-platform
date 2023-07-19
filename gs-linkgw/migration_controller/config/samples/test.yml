@@ -1,0 +1,14 @@
+apiVersion: gedgemig.etri.re.kr/v1
+kind: Livmigration
+metadata:
+  name: livmigration-sample
+  labels:
+   name: livmigration-sample
+spec:
+  replicas: 1
+  action: checkpoint
+  snapshotimgPath: /mnt/shared_sheepfs/savedState
+  sourcePod: simple
+  destHost: kubeetri2
+  selector:
+    migPod: 

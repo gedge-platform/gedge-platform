@@ -1,0 +1,20 @@
+# permissions for end users to view maters.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mater-viewer-role
+rules:
+- apiGroups:
+  - odk.dudaji.com
+  resources:
+  - maters
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - odk.dudaji.com
+  resources:
+  - maters/status
+  verbs:
+  - get

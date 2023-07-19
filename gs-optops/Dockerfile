@@ -1,0 +1,108 @@
+FROM centos:7
+
+RUN yum -y update; \
+    yum install -y systemd;
+
+VOLUME /var/lib/docker
+
+RUN yum install -y procps \
+    curl \
+    iproute \
+    jq \
+    kmod \
+    net-tools \
+    iputils \
+    ca-certificates \
+    fuse \
+    rsync \
+    redhat-lsb-core
+
+RUN yum install -y \
+    gnupg release vim wget jq \
+    git nfs-common \
+    tmux net-tools dnsutils traceroute iputils-ping \
+    e2fsprogs;
+
+
+# install docker
+RUN yum install -y yum-utils; \
+    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo; \
+    yum install -y docker-ce docker-ce-cli containerd.io
+
+RUN mkdir -p /etc/docker
+# RUN printf '{\n\t"storage-driver" : "devicemapper",\n\t"storage-opts":["dm.override_udev_sync_check=true"]\n}' > /etc/docker/daemon.json
+
+# install tools for kubernetes
+RUN yum install -y \
+    ebtables \
+    ethtool \
+    socat \
+    iproute2 \
+    kmod \
+    conntrack
+
+# install CNI plugin
+ENV CNI_VERSION="v0.8.2"
+ENV ARCH="amd64"
+RUN mkdir -p /opt/cni/bin \
+    && curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-${ARCH}-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+
+ENV DOWNLOAD_DIR=/usr/local/bin
+RUN mkdir -p ${DOWNLOAD_DIR}
+
+# install kubeadm, kubectl, kubelet
+ARG K8S_RELEASE_VERSION="v1.23.0"
+RUN RELEASE=${K8S_RELEASE_VERSION};\
+    ARCH="amd64"; \
+    cd ${DOWNLOAD_DIR}; \
+    curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${RELEASE}/bin/linux/${ARCH}/{kubeadm,kubelet,kubectl}; \
+    chmod +x kubeadm; \
+    chmod +x kubelet; \
+    chmod +x kubectl;
+
+# install kubelet systemd service
+ENV RELEASE_VERSION="v0.4.0"
+RUN curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" | sed "s:/usr/bin:${DOWNLOAD_DIR}:g" | tee /etc/systemd/system/kubelet.service \
+    && mkdir -p /etc/systemd/system/kubelet.service.d \
+    && curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" | sed "s:/usr/bin:${DOWNLOAD_DIR}:g" | tee /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+# setting for kubernetes
+RUN mkdir -p /etc/modules-load.d \
+    && printf "overlay\nbr_netfilter" > /etc/modules-load.d/k8s.conf \
+    && mkdir -p /etc/sysctl.d \
+    && printf "net.bridge.bridge-nf-call-iptables = 1\nnet.ipv4.ip_forward=1\nnet.bridge.bridge-nf-call-ip6tables=1\nnet.ipv6.conf.default.disable_ipv6=0\nnet.ipv6.conf.all.disable_ipv6=0" > /etc/sysctl.d/k8s.conf
+
+# install kustomize for building kubeflow
+RUN wget https://github.com/kubernetes-sigs/kustomize/releases/download/v3.2.0/kustomize_3.2.0_linux_amd64; \
+    chmod 755 kustomize_3.2.0_linux_amd64; \
+    mv kustomize_3.2.0_linux_amd64 /usr/local/bin/kustomize; \
+    kustomize version
+
+# install helm for nfs-client-provisioner
+RUN wget https://get.helm.sh/helm-v3.6.2-linux-386.tar.gz; \
+    tar xzvf helm-v3.6.2-linux-386.tar.gz; \
+    mv linux-386/helm /usr/local/bin
+
+# change kubelet cgroup manager to cgroupfs
+RUN printf '# Note: This dropin only works with kubeadm and kubelet v1.11+\n[Service]\nEnvironment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"\nEnvironment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"\nEnvironment="KUBELET_CGROUP_ARGS=--cgroup-driver=cgroupfs"\n# This is a file that "kubeadm init" and "kubeadm join" generates at runtime, populating the KUBELET_KUBEADM_ARGS variable dynamically\nEnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env\n# This is a file that the user can use for overrides of the kubelet args as a last resort. Preferably, the user should use\n# the .NodeRegistration.KubeletExtraArgs object in the configuration files instead. KUBELET_EXTRA_ARGS should be sourced from this file.\nEnvironmentFile=-/etc/default/kubelet\nExecStart=\nExecStart=/usr/local/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS $KUBELET_CGROUP_ARGS' > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+# set outer and inter prompt color
+RUN sed -i '$aif [[ $KUBE_NODE_TYPE == "OUTER" ]]; then\n  export PS1="\\[\\e[0;32m\\](outer)\\[\\e[m\\] \\[\\e]0;\\u@\\h: \\w\\a\\]${debian_chroot:+($debian_chroot)}\\u@\\h:\\w\\$ "\nelif [[ $KUBE_NODE_TYPE == "INNER" ]]; then\n  export PS1="\\[\\e[0;31m\\](inner)\\[\\e[m\\] \\[\\e]0;\\u@\\h: \\w\\a\\]${debian_chroot:+($debian_chroot)}\\u@\\h:\\w\\$ "\nfi' ~/.bashrc
+
+WORKDIR /
+
+COPY ../../Downloads/vk8s .
+
+RUN mv k9s /usr/local/bin/k9s
+
+RUN chmod +x init.sh\
+    && chmod +x init-kubernetes.sh \
+    && chmod +x reset-kubernetes.sh \
+    && chmod +x install-kubeflow.sh \
+    && chmod +x /usr/local/bin/k9s \
+    && chmod +x setting-internet.sh
+
+# RUN setenforce 0
+RUN sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+ENTRYPOINT ["/sbin/init"]

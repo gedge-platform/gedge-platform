@@ -1,0 +1,435 @@
+.text-updater-node {
+    height: 130px;
+    border: 1px solid #000;
+    padding: 5px;
+    border-radius: 5px;
+    background: #777;
+    box-shadow: 0px 0px 8px whitesmoke inset;
+    border-radius: 9px;
+
+  }
+  
+  .text-updater-node label {
+    display: block;
+    text-align: center;
+    color: #000;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+$circle-size : 40px;
+.loading-btn-wrapper {
+  display: inline-block;
+  width: 240px;
+  height: 40px;
+  text-align: center;
+}
+.success-btn {
+  $root:&;
+    position: relative;
+    
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    
+    
+    background: #03a903;
+    border: 0;
+    border-radius: 24px;
+    
+    cursor: pointer;
+    
+    transition: all .33s ease-in-out;
+    
+    &:hover {
+      background: #2196f3;
+    }
+    
+    &, &:focus {
+      outline: none;
+    }
+    
+    &--Pending_layout{
+      background: orange;
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: 24px;
+      box-shadow: 0px 0px 10px white inset;
+      border-radius: 9px;
+    }
+    &--Running_layout{
+      background: #23C723;
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: 24px;
+      box-shadow: 0px 0px 10px white inset;
+      border-radius: 9px;
+    }
+    &--Succeeded_layout{
+      background: #005200;
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: 24px;
+      box-shadow: 0px 0px 10px white inset;
+      border-radius: 9px;
+    }
+    &--Failed_layout{
+      background: red;
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: 24px;
+      box-shadow: 0px 0px 10px white inset;
+      border-radius: 9px;
+    }
+    &--Waiting_layout{
+      background: #2196f3;
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: 24px;
+      box-shadow: 0px 0px 10px white inset;
+      border-radius: 9px;
+    }
+
+
+    // Styles for all states
+    &--pending,
+    &--success,
+    &--fail {
+      // Morph button to circle (width equals height)
+      width: $circle-size;
+      
+      // Prevent any further clicks triggering events during animation
+      pointer-events: none;
+      cursor: default;
+      
+      // Hide text
+      #{$root}__text {
+        opacity: 0;
+      }
+    }
+    
+    // State "pending"
+    // Show loading indicator
+    &--pending:before {
+      content: '';
+  
+      position: absolute;
+      top: 50%;
+      left: 50%;
+  
+      display: inline-block;
+  
+      // Can't use percentage here as we already show this icon during morph animation
+      height: #{$circle-size * .7};
+      width: #{$circle-size * .7};
+  
+      border: 3px solid rgba(255, 255, 255, .33);
+      border-top-color: #fff;
+      border-radius: 50%;
+  
+      animation:
+        loading-btn--fade-in .33s ease,
+        loading-btn--rotation .66s linear 0s infinite;
+    }
+      
+    // Success state - show check icon
+    &--success {
+      
+      // Different background color (also on hover)
+      &, &:hover {
+        background: #8bc34a;
+      }
+  
+      // Use "after" pseudo to trigger new fade in animation, as "before" is already used on "--pending"
+      &:after {
+        content: '';
+  
+        position: absolute;
+        top: 50%;
+        left: 50%;
+  
+        // Simulate checkmark icon
+        display: inline-block;
+        height: 25%;
+        width: 50%;
+  
+        border: 3px solid #fff;
+        border-top-width: 0;
+        border-right-width: 0;
+  
+        transform: translate(-50%, -75%) rotate(-45deg);
+  
+        animation: 
+          loading-btn--fade-in .6s ease;
+      }
+    } 
+  
+    // Fail state - show cross icon
+    &--fail {
+      
+      // Different background color (also on hover)
+      &, &:hover {
+        background: #ff5722;
+      }
+  
+      // Use "after" pseudo to trigger new fade in animation, as "before" is already used on "--pending"
+      &:after {
+        content: '';
+  
+        position: absolute;
+        top: 50%;
+        left: 50%;
+  
+        // Simulate cross icon
+        display: inline-block;
+        height: 65%;
+        width: 65%;
+  
+        // Using background gradient is the only solution creating a cross with a single element
+        background: 
+          linear-gradient(
+            to bottom,
+            transparent 44%, 
+            #fff 44%, 
+            #fff 56%,  
+            transparent 56%
+          ),
+  
+          linear-gradient(
+            to right,
+            transparent 44%, 
+            #fff 44%, 
+            #fff 56%,  
+            transparent 56%
+        );
+  
+        transform: translate(-50%, -50%) rotate(-45deg);
+  
+        animation: 
+          loading-btn--fade-in .6s ease;
+      }
+    } 
+    
+    // Text has to be positioned absolute in order prevent line-breaks or trimming of text when morphing button to circle.  
+    &__text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      
+      font-size: 13px;
+      color: #fff;
+      
+      transition: inherit;
+    }
+  }
+  
+  
+  /**
+   * Animations
+   */
+  
+  @keyframes loading-btn--fade-in {
+      0% {
+          opacity: 0;
+      }
+  
+      100% {
+          opacity: 1;
+      }
+  }
+  .pending-btn {
+    $root:&;
+      position: relative;
+      
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      
+      
+    background: #03a9f4;
+      border: 0;
+      border-radius: 24px;
+      
+      cursor: pointer;
+      
+      transition: all .33s ease-in-out;
+      
+      &:hover {
+        background: #2196f3;
+      }
+      
+      &, &:focus {
+        outline: none;
+      }
+      
+      // Styles for all states
+      &--pending,
+      &--success,
+      &--fail {
+        // Morph button to circle (width equals height)
+        width: $circle-size;
+        
+        // Prevent any further clicks triggering events during animation
+        pointer-events: none;
+        cursor: default;
+        
+        // Hide text
+        #{$root}__text {
+          opacity: 0;
+        }
+      }
+      
+      // State "pending"
+      // Show loading indicator
+      &--pending:before {
+        content: '';
+    
+        position: absolute;
+        top: 50%;
+        left: 50%;
+    
+        display: inline-block;
+    
+        // Can't use percentage here as we already show this icon during morph animation
+        height: #{$circle-size * .7};
+        width: #{$circle-size * .7};
+    
+        border: 3px solid rgba(255, 255, 255, .33);
+        border-top-color: #fff;
+        border-radius: 50%;
+    
+        animation:
+          loading-btn--fade-in .33s ease,
+          loading-btn--rotation .66s linear 0s infinite;
+      }
+        
+      // Success state - show check icon
+      &--success {
+        
+        // Different background color (also on hover)
+        &, &:hover {
+          background: #8bc34a;
+        }
+    
+        // Use "after" pseudo to trigger new fade in animation, as "before" is already used on "--pending"
+        &:after {
+          content: '';
+    
+          position: absolute;
+          top: 50%;
+          left: 50%;
+    
+          // Simulate checkmark icon
+          display: inline-block;
+          height: 25%;
+          width: 50%;
+    
+          border: 3px solid #fff;
+          border-top-width: 0;
+          border-right-width: 0;
+    
+          transform: translate(-50%, -75%) rotate(-45deg);
+    
+          animation: 
+            loading-btn--fade-in .6s ease;
+        }
+      } 
+    
+      // Fail state - show cross icon
+      &--fail {
+        
+        // Different background color (also on hover)
+        &, &:hover {
+          background: #ff5722;
+        }
+    
+        // Use "after" pseudo to trigger new fade in animation, as "before" is already used on "--pending"
+        &:after {
+          content: '';
+    
+          position: absolute;
+          top: 50%;
+          left: 50%;
+    
+          // Simulate cross icon
+          display: inline-block;
+          height: 65%;
+          width: 65%;
+    
+          // Using background gradient is the only solution creating a cross with a single element
+          background: 
+            linear-gradient(
+              to bottom,
+              transparent 44%, 
+              #fff 44%, 
+              #fff 56%,  
+              transparent 56%
+            ),
+    
+            linear-gradient(
+              to right,
+              transparent 44%, 
+              #fff 44%, 
+              #fff 56%,  
+              transparent 56%
+          );
+    
+          transform: translate(-50%, -50%) rotate(-45deg);
+    
+          animation: 
+            loading-btn--fade-in .6s ease;
+        }
+      } 
+      
+      // Text has to be positioned absolute in order prevent line-breaks or trimming of text when morphing button to circle.  
+      &__text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        
+        font-size: 13px;
+        color: #fff;
+        
+        transition: inherit;
+      }
+    }
+    
+    
+    /**
+     * Animations
+     */
+    
+    @keyframes loading-btn--fade-in {
+        0% {
+            opacity: 0;
+        }
+    
+        100% {
+            opacity: 1;
+        }
+    }

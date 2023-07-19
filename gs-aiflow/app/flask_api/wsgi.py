@@ -1,7 +1,19 @@
+import sys
 from gevent.pywsgi import WSGIServer
 from web_api import app
 
+
+def main():
+    print("Start Server")
+    try:
+        http_server = WSGIServer(listener=("0.0.0.0", 5500),
+                                 application=app)
+        http_server.serve_forever()
+    except KeyboardInterrupt:
+        print("End Server")
+        sys.exit(0)
+    print("End Server Process")
+
+
 if __name__ == "__main__":
-    http_server=WSGIServer(("172.16.16.155",5500),app)
-    # http_server=WSGIServer(("0.0.0.0",5000),app)
-    http_server.serve_forever()
+    main()

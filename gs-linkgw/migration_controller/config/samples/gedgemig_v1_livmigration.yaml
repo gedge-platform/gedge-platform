@@ -1,0 +1,6 @@
+apiVersion: gedgemig.etri.re.kr/v1
+kind: Livmigration
+metadata:
+  name: livmigration-sample
+spec:
+  # TODO(user): Add fields here

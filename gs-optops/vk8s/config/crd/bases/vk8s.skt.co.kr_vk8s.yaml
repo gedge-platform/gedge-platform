@@ -1,0 +1,124 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.1
+  creationTimestamp: null
+  name: vk8s.vk8s.skt.co.kr
+spec:
+  group: vk8s.skt.co.kr
+  names:
+    kind: Vk8s
+    listKind: Vk8sList
+    plural: vk8s
+    singular: vk8s
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Vk8s is the Schema for the vk8s API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: Vk8sSpec defines the desired state of Vk8s
+            properties:
+              browserPort:
+                format: int32
+                type: integer
+              kubeflow:
+                type: boolean
+              nfsMountPath:
+                type: string
+              nfsServer:
+                type: string
+              nodes:
+                description: Foo is an example field of Vk8s. Edit vk8s_types.go to
+                  remove/update
+                items:
+                  description: NodePod defines the desired state of pod which is used
+                    for inner k8s node
+                  properties:
+                    image:
+                      type: string
+                    name:
+                      type: string
+                    resources:
+                      description: ResourceInfo defines the requests and limits of
+                        resource
+                      properties:
+                        limits:
+                          description: Resource defines cpu, memory and gpu resource
+                          properties:
+                            cpu:
+                              type: string
+                            gpu:
+                              format: int64
+                              type: integer
+                            memory:
+                              type: string
+                          type: object
+                        requests:
+                          description: Resource defines cpu, memory and gpu resource
+                          properties:
+                            cpu:
+                              type: string
+                            gpu:
+                              format: int64
+                              type: integer
+                            memory:
+                              type: string
+                          type: object
+                      type: object
+                    role:
+                      type: string
+                  required:
+                  - image
+                  - name
+                  - role
+                  type: object
+                type: array
+            required:
+            - browserPort
+            - kubeflow
+            - nfsMountPath
+            - nfsServer
+            - nodes
+            type: object
+          status:
+            description: Vk8sStatus defines the observed state of Vk8s
+            properties:
+              vk8ses:
+                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                  of cluster Important: Run "make" to regenerate code after modifying
+                  this file'
+                items:
+                  type: string
+                type: array
+            required:
+            - vk8ses
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
