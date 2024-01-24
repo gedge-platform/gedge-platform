@@ -1,0 +1,80 @@
+load("@rules_erlang//:xref.bzl", "xref")
+load("@rules_erlang//:dialyze.bzl", "dialyze", "plt")
+load(
+    "//:rabbitmq.bzl",
+    "RABBITMQ_DIALYZER_OPTS",
+    "assert_suites",
+    "broker_for_integration_suites",
+    "rabbitmq_app",
+    "rabbitmq_integration_suite",
+    "rabbitmq_suite",
+)
+
+APP_NAME = "rabbitmq_jms_topic_exchange"
+
+APP_DESCRIPTION = "RabbitMQ JMS topic selector exchange plugin"
+
+APP_MODULE = "rabbit_federation_app"
+
+BUILD_DEPS = [
+    "@lager//:erlang_app",
+]
+
+DEPS = [
+    "//deps/rabbit_common:erlang_app",
+]
+
+RUNTIME_DEPS = [
+    "//deps/rabbit:erlang_app",
+]
+
+rabbitmq_app(
+    app_description = APP_DESCRIPTION,
+    app_module = APP_MODULE,
+    app_name = APP_NAME,
+    build_deps = BUILD_DEPS,
+    runtime_deps = RUNTIME_DEPS,
+    deps = DEPS,
+)
+
+xref(tags = ["xref"])
+
+plt(
+    name = "base_plt",
+    deps = DEPS,
+)
+
+dialyze(
+    dialyzer_opts = RABBITMQ_DIALYZER_OPTS,
+    plt = ":base_plt",
+    tags = ["dialyze"],
+    warnings_as_errors = False,
+)
+
+broker_for_integration_suites()
+
+PACKAGE = "deps/rabbitmq_jms_topic_exchange"
+
+suites = [
+    rabbitmq_integration_suite(
+        PACKAGE,
+        name = "rjms_topic_selector_SUITE",
+    ),
+    rabbitmq_suite(
+        name = "rjms_topic_selector_unit_SUITE",
+        size = "small",
+        deps = [
+            "//deps/amqp_client:erlang_app",
+            "//deps/rabbit_common:erlang_app",
+        ],
+    ),
+    rabbitmq_suite(
+        name = "sjx_evaluation_SUITE",
+        size = "small",
+    ),
+]
+
+assert_suites(
+    suites,
+    glob(["test/**/*_SUITE.erl"]),
+)

@@ -1,1 +1,0 @@
-PLUGINS := rabbitmq_management rabbitmq_mqtt rabbitmq_stomp rabbitmq_web_stomp rabbitmq_web_mqtt

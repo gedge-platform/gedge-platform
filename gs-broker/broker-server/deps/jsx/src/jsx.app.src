@@ -1,9 +1,0 @@
-{application,jsx,
-             [{description,"a streaming, evented json parsing toolkit"},
-              {vsn,"3.1.0"},
-              {modules,[]},
-              {registered,[]},
-              {applications,[kernel,stdlib]},
-              {env,[]},
-              {licenses,["MIT"]},
-              {links,[{"Github","https://github.com/talentdeficit/jsx"}]}]}.

@@ -1,0 +1,66 @@
+load("@rules_erlang//:xref.bzl", "xref")
+load("@rules_erlang//:dialyze.bzl", "dialyze", "plt")
+load(
+    "//:rabbitmq.bzl",
+    "RABBITMQ_DIALYZER_OPTS",
+    "assert_suites",
+    "broker_for_integration_suites",
+    "rabbitmq_app",
+    "rabbitmq_integration_suite",
+)
+
+APP_NAME = "rabbitmq_consistent_hash_exchange"
+
+APP_DESCRIPTION = "Consistent Hash Exchange Type"
+
+BUILD_DEPS = [
+    "//deps/rabbitmq_cli:rabbitmqctl",
+    "@lager//:erlang_app",
+]
+
+DEPS = [
+    "//deps/rabbit_common:erlang_app",
+]
+
+RUNTIME_DEPS = [
+    "//deps/rabbit:erlang_app",
+]
+
+rabbitmq_app(
+    app_description = APP_DESCRIPTION,
+    app_name = APP_NAME,
+    build_deps = BUILD_DEPS,
+    runtime_deps = RUNTIME_DEPS,
+    deps = DEPS,
+)
+
+xref(tags = ["xref"])
+
+plt(
+    name = "base_plt",
+    deps = DEPS,
+)
+
+dialyze(
+    dialyzer_opts = RABBITMQ_DIALYZER_OPTS + ["-Wno_behaviours"],
+    plt = ":base_plt",
+    tags = ["dialyze"],
+    warnings_as_errors = False,
+)
+
+broker_for_integration_suites()
+
+PACKAGE = "deps/rabbitmq_consistent_hash_exchange"
+
+suites = [
+    rabbitmq_integration_suite(
+        PACKAGE,
+        name = "rabbit_exchange_type_consistent_hash_SUITE",
+        shard_count = 2,
+    ),
+]
+
+assert_suites(
+    suites,
+    glob(["test/**/*_SUITE.erl"]),
+)

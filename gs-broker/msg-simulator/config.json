@@ -1,0 +1,39 @@
+{
+	"host": {
+		"ip_address": "",
+		"amqp_port": "",
+		"http_port": "",
+		"mqtt_port": "",
+		"stomp_port": "",
+		"ws-stomp_port": "",
+		"ws-mqtt_port": "",
+		"coap_port": "",
+		"grpc_port": ""
+	},
+	"user": {
+		"id": "",
+		"pw": "",
+		"vhost": ""
+	},
+	"service": {
+		"amqp_exchange": "",
+		"http_exchange": "",
+		"mqtt_exchange": "",
+		"stomp_exchange": "",
+		"ws-stomp_exchange": "",
+		"ws-mqtt_exchange": "",
+		"coap_exchange": "",
+		"grpc_exchange": ""
+	},
+	"queue": {
+		"amqp_queue": "",
+		"http_queue": "",
+		"mqtt_queue": "",
+		"stomp_queue": "",
+		"ws-mqtt_queue": "",
+		"ws-stomp_queue": "",
+		"coap_queue": "",
+		"grpc_queue": ""
+
+	}
+}

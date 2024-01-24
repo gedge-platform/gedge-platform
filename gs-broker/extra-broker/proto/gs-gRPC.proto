@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package gsgRPC;
+
+service GsService {
+  rpc SayGs (GsRequest) returns (GsResponse);
+}
+
+message GsRequest {
+  string greeting = 1;
+}
+
+message GsResponse {
+  string reply = 1;
+}

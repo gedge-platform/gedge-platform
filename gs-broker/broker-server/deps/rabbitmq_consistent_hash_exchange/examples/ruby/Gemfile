@@ -1,5 +1,0 @@
-# encoding: utf-8
-
-source "https://rubygems.org"
-
-gem "bunny", ">= 2.15.0", "< 3.0"

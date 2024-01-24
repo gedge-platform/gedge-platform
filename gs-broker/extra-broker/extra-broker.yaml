@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: gedge-platform
+  name: gs-extra-broker
+  labels:
+    app: gs-extra-broker
+spec:
+  containers:
+  - name: gs-extra-broker
+    image: gs-extra-broker:0.1
+    ports:
+    - containerPort: 50050
+      protocol: UDP
+    - containerPort: 50051
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: gedge-platform
+  name: gs-extra-broker-service
+spec:
+  type: NodePort
+  selector:
+    app: gs-extra-broker
+  ports:
+    - name: coap
+      protocol: UDP
+      port: 50050
+      nodePort: 30050
+    - name: grpc
+      port: 50051
+      nodePort: 30051
+

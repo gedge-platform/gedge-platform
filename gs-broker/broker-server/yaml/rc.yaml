@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+    name: message-broker
+    namespace: gedge-platform
+spec:
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                app: message-broker
+        spec:
+            containers:
+                - image: imxsuu/gedge:gs-broker 
+                  name: message-broker
+                  ports:
+                      - containerPort: 5672
+                        protocol: TCP
+                      - containerPort: 15672
+                        protocol: TCP
+                      - containerPort: 1883
+                        protocol: TCP
+                      - containerPort: 61613
+                        protocol: TCP
+                      - containerPort: 12345
+                        protocol: TCP
+                      - containerPort: 9001
+                        protocol: TCP
+                  imagePullPolicy: Always
+                  env:
+                      - name: TZ
+                        value: Asia/Seoul

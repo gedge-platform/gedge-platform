@@ -1,0 +1,46 @@
+version: "1"
+services:
+  front:
+    build: "./frontend"
+    container_name: react-web
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    links:
+      - backend
+
+  backend:
+    build: "./backend"
+    container_name: go-server
+    restart: always
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+      - kubemq
+    networks:
+      - default
+
+  db:
+    image: mysql:5.7
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    networks:
+      - default
+    volumes:
+      - ./db_data:/var/lib/mysql
+
+  kubemq:
+    image: kubemq/kubemq-community:latest
+    container_name: kubemq
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+      - "9090:9090"
+    restart: always
