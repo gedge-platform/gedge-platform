@@ -81,10 +81,10 @@ class ServiceAdminDashboard {
     });
   };
 
-  loadProjectName = async () => {
+  loadProjectName = async (workspaceName) => {
     const { id } = getItem("user");
     await axios
-      .get(`${SERVER_URL}/userProjects?user=${id}`)
+      .get(`${SERVER_URL}/userProjects?user=${id}&workspace=${workspaceName}`)
       .then(({ data: { data } }) => {
         runInAction(() => {
           this.projectNameList = data.map((item) => item.projectName);
@@ -120,9 +120,9 @@ class ServiceAdminDashboard {
           this.deploymentMetrics = res.data?.items?.deployment_count[0].values;
           this.podMetrics = res.data?.items?.pod_count[0].values;
           this.volumeMetrics = res.data?.items?.pv_count[0].values;
+          this.serviceMetrics = res.data?.items?.service_count[0].values;
           this.cronjobMetrics = res.data?.items?.cronjob_count[0].values;
           this.daemonsetMetrics = res.data?.items?.daemonset_count[0].values;
-          this.serviceMetrics = res.data?.items?.service_count[0].values;
           this.statefulsetMetrics =
             res.data?.items?.statefulset_count[0].values;
         });
@@ -142,6 +142,7 @@ class ServiceAdminDashboard {
       })
       .then(() => {
         this.loadServiceAdminDashboard(this.workspaceName[0]);
+        this.loadProjectName(this.workspaceName[0]);
       });
   };
 

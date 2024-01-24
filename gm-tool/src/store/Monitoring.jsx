@@ -80,10 +80,6 @@ class Monitoring {
     }
   };
 
-  // checkedNullValue = (res) => {
-  //     console.log(res.data.items.length);
-  // };
-
   convertResponseToMonit = (res) => {
     const array = [];
     runInAction(() => {
@@ -100,12 +96,10 @@ class Monitoring {
             index < unixCurrentTime();
             index = index + 60 * 5
           ) {
-            console.log(clusterMetric);
             clusterMetric.metrics.push({
               time: unixToTime(index),
               value: 0,
             });
-            console.log(array);
             array.push(clusterMetric);
           }
 
@@ -130,10 +124,16 @@ class Monitoring {
       .then((res) => {
         runInAction(() => {
           this.clusterNames = res.data.data?.map((item) => item.clusterName);
-          this.clusterName = this.clusterNames[0];
         });
       })
       .then(() => callback());
+  };
+  loadClusterNameList = async () => {
+    await axios.get(`${SERVER_URL}/clusters`).then((res) => {
+      runInAction(() => {
+        this.clusterNames = res.data.data?.map((item) => item.clusterName);
+      });
+    });
   };
 
   loadCoCPU = async (target, start, end, step, metricFilter, ...options) => {
@@ -171,7 +171,6 @@ class Monitoring {
       )
       .then((res) => {
         this.coPieMemory = this.convertResponseToMonit(res);
-        // console.log(this.coPieMemory[2]?.metrics);
       });
   };
 
@@ -329,14 +328,7 @@ class Monitoring {
       });
   };
 
-  loadAllMetrics = async (
-    target,
-    // start,
-    end,
-    // step,
-    metricFilter,
-    ...option
-  ) => {
+  loadAllMetrics = async (target, end, metricFilter, ...option) => {
     await axios
       .get(
         this.getMonitURL(
@@ -357,14 +349,7 @@ class Monitoring {
       });
   };
 
-  loadRealAllMetrics = async (
-    target,
-    // start,
-    end,
-    // step,
-    metricFilter,
-    ...option
-  ) => {
+  loadRealAllMetrics = async (target, end, metricFilter, ...option) => {
     await axios
       .get(
         this.getMonitURL(
@@ -385,14 +370,7 @@ class Monitoring {
       });
   };
 
-  loadAppMetrics = async (
-    target,
-    // start,
-    end,
-    // step,
-    metricFilter,
-    ...option
-  ) => {
+  loadAppMetrics = async (target, end, metricFilter, ...option) => {
     await axios
       .get(
         this.getMonitURL(
@@ -413,14 +391,7 @@ class Monitoring {
       });
   };
 
-  loadRealAppMetrics = async (
-    target,
-    // start,
-    end,
-    // step,
-    metricFilter,
-    ...option
-  ) => {
+  loadRealAppMetrics = async (target, end, metricFilter, ...option) => {
     await axios
       .get(
         this.getMonitURL(
@@ -440,33 +411,6 @@ class Monitoring {
         });
       });
   };
-
-  // loadMetrics = async (
-  //     target,
-  //     start,
-  //     end,
-  //     step,
-  //     clusterFilter,
-  //     metricFilter,
-  //     ...options
-  // ) => {
-  //     await axios
-  //         .get(
-  //             this.getMonitURL(
-  //                 target,
-  //                 start,
-  //                 end,
-  //                 step,
-  //                 clusterFilter,
-  //                 metricFilter,
-  //                 options
-  //             ),
-  //             { auth: BASIC_AUTH }
-  //         )
-  //         .then((res) => {
-  //             this.convertResponseToMonit(res);
-  //         });
-  // };
 }
 
 const monitoringStore = new Monitoring();

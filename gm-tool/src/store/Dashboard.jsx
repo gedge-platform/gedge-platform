@@ -1,7 +1,8 @@
 import axios from "axios";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
 import { createContext } from "react";
-import { SERVER_URL } from "../config";
+import { SERVER_URL, SPIDER_URL } from "../config";
+// import { SERVER_URL } from "../config";
 
 class Dashboard {
   viewList = [];
@@ -10,7 +11,9 @@ class Dashboard {
   credentialCnt = 0;
   edgeClusterCnt = 0;
   workspaceCnt = 0;
+  coreClusterCnt = 0;
   projectCnt = 0;
+  coreClusterCnt = 0;
   clusterCpuTop5 = [
     {
       cluster: "",
@@ -45,7 +48,7 @@ class Dashboard {
       _id: "",
       address: "",
       clusterEndpoint: "",
-      // clusterName: "",
+      clusterName: "",
       clusterType: "",
       status: "",
       token: "",
@@ -57,9 +60,18 @@ class Dashboard {
   y = [];
   pointArr = [];
 
-  connectionconfig = [];
+  connectionconfig = [
+    {
+      ConfigName: "",
+      ProviderName: "",
+      DriverName: "",
+      CredentialName: "",
+      RegionName: " ",
+    },
+  ];
   ConfigName = [];
   ProviderName = [];
+  CredentialName = [];
   ConfigNameCnt = 0;
 
   VMCnt = 0;
@@ -68,6 +80,9 @@ class Dashboard {
   Stop = 0;
 
   VMList = [];
+  vmStatusList = [];
+  ConfigNameList = [];
+  configName = [];
 
   clusterNameList = [];
   cloudNameList = [];
@@ -133,10 +148,17 @@ class Dashboard {
 
   edgeNodeRunning = [];
   nodeRunning = [];
-  nodeReady = 0;
-  nodeNotReady = 0;
 
-  mapZoom = 1;
+  firstCloudName = "";
+
+  totalCpu = "";
+  totalMem = "";
+  totalDisk = "";
+  usageTotalCpu = "";
+  usageTotalMem = "";
+  usageTotalDisk = "";
+
+  mapZoom = 6;
   setMapZoom = (value) => {
     runInAction(() => {
       this.mapZoom = value;
@@ -162,17 +184,25 @@ class Dashboard {
   loadDashboardCnt = async () => {
     await axios
       .get(`${SERVER_URL}/totalDashboard`)
-      // .get(`${SERVER_URL}/totalDashboard`)
       .then(({ data: { data } }) => {
         runInAction(() => {
           this.dashboardDetail = data;
+          this.edgeInfo = data.edgeInfo;
           this.clusterCnt = data.clusterCnt;
           this.credentialCnt = data.credentialCnt;
           this.edgeClusterCnt = data.edgeClusterCnt;
           this.workspaceCnt = data.workspaceCnt;
           this.projectCnt = data.projectCnt;
+          this.coreClusterCnt = data.coreClusterCnt;
+
+          this.totalCpu = data.totalCpu;
+          this.totalMem = data.totalMem;
+          this.totalDisk = data.totalDisk;
+
+          this.usageTotalCpu = data.usageTotalCpu;
+          this.usageTotalMem = data.usageTotalMem;
+          this.usageTotalDisk = data.usageTotalDisk;
         });
-        // console.log(this.credentialCnt);
       });
   };
 
@@ -187,7 +217,16 @@ class Dashboard {
           this.clusterMemTop5 = data.clusterMemTop5;
           this.podMemTop5 = data.podMemTop5;
         });
-        // console.log(toJS(this.clusterCpuTop5))
+      });
+  };
+
+  loadMapStatus = async () => {
+    await axios
+      .get(`${SERVER_URL}/totalDashboard`)
+      .then(({ data: { data } }) => {
+        runInAction(() => {
+          this.edgeNodeRunning = data.nodeRunning;
+        });
       });
   };
 
@@ -214,182 +253,48 @@ class Dashboard {
 
   loadCredentialName = async () => {
     await axios
-      .get(`http://210.207.104.188:1024/spider/connectionconfig`)
+      // .get(`${SPIDER_URL}/spider/connectionconfig`)
+      .get(`http://101.79.4.15:1024/spider/connectionconfig`)
       .then((res) => {
         runInAction(() => {
           this.connectionconfig = res.data.connectionconfig;
-          this.ConfigNameList = this.connectionconfig.map(
-            (name) => name.ConfigName
-          );
-          // const ConfigNameList = Object.values(this.ConfigName);
-          this.ProviderName = this.connectionconfig.map(
-            (provider) => provider.ProviderName
-          );
+          this.ConfigNameList = this.connectionconfig
+            ? this.connectionconfig.map((name) => name.ConfigName)
+            : "";
+          this.ProviderName = this.connectionconfig
+            ? this.connectionconfig.map((provider) => provider.ProviderName)
+            : "";
+          this.ProviderName = this.connectionconfig
+            ? this.connectionconfig.map(
+                (credentialName) => credentialName.CredentialName
+              )
+            : "";
         });
       })
       .then(() => {
-        // console.log(this.ConfigName);
-        // for (let i = 1; i <= this.ConfigName.length; i++) {
-        //   this.loadVMCnt(this.ConfigName[i]);
-        // }
+        for (let i = 0; i < this.ConfigNameList.length; i++) {
+          this.loadVMStatusCnt(this.ConfigNameList[i], this.ProviderName[i]);
+        }
         // this.ConfigNameList.map((name) => this.loadVMCnt(name));
         // this.loadVMCnt();
-        // this.ConfigName.map(val => this.loadVMStatusCnt(val));
+        // this.ConfigNameList.map((val) => this.loadVMStatusCnt(val, val2));
       });
   };
 
-  loadVMStatusCnt = async () => {
-    const urls = axios.get(
-      `http://210.207.104.188:1024/spider/connectionconfig`
-    );
-    const configResult = await Promise.all([urls]).then((res) => {
-      return res;
+  setVmStatusList = async () => {
+    runInAction(() => {
+      this.vmStatusList = [];
     });
-    const configNameList = configResult[0].data.connectionconfig;
-    const vmList = [];
-    await configNameList.forEach((config) => {
-      let configName = config.ConfigName;
-      axios
-        .post(
-          `http://192.168.160.216:8010/gmcapi/v2/spider/vm/vmstatus/vmstatusCount`,
-          {
-            ConnectionName: configName,
-          }
-        )
-        .then((res) => {
-          vmList.push(res);
-        });
-    });
-
-    // res.forEach((result) => {
-    //   Object.values(result.data.connectionconfig).map(
-    //     (val) => val.ConfigName
-    // );
-    // })
-  };
-
-  // ConfigName = this.ConfigName.map(name => this.loadVMCnt(name));
-
-  // loadVMCnt = async (ConfigName) => {
-  //   await axios.post(`http://192.168.160.216:8010/gmcapi/v2/spider/vm/vmCount`,
-  //   {ConnectionName: ConfigName})
-  //   .then((res) => {
-  //     // console.log(res);
-  //     runInAction(() => {
-  //       console.log("step3");
-  //       this.VMCnt = res.data.VMCnt;
-  //       // this.VMList.configName = ConfigName;
-  //       // this.VMList.vmCnt = this.VMCnt;
-  //     })
-  //     console.log(this.VMCnt);
-  //     return this.VMCnt
-  //   });
-  // .then((res) => {
-  //   console.log("step4");
-  // //   console.log(res);
-  //   this.VMList.configName = ConfigName;
-  //   this.VMList.vmCnt = this.VMCnt;
-  // console.log(this.VMList);
-  //   // this.ConfigName.map(val => this.loadVMStatusCnt(val));
-  // })
-  // .then(() => {
-  //   console.log("step5" + ConfigName);
-  //     this.loadVMCnt(this.ConfigName);
-  // });
-  // };
-  loadVMCnt = async () => {
-    const urls = axios.get(
-      `http://210.207.104.188:1024/spider/connectionconfig`
-    );
-    const configResult = await Promise.all([urls]).then((res) => {
-      console.log(res);
-      return res;
-    });
-    const configNameList = configResult[0].data.connectionconfig;
-    const vmCntList = [];
-    await configNameList.forEach((config) => {
-      let configName = config.ConfigName;
-      axios
-        .post(`http://192.168.160.216:8010/gmcapi/v2/spider/vm/vmCount`, {
-          ConnectionName: configName,
-        })
-        .then((res) => {
-          const vmCnt = res.data.VMCnt;
-          // console.log("test : ", res);
-          vmCntList.push({ configName, vmCnt });
-          return vmCntList;
-        });
-    });
-    // res.forEach((result) => {
-    //   Object.values(result.data.connectionconfig).map(
-    //     (val) => val.ConfigName
-    // );
-    // })
   };
 
   loadVMStatusCnt = async () => {
-    const urls = axios.get(
-      `http://210.207.104.188:1024/spider/connectionconfig`
-    );
+    const urls = axios.get(`${SERVER_URL}/spider/connectionconfig`);
     const configResult = await Promise.all([urls]).then((res) => {
       return res;
     });
-    const configNameList = configResult[0].data.connectionconfig;
-    const vmStatusList = [];
-    await configNameList.forEach((config) => {
-      let configName = config.ConfigName;
-      axios
-        .post(
-          `http://192.168.160.216:8010/gmcapi/v2/spider/vm/vmstatus/vmstatusCount`,
-          {
-            ConnectionName: configName,
-          }
-        )
-        .then((res) => {
-          const stop = res.data.Stop;
-          const running = res.data.Running;
-          const paused = res.data.Paused;
-          // vmStatusList.push(configName);
-          // vmStatusList.push(running);
-          // vmStatusList.push(stop);
-          // vmStatusList.push(paused);
-          vmStatusList.push([configName, running, stop, paused]);
-          // console.log(vmStatusList);
-          return vmStatusList;
-        });
-    });
 
-    // console.log(configNameList);
+    this.configName = configResult[0].data.data.connectionconfig;
   };
-
-  // loadVMStatusCnt = async (ConfigName) => {
-  //   await axios.post(`http://192.168.160.216:8010/gmcapi/v2/spider/vm/vmstatus/vmstatusCount`,
-  //   {ConnectionName: ConfigName})
-  //   .then((res) => {
-  //     runInAction(() => {
-  //       console.log("step6");
-  //       // console.log(res);
-  //       this.Paused = res.data.Paused;
-  //       this.Running = res.data.Running;
-  //       this.Stop = res.data.Stop;
-  //     })
-  //     return (
-  //       this.Paused,
-  //       this.Running,
-  //       this.Stop
-  //     )
-  //   });
-  // .then(() => {
-  //   // if(ConfigName === VMList.ConfigName) {
-  //     console.log("step7");
-  //     // console.log(res);
-  //     VMList.paused = this.Paused;
-  //     VMList.running = this.Running;
-  //     VMList.stop = this.Stop;
-  //     console.log(VMList);
-  //   // }l
-  // })
-  // };
 
   edgeType = [];
   cloudType = [];
@@ -399,12 +304,9 @@ class Dashboard {
       runInAction(() => {
         this.edgeType = data.filter((item) => item.clusterType === "edge");
         this.clusterNameList = this.edgeType.map((item) => item.clusterName);
-
         this.totalElements = data.length;
       });
     });
-    console.log(this.clusterNameList);
-    // this.clusterNameList.map((item) => this.loadEdgeZoneDetailDashboard(item));
     this.loadEdgeZoneDetailDashboard(this.clusterNameList[0]);
   };
 
@@ -413,7 +315,6 @@ class Dashboard {
       .get(`${SERVER_URL}/cloudDashboard?cluster=${clusterName}`)
       .then(({ data: { data } }) =>
         runInAction(() => {
-          console.log("data", data);
           this.clusterInfo = data.ClusterInfo;
           this.nodeInfo = data.nodeInfo;
           this.type = this.nodeInfo.map((val) => val.type);
@@ -452,10 +353,11 @@ class Dashboard {
       runInAction(() => {
         this.cloudType = data.filter((item) => item.clusterType === "cloud");
         this.cloudNameList = this.cloudType.map((item) => item.clusterName);
+        this.firstCloudName = this.cloudNameList[0];
         this.totalElements = data.length;
       });
     });
-    this.loadCloudZoneDetailDashboard(this.cloudNameList[0]);
+    this.loadCloudZoneDetailDashboard(this.firstCloudName);
   };
 
   loadCloudZoneDetailDashboard = async (cloudName) => {
@@ -466,15 +368,19 @@ class Dashboard {
           this.cloudName = cloudName;
           this.clusterInfo = data.ClusterInfo;
           this.nodeInfo = data.nodeInfo;
-          this.type = this.nodeInfo.map((val) => val.type);
-          this.master = this.type.reduce(
-            (cnt, element) => cnt + ("master" === element),
-            0
-          );
-          this.worker = this.type.reduce(
-            (cnt, element) => cnt + ("worker" === element),
-            0
-          );
+          this.type = this.nodeInfo ? this.nodeInfo.map((val) => val.type) : "";
+          this.master = this.type
+            ? this.type.reduce(
+                (cnt, element) => cnt + ("master" === element),
+                0
+              )
+            : 0;
+          this.worker = this.type
+            ? this.type.reduce(
+                (cnt, element) => cnt + ("worker" === element),
+                0
+              )
+            : 0;
           this.cpuUsage = data.cpuUsage ? data.cpuUsage : 0;
           this.cpuUtil = data.cpuUtil ? data.cpuUtil : 0;
           this.cpuTotal = data.cpuTotal ? data.cpuTotal : 0;

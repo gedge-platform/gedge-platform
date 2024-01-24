@@ -1,3 +1,5 @@
 .env
 gmc_api_gateway/.env
 gmc_api_gateway/nohup.out
+gmc_api_gateway/tmp
+*.out

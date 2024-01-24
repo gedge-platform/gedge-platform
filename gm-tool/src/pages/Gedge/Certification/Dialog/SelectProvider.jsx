@@ -6,11 +6,12 @@ import { certificationStore } from "@/store";
 const SelectProvider = observer(props => {
   const { loadCredentialList, setProviderName } = certificationStore;
 
-  const ProviderList = ["AWS", "OPENSTACK"];
+  const ProviderList = ["AWS", "OPENSTACK", "GCP"];
 
   const onChange = ({ target: { name, value } }) => {
     if (value === "AWS") setProviderName(value);
     else if (value === "OPENSTACK") setProviderName(value);
+    else if (value === "GCP") setProviderName(value);
   };
 
   useEffect(() => {

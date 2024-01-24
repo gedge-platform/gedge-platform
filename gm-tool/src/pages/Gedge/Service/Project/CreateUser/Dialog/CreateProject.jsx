@@ -39,7 +39,7 @@ const ToggleBtn = styled.button`
   border-radius: 30px;
   border: none;
   cursor: pointer;
-  background-color: ${props => (!props.toggle ? "none" : "#0f5ce9")};
+  background-color: ${(props) => (!props.toggle ? "none" : "#0f5ce9")};
   position: relative;
   display: flex;
   justify-content: center;
@@ -54,7 +54,7 @@ const Circle = styled.div`
   position: absolute;
   left: 5%;
   transition: all 0.5s ease-in-out;
-  ${props =>
+  ${(props) =>
     props.toggle &&
     `
       transform: translate(60px, 0);
@@ -62,10 +62,17 @@ const Circle = styled.div`
     `}
 `;
 
-const CreateProject = observer(props => {
+const CreateProject = observer((props) => {
   const { open } = props;
   const { clusters, setClusters, loadClusterInWorkspace } = clusterStore;
-  const { workSpaceList, loadWorkSpaceList, selectClusterInfo, setSelectClusterInfo, loadWorkspaceDetail, viewList } = workspaceStore;
+  const {
+    workSpaceList,
+    loadWorkSpaceList,
+    selectClusterInfo,
+    setSelectClusterInfo,
+    loadWorkspaceDetail,
+    viewList,
+  } = workspaceStore;
   const { createProject } = projectStore;
 
   const [projectName, setProjectName] = useState("");
@@ -76,7 +83,7 @@ const CreateProject = observer(props => {
 
   const [toggle, setToggle] = useState(false);
   const clickedToggle = () => {
-    setToggle(prev => !prev);
+    setToggle((prev) => !prev);
   };
 
   const handleClose = () => {
@@ -90,7 +97,8 @@ const CreateProject = observer(props => {
     setCheck(false);
   };
 
-  const onChange = async ({ target: { name, value } }) => {
+  const onChange = async (e) => {
+    const { name, value } = e.target;
     if (name === "workspace") {
       if (value === "") {
         setSelectClusterInfo([]);
@@ -110,7 +118,9 @@ const CreateProject = observer(props => {
     if (checked) {
       setSelectClusters([...selectClusters, clusterName]);
     } else {
-      setSelectClusters(selectClusters.filter(cluster => cluster !== clusterName));
+      setSelectClusters(
+        selectClusters.filter((cluster) => cluster !== clusterName)
+      );
     }
   };
 
@@ -135,7 +145,7 @@ const CreateProject = observer(props => {
 
   const postProject = () => {
     if (!check) {
-      swalError("프로젝트 이름을 확인해주세요!");
+      swalError("중복확인을 해주세요!");
       return;
     }
     if (workspace === "") {
@@ -146,7 +156,15 @@ const CreateProject = observer(props => {
       swalError("클러스터를 확인해주세요!");
       return;
     }
-    createProject(projectName, projectDescription, props.type, workspace, selectClusters, toggle, handleClose);
+    createProject(
+      projectName,
+      projectDescription,
+      props.type,
+      workspace,
+      selectClusters,
+      toggle,
+      handleClose
+    );
     props.reloadFunc && props.reloadFunc();
   };
 
@@ -160,7 +178,15 @@ const CreateProject = observer(props => {
   }, [workspace]);
 
   return (
-    <CDialogNew id="myDialog" open={open} maxWidth="md" title={`Create Project`} onClose={handleClose} bottomArea={false} modules={["custom"]}>
+    <CDialogNew
+      id="myDialog"
+      open={open}
+      maxWidth="md"
+      title={`Create Project`}
+      onClose={handleClose}
+      bottomArea={false}
+      modules={["custom"]}
+    >
       <table className="tb_data_new tb_write">
         <tbody>
           <tr>
@@ -169,7 +195,14 @@ const CreateProject = observer(props => {
               <span className="requried">*</span>
             </th>
             <td style={{ display: "flex" }}>
-              <CTextField type="text" placeholder="Project Name" style={{ flex: 3 }} name="projectName" onChange={onChange} value={projectName} />
+              <CTextField
+                type="text"
+                placeholder="Project Name"
+                style={{ flex: 3 }}
+                name="projectName"
+                onChange={onChange}
+                value={projectName}
+              />
               <ButtonNext onClick={checkProjectName} style={{ height: "32px" }}>
                 중복확인
               </ButtonNext>
@@ -194,7 +227,13 @@ const CreateProject = observer(props => {
               <span className="requried">*</span>
             </th>
             <td>
-              <CTextField type="text" disabled={true} className="form_fullWidth" name="projectType" value={props.type} />
+              <CTextField
+                type="text"
+                disabled={true}
+                className="form_fullWidth"
+                name="projectType"
+                value={props.type}
+              />
             </td>
           </tr>
           <tr>
@@ -217,9 +256,11 @@ const CreateProject = observer(props => {
             <td>
               <FormControl className="form_fullWidth">
                 <select name="workspace" onChange={onChange}>
-                  <option value={" "}>Select Workspace</option>
-                  {viewList.map(workspace => (
-                    <option value={workspace.workspaceName}>{workspace.workspaceName}</option>
+                  <option value={""}>Select Workspace</option>
+                  {viewList?.map((workspace) => (
+                    <option value={workspace.workspaceName}>
+                      {workspace.workspaceName}
+                    </option>
                   ))}
                 </select>
               </FormControl>
@@ -238,16 +279,22 @@ const CreateProject = observer(props => {
                     <th>타입</th>
                     <th>IP</th>
                   </tr>
-                  {selectClusterInfo.map(({ clusterName, clusterType, clusterEndpoint }) => (
-                    <tr>
-                      <td style={{ textAlign: "center" }}>
-                        <input type="checkbox" name="clusterCheck" onChange={e => checkCluster(e, clusterName)} />
-                      </td>
-                      <td>{clusterName}</td>
-                      <td>{clusterType}</td>
-                      <td>{clusterEndpoint}</td>
-                    </tr>
-                  ))}
+                  {selectClusterInfo.map(
+                    ({ clusterName, clusterType, clusterEndpoint }) => (
+                      <tr>
+                        <td style={{ textAlign: "center" }}>
+                          <input
+                            type="checkbox"
+                            name="clusterCheck"
+                            onChange={(e) => checkCluster(e, clusterName)}
+                          />
+                        </td>
+                        <td>{clusterName}</td>
+                        <td>{clusterType}</td>
+                        <td>{clusterEndpoint}</td>
+                      </tr>
+                    )
+                  )}
                 </tbody>
               </table>
             </td>

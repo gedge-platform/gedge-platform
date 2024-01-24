@@ -7,17 +7,15 @@ import styled from "styled-components";
 import { dateFormatter, isValidJSON, nullCheck } from "@/utils/common-utils";
 import ReactJson from "react-json-view";
 import EventAccordion from "@/components/detail/EventAccordion";
+import { CCreateButton, CDeleteButton } from "@/components/buttons";
+import EdgeZoneAddNode from "./Dialog/EdgeZoneAddNode";
 
-const TableTitle = styled.p`
+const TableTitle = styled.span`
+  flex: 1;
+  flex-direction: row;
   font-size: 14px;
   font-weight: 500;
   margin: 8px 0;
-  color: rgba(255, 255, 255, 0.8);
-`;
-const TableSubTitle = styled.p`
-  font-size: 12px;
-  font-weight: 500;
-  margin: 12px 0;
   color: rgba(255, 255, 255, 0.8);
 `;
 
@@ -26,9 +24,9 @@ const LabelContainer = styled.div`
   flex-wrap: wrap;
   width: 100%;
   padding: 12px;
-  border-radius: 4px;
+  border: 1px double #141a30;
   background-color: #2f3855;
-
+  margin: 10px 0;
   p {
     color: rgba(255, 255, 255, 0.6);
   }
@@ -42,7 +40,6 @@ const Label = styled.span`
   line-height: 20px;
   font-weight: 600;
   margin: 6px 6px;
-
   .key {
     padding: 0 2px;
     background-color: #eff4f9;
@@ -56,31 +53,34 @@ const Label = styled.span`
   }
 `;
 
-const NoInfo = styled.div`
-  padding: 12px 12px;
-  background-color: #141a30;
-`;
-
-const Detail = observer(props => {
+const Detail = observer((props) => {
   const {
     clusterDetail: {
       clusterName,
-      clusterEndpoint,
-      clusterCreator,
-      gpu,
-      clusterType,
-      created_at,
       events,
-      ipAddr,
       nodes,
-      resource: { cronjob_count, deployment_count, job_count, pod_count, service_count, volume_count, Statefulset_count, daemonset_count },
+      resource: {
+        cronjob_count,
+        deployment_count,
+        job_count,
+        pod_count,
+        service_count,
+        volume_count,
+        Statefulset_count,
+        daemonset_count,
+      },
     },
+    dataUsage,
+    loadCluster,
+    gpuInfo,
   } = clusterStore;
+
   const nodesChk = nodes === null ? 0 : nodes;
 
   const [open, setOpen] = useState(false);
   const [tabvalue, setTabvalue] = useState(0);
   const [nodeNum, setNodeNum] = useState(0);
+  const [AddNode, setAddNodeOpen] = useState(false);
 
   const handleTabChange = (event, newValue) => {
     setTabvalue(newValue);
@@ -91,6 +91,72 @@ const Detail = observer(props => {
   };
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleAddNodeOpen = () => {
+    setAddNodeOpen(true);
+  };
+
+  const handleAddNodeClose = () => {
+    setAddNodeOpen(false);
+  };
+
+  const reloadData = () => {
+    setReRun(true);
+  };
+
+  const nodeTemp = nodes ? nodes?.map((data) => data.name).join(", ") : "-";
+  const containerRuntimeVersionTemp = nodes
+    ? nodes?.map((data) => data.containerRuntimeVersion).join(", ")
+    : "-";
+
+  const FormatNewLines = (nodeTemp) => {
+    // 쉼표를 기준으로 분리하고 trim() 메서드로 양쪽 공백 제거
+    const dataArray = nodeTemp.split(",").map((item) => item.trim());
+
+    // 각 항목을 새 줄로 이어붙이기
+    // html 부분에도 style={{ whiteSpace: "pre-line" }} 추가해야함
+    const nodeResult = dataArray.join("\n");
+
+    return nodeResult;
+  };
+
+  const allocatableData = () => {
+    let allocatableResult = 0;
+    const allocatableArray = gpuInfo?.map((data) => data.allocatable);
+
+    if (allocatableArray) {
+      for (let i = 0; i < allocatableArray.length; i++) {
+        const allocatableValue = allocatableArray[i]?.["nvidia.com/gpu"];
+
+        allocatableResult += allocatableValue;
+      }
+
+      return allocatableResult;
+    } else {
+      return 0;
+    }
+  };
+
+  const limitsData = () => {
+    let limitsResult = 0;
+
+    const limitsArray = gpuInfo?.map((data) => data.limits);
+
+    if (limitsArray) {
+      for (let i = 0; i < limitsArray.length; i++) {
+        const limitsValue =
+          limitsArray[i]?.["nvidia.com/gpu"] !== undefined
+            ? limitsArray[i]?.["nvidia.com/gpu"]
+            : 0;
+
+        limitsResult += limitsValue;
+      }
+
+      return limitsResult;
+    } else {
+      return 0;
+    }
   };
 
   const nodeList = () => {
@@ -119,15 +185,27 @@ const Detail = observer(props => {
       <tr>
         <th style={{ width: "40%" }}>{key}</th>
         <td>
-          {isValidJSON(value) ? <ReactJson src={JSON.parse(value)} theme="summerfruit" displayDataTypes={false} displayObjectSize={false} /> : value}
+          {isValidJSON(value) ? (
+            <ReactJson
+              src={JSON.parse(value)}
+              theme="summerfruit"
+              displayDataTypes={false}
+              displayObjectSize={false}
+            />
+          ) : (
+            value
+          )}
         </td>
       </tr>
     ));
   };
 
   useEffect(() => {
-    labelByNode();
-    annotationByNode();
+    if (nodesChk.length >= 1) {
+      labelByNode();
+      annotationByNode();
+      loadCluster(clusterName);
+    }
   }, [nodeNum]);
 
   return (
@@ -141,57 +219,67 @@ const Detail = observer(props => {
       </CTabs>
       <CTabPanel style={{ overflowY: "scroll" }} value={tabvalue} index={0}>
         <div className="tb_container">
-          <table className="tb_data">
-            {/* <tbody className="tb_data_detail">
-              <tr>
-                <th>Cluster Name</th>
-                <td>{clusterName}</td>
-                <th>IP</th>
-                <td>{ipAddr}</td>
-              </tr>
-              <tr>
-                <th>Type</th>
-                <td>{clusterType}</td>
-                <th>Creator</th>
-                <td>{clusterCreator}</td>
-              </tr>
-              <tr>
-                <th>Created</th>
-                <td>{dateFormatter(created_at)}</td>
-              </tr>
-            </tbody> */}
-          </table>
-          <br />
-
-          <TableTitle>GPU List</TableTitle>
-          {gpu ? (
-            <>
+          <>
+            <div>
               <table className="tb_data" style={{ tableLayout: "fixed" }}>
                 <tbody className="tb_data_detail">
                   <tr>
-                    <th>container</th>
-                    <th>name</th>
+                    <th>clusterName</th>
+                    <td>{clusterName ? clusterName : "-"}</td>
                     <th>node</th>
-                    <th>uuid</th>
-                    <th>vbios_version</th>
+                    <td style={{ whiteSpace: "pre-line" }}>
+                      {FormatNewLines(nodeTemp)}
+                    </td>
                   </tr>
-                  {gpu.map(({ container, name, node, uuid, vbios_version }) => (
-                    <tr>
-                      <td>{container}</td>
-                      <td>{name}</td>
-                      <td>{node}</td>
-                      <td>{uuid}</td>
-                      <td>{vbios_version}</td>
-                    </tr>
-                  ))}
+                  <tr>
+                    <th>gpu (used / total)</th>
+                    <td>
+                      {limitsData()} / {allocatableData()}
+                    </td>
+                    <th>container</th>
+                    <td style={{ whiteSpace: "pre-line" }}>
+                      {FormatNewLines(containerRuntimeVersionTemp)}
+                    </td>
+                  </tr>
                 </tbody>
               </table>
-            </>
-          ) : (
-            <LabelContainer>
-              <p>No GPU Info.</p>
-            </LabelContainer>
-          )}
+            </div>
+            <br />
+            <TableTitle>Resource Usage</TableTitle>
+            <div style={{ padding: "3px" }}></div>
+            <tbody>
+              <tr className="tb_workload_detail_th">
+                <td colSpan={4}>
+                  {dataUsage ? (
+                    <>
+                      <table className="tb_data">
+                        <tbody>
+                          <tr>
+                            <th style={{ width: "307px" }}>CPU</th>
+                            <td style={{ width: "307px" }}>
+                              {dataUsage?.cpuUsage
+                                ? dataUsage?.cpuUsage.value
+                                : "-"}
+                            </td>
+                            <th style={{ width: "307px" }}>MEMORY</th>
+                            <td style={{ width: "307px" }}>
+                              {dataUsage?.memoryUsage
+                                ? dataUsage?.memoryUsage.value
+                                : "-"}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </>
+                  ) : (
+                    <LabelContainer>
+                      <p>No Resource Usage Information</p>
+                    </LabelContainer>
+                  )}
+                </td>
+              </tr>
+            </tbody>
+          </>
         </div>
       </CTabPanel>
       <CTabPanel style={{ overflowY: "scroll" }} value={tabvalue} index={1}>
@@ -200,27 +288,27 @@ const Detail = observer(props => {
             <tbody className="tb_data_detail">
               <tr>
                 <th>Deployment</th>
-                <td>{deployment_count}</td>
+                <td>{deployment_count ? deployment_count : "-"}</td>
                 <th>Pod</th>
-                <td>{pod_count}</td>
+                <td>{pod_count ? pod_count : "-"}</td>
               </tr>
               <tr>
                 <th>Service</th>
-                <td>{service_count}</td>
+                <td>{service_count ? service_count : "-"}</td>
                 <th>Cronjob</th>
-                <td>{cronjob_count}</td>
+                <td>{cronjob_count ? cronjob_count : "-"}</td>
               </tr>
               <tr>
                 <th>StatefulSet</th>
-                <td>{Statefulset_count}</td>
+                <td>{Statefulset_count ? Statefulset_count : "-"}</td>
                 <th>DaemonSet</th>
-                <td>{daemonset_count}</td>
+                <td>{daemonset_count ? daemonset_count : "-"}</td>
               </tr>
               <tr>
                 <th>Job</th>
-                <td>{job_count}</td>
+                <td>{job_count ? job_count : "-"}</td>
                 <th>Volume</th>
-                <td>{volume_count}</td>
+                <td>{volume_count ? volume_count : "-"}</td>
               </tr>
             </tbody>
           </table>
@@ -228,7 +316,18 @@ const Detail = observer(props => {
       </CTabPanel>
       <CTabPanel style={{ overflowY: "scroll" }} value={tabvalue} index={2}>
         <div className="tb_container">
-          <TableTitle>Node List</TableTitle>
+          <TableTitle>Node List</TableTitle>&nbsp;&nbsp;&nbsp;&nbsp;
+          {/* <CCreateButton onClick={handleAddNodeOpen} styled={{ flex: 1 }}>
+            Node 추가
+          </CCreateButton>
+         */}
+          <EdgeZoneAddNode
+            open={AddNode}
+            onClose={handleAddNodeClose}
+            reloadFunc={reloadData}
+          />
+          <br />
+          <br />
           <table className="tb_data" style={{ tableLayout: "fixed" }}>
             <tbody>
               <tr>
@@ -239,12 +338,16 @@ const Detail = observer(props => {
                 <th>OS</th>
                 <th>Created</th>
               </tr>
-
               {nodesChk.length >= 1 ? (
                 nodeList()
               ) : (
                 <tr>
-                  <td>No Nodes Information</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
                 </tr>
               )}
             </tbody>
@@ -253,13 +356,21 @@ const Detail = observer(props => {
       </CTabPanel>
       <CTabPanel style={{ overflowY: "scroll" }} value={tabvalue} index={3}>
         <div className="tb_container">
-          <TableTitle>Labels({nodes[nodeNum].name})</TableTitle>
-          <LabelContainer>{labelByNode()}</LabelContainer>
+          <TableTitle>Labels</TableTitle>
+          <LabelContainer>
+            {nodesChk.length >= 1 ? labelByNode() : <p>No Labels Info</p>}
+          </LabelContainer>
 
-          <TableTitle>Annotations({nodes[nodeNum].name})</TableTitle>
-          <table className="tb_data">
-            <tbody>{annotationByNode()}</tbody>
-          </table>
+          <TableTitle>Annotations</TableTitle>
+          {nodesChk.length >= 1 ? (
+            <table className="tb_data" style={{ margin: "10px 0" }}>
+              <tbody>{annotationByNode()}</tbody>
+            </table>
+          ) : (
+            <LabelContainer>
+              <p>No Annotations Info</p>
+            </LabelContainer>
+          )}
         </div>
       </CTabPanel>
       <CTabPanel style={{ overflowY: "scroll" }} value={tabvalue} index={4}>

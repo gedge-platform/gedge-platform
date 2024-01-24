@@ -61,7 +61,7 @@ const NoInfo = styled.div`
   background-color: #141a30;
 `;
 
-const Detail = observer(props => {
+const Detail = observer((props) => {
   const {
     clusterDetail: {
       clusterName,
@@ -73,7 +73,16 @@ const Detail = observer(props => {
       events,
       ipAddr,
       nodes,
-      resource: { cronjob_count, deployment_count, job_count, pod_count, service_count, volume_count, Statefulset_count, daemonset_count },
+      resource: {
+        cronjob_count,
+        deployment_count,
+        job_count,
+        pod_count,
+        service_count,
+        volume_count,
+        Statefulset_count,
+        daemonset_count,
+      },
     },
   } = clusterStore;
 
@@ -118,7 +127,16 @@ const Detail = observer(props => {
       <tr>
         <th style={{ width: "40%" }}>{key}</th>
         <td>
-          {isValidJSON(value) ? <ReactJson src={JSON.parse(value)} theme="summerfruit" displayDataTypes={false} displayObjectSize={false} /> : value}
+          {isValidJSON(value) ? (
+            <ReactJson
+              src={JSON.parse(value)}
+              theme="summerfruit"
+              displayDataTypes={false}
+              displayObjectSize={false}
+            />
+          ) : (
+            value
+          )}
         </td>
       </tr>
     ));
@@ -234,7 +252,7 @@ const Detail = observer(props => {
           </>
         ) : (
           <LabelContainer>
-            <p>No GPU Info.</p>
+            <p>No GPU Info</p>
           </LabelContainer>
         )}
       </CTabPanel>

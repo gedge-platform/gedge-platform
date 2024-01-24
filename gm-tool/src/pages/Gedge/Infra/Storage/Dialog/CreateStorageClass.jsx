@@ -8,6 +8,7 @@ import { StorageClassStore } from "@/store";
 import StorageClassBasicInfo from "./StorageClassBasicInfo";
 import StorageClassAdvancedSetting from "./StorageClassAdvancedSetting";
 import StorageClassYamlPopup from "./StorageClassYamlPopup";
+import { stringify } from "json-to-pretty-yaml2";
 
 const Button = styled.button`
   background-color: #fff;
@@ -26,7 +27,7 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const CreateStorageClass = observer(props => {
+const CreateStorageClass = observer((props) => {
   const { open } = props;
   const [stepValue, setStepValue] = useState(1);
   const {
@@ -63,16 +64,17 @@ const CreateStorageClass = observer(props => {
       clusterID: "rook-ceph",
       fsName: "myfs",
       pool: "myfs-replicated",
-      "csi.storage.k8s.io/provisioner-secret-name": "rook-csi-cephfs-provisioner",
+      "csi.storage.k8s.io/provisioner-secret-name":
+        "rook-csi-cephfs-provisioner",
       "csi.storage.k8s.io/provisioner-secret-namespace": "rook-ceph",
-      "csi.storage.k8s.io/controller-expand-secret-name": "rook-csi-cephfs-provisioner",
+      "csi.storage.k8s.io/controller-expand-secret-name":
+        "rook-csi-cephfs-provisioner",
       "csi.storage.k8s.io/controller-expand-secret-namespace": "rook-ceph",
       "csi.storage.k8s.io/node-stage-secret-name": "rook-csi-cephfs-node",
       "csi.storage.k8s.io/node-stage-secret-namespace": "rook-ceph",
     },
     allowVolumeExpansion: Boolean(volumeExpansion === true ? true : false),
     reclaimPolicy: reclaimPolicy,
-    // volumeBindingMode: volumeBindingMode,
   };
 
   const templateNfs = {
@@ -93,16 +95,17 @@ const CreateStorageClass = observer(props => {
       clusterID: "rook-ceph",
       fsName: "myfs",
       pool: "myfs-replicated",
-      "csi.storage.k8s.io/provisioner-secret-name": "rook-csi-cephfs-provisioner",
+      "csi.storage.k8s.io/provisioner-secret-name":
+        "rook-csi-cephfs-provisioner",
       "csi.storage.k8s.io/provisioner-secret-namespace": "rook-ceph",
-      "csi.storage.k8s.io/controller-expand-secret-name": "rook-csi-cephfs-provisioner",
+      "csi.storage.k8s.io/controller-expand-secret-name":
+        "rook-csi-cephfs-provisioner",
       "csi.storage.k8s.io/controller-expand-secret-namespace": "rook-ceph",
       "csi.storage.k8s.io/node-stage-secret-name": "rook-csi-cephfs-node",
       "csi.storage.k8s.io/node-stage-secret-namespace": "rook-ceph",
     },
     allowVolumeExpansion: Boolean(volumeExpansion === true ? true : false),
     reclaimPolicy: reclaimPolicy,
-    // volumeBindingMode: volumeBindingMode,
   };
 
   const templateRbd = {
@@ -124,7 +127,8 @@ const CreateStorageClass = observer(props => {
       imageFeatures: "layering",
       "csi.storage.k8s.io/provisioner-secret-name": "rook-csi-rbd-provisioner",
       "csi.storage.k8s.io/provisioner-secret-namespace": "rook-ceph",
-      "csi.storage.k8s.io/controller-expand-secret-name": "rook-csi-rbd-provisioner",
+      "csi.storage.k8s.io/controller-expand-secret-name":
+        "rook-csi-rbd-provisioner",
       "csi.storage.k8s.io/controller-expand-secret-namespace": "rook-ceph",
       "csi.storage.k8s.io/node-stage-secret-name": "rook-csi-rbd-node",
       "csi.storage.k8s.io/node-stage-secret-namespace": "rook-ceph",
@@ -132,7 +136,6 @@ const CreateStorageClass = observer(props => {
     },
     allowVolumeExpansion: Boolean(volumeExpansion === true ? true : false),
     reclaimPolicy: reclaimPolicy,
-    // volumeBindingMode: volumeBindingMode,
   };
 
   const handleClose = () => {
@@ -145,7 +148,7 @@ const CreateStorageClass = observer(props => {
     setVolumeBindingMode("");
   };
 
-  const onClickStepOne = e => {
+  const onClickStepOne = (e) => {
     if (storageClassName === "") {
       swalError("StorageClass 이름을 입력해주세요");
       return;
@@ -183,15 +186,13 @@ const CreateStorageClass = observer(props => {
 
   const CreateStorageClass = () => {
     if (storageSystem === "CephFS") {
-      postStorageClass(require("json-to-pretty-yaml").stringify(templateCephfs));
+      postStorageClass(stringify(templateCephfs));
     }
     if (storageSystem === "NFS") {
-      console.log("NFS: ", storageSystem);
-      postStorageClass(require("json-to-pretty-yaml").stringify(templateNfs));
+      postStorageClass(stringify(templateNfs));
     }
     if (storageSystem === "BlockStorage") {
-      console.log("BlockStorage: ", storageSystem);
-      postStorageClass(require("json-to-pretty-yaml").stringify(templateRbd));
+      postStorageClass(stringify(templateRbd));
     }
     handleClose();
     props.reloadFunc && props.reloadFunc();
@@ -204,14 +205,11 @@ const CreateStorageClass = observer(props => {
   useEffect(() => {
     if (stepValue === 3) {
       if (storageSystem === "CephFS") {
-        const YAML = require("json-to-pretty-yaml");
-        setContent(YAML.stringify(templateCephfs));
+        setContent(stringify(templateCephfs));
       } else if (storageSystem === "NFS") {
-        const YAML = require("json-to-pretty-yaml");
-        setContent(YAML.stringify(templateNfs));
+        setContent(stringify(templateNfs));
       } else {
-        const YAML = require("json-to-pretty-yaml");
-        setContent(YAML.stringify(templateRbd));
+        setContent(stringify(templateRbd));
       }
     }
   }, [stepValue]);
@@ -236,7 +234,7 @@ const CreateStorageClass = observer(props => {
               }}
             >
               <Button onClick={handleClose}>취소</Button>
-              <ButtonNext onClick={e => onClickStepOne(e)}>다음</ButtonNext>
+              <ButtonNext onClick={(e) => onClickStepOne(e)}>다음</ButtonNext>
             </div>
           </div>
         </>
@@ -291,7 +289,9 @@ const CreateStorageClass = observer(props => {
               }}
             >
               <Button onClick={() => setStepValue(2)}>이전</Button>
-              <ButtonNext onClick={() => CreateStorageClass()}>Schedule Apply</ButtonNext>
+              <ButtonNext onClick={() => CreateStorageClass()}>
+                Schedule Apply
+              </ButtonNext>
             </div>
           </div>
         </>
@@ -300,7 +300,15 @@ const CreateStorageClass = observer(props => {
   };
 
   return (
-    <CDialogNew id="myDialog" open={open} maxWidth="md" title={"Create StorageClass"} onClose={handleClose} bottomArea={false} modules={["custom"]}>
+    <CDialogNew
+      id="myDialog"
+      open={open}
+      maxWidth="md"
+      title={"Create StorageClass"}
+      onClose={handleClose}
+      bottomArea={false}
+      modules={["custom"]}
+    >
       {stepOfComponent()}
     </CDialogNew>
   );

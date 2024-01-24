@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { CTextField } from "@/components/textfields";
 import { observer } from "mobx-react";
-import { deploymentStore } from "@/store";
+import { claimStore } from "@/store";
+import { makeAutoObservable, runInAction, toJS } from "mobx";
 
 const HeaderContainer = styled.div`
   width: 320px;
@@ -20,7 +21,8 @@ const ButtonBox = styled.div`
 `;
 const Button = styled.button`
   border: none;
-  height: 32px;
+  height: 28px;
+  width: 30px;
   font-size: 20px;
   font-weight: 600;
   line-height: 1;
@@ -39,20 +41,75 @@ const Span = styled.span`
 
 const VolumeAdvancedSetting = observer(() => {
   const {
-    podReplicas,
-    containerName,
-    containerPort,
-    containerPortName,
-    containerImage,
-    setPodReplicas,
-    setContainerName,
-    setContainerPort,
-    setContainerPortName,
-    setContainerImage,
-  } = deploymentStore;
+    labels,
+    setLabels,
+    inputLabelKey,
+    setInputLabelKey,
+    inputLabelValue,
+    setInputLabelValue,
+    inputAnnotationsKey,
+    setInputAnnotationsKey,
+    inputAnnotationsValue,
+    setInputAnnotationsValue,
+    annotations,
+    setAnnotations,
+  } = claimStore;
 
-  const onChange = (e, type) => {
+  const [labelsNextId, setLabelsNextId] = useState(1);
+  const [annotationsNextId, setAnnotationsNextId] = useState(1);
+
+  const handleChange = (e) => {
     const { value, name } = e.target;
+    if (name === "LabelsKey") {
+      setInputLabelKey(value);
+      return;
+    } else if (name === "LabelsValue") {
+      setInputLabelValue(value);
+      return;
+    } else if (name === "AnnotationsKey") {
+      setInputAnnotationsKey(value);
+      return;
+    } else if (name === "AnnotationsValue") {
+      setInputAnnotationsValue(value);
+      return;
+    }
+  };
+
+  const addLabels = () => {
+    const newLabelsList = labels.concat({
+      id: labelsNextId,
+      key: inputLabelKey,
+      value: inputLabelValue,
+    });
+    setLabelsNextId(labelsNextId + 1);
+    setLabels([...labels, newLabelsList]);
+    setInputLabelKey(inputLabelKey);
+    setInputLabelValue(inputLabelValue);
+  };
+
+  const deleteLabels = (id) => {
+    if (labels.length == 1) return;
+    const deletedNewList = labels.filter((labels) => labels.id !== id);
+    setLabels(deletedNewList);
+  };
+
+  const addAnnotations = () => {
+    const newAnnotationsList = annotations.concat({
+      id: annotationsNextId,
+      key: inputAnnotationsKey,
+      value: inputAnnotationsValue,
+    });
+    setAnnotationsNextId(annotationsNextId + 1);
+    setAnnotations(newAnnotationsList);
+    setInputAnnotationsKey("");
+    setInputAnnotationsValue("");
+    return;
+  };
+
+  const deleteAnnotations = (id) => {
+    if (annotations.length == 1) return;
+    const deletedNewList = annotations.filter((labels) => labels.id !== id);
+    setAnnotations(deletedNewList);
   };
 
   return (
@@ -75,56 +132,66 @@ const VolumeAdvancedSetting = observer(() => {
 
       <table className="tb_data_new tb_write">
         <tbody>
-          <tr>
-            <th>Labels</th>
-
-            <td>
-              <CTextField
-                type="text"
-                placeholder="Key"
-                className="form_fullWidth"
-                name="LabelsKey"
-                onChange={onChange}
-                // value={volumeName}
-              />
-            </td>
-            <td>
-              <CTextField
-                type="text"
-                placeholder="Value"
-                className="form_fullWidth"
-                name="LabelsValue"
-                onChange={onChange}
-                // value={volumeName}
-              />
-            </td>
-            <th></th>
-          </tr>
-          <tr>
-            <th>Annotations</th>
-
-            <td>
-              <CTextField
-                type="text"
-                placeholder="Key"
-                className="form_fullWidth"
-                name="AnnotationsKey"
-                onChange={onChange}
-                // value={volumeName}
-              />
-            </td>
-            <td>
-              <CTextField
-                type="text"
-                placeholder="Value"
-                className="form_fullWidth"
-                name="AnnotationsValue"
-                onChange={onChange}
-                // value={volumeName}
-              />
-            </td>
-            <th></th>
-          </tr>
+          {labels.map((item, i) => (
+            <tr>
+              <th>Labels</th>
+              <td>
+                <CTextField
+                  type="text"
+                  placeholder="Key"
+                  className="form_fullWidth"
+                  name="LabelsKey"
+                  onChange={handleChange}
+                  value={item.key || ""}
+                />
+              </td>
+              <td>
+                <CTextField
+                  type="text"
+                  placeholder="Value"
+                  className="form_fullWidth"
+                  name="LabelsValue"
+                  onChange={handleChange}
+                  value={item.value}
+                />
+              </td>
+              <td>
+                <Button onClick={addLabels}>+</Button>
+                &nbsp;&nbsp;
+                <Button onClick={() => deleteLabels(item.id)}>-</Button>
+              </td>
+            </tr>
+          ))}
+          {annotations.map((item, i) => (
+            <tr>
+              <th>Annotations</th>
+              <td>
+                <CTextField
+                  type="text"
+                  placeholder="Key"
+                  className="form_fullWidth"
+                  name="AnnotationsKey"
+                  onChange={handleChange}
+                  value={inputAnnotationsKey}
+                />
+              </td>
+              <td>
+                <CTextField
+                  type="text"
+                  placeholder="Value"
+                  className="form_fullWidth"
+                  name="AnnotationsValue"
+                  onChange={handleChange}
+                  value={inputAnnotationsValue}
+                />
+              </td>
+              <td colSpan={2}>
+                <Button onClick={addAnnotations}>+</Button>
+                &nbsp;&nbsp;
+                <Button onClick={() => deleteAnnotations(item.id)}>-</Button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </>

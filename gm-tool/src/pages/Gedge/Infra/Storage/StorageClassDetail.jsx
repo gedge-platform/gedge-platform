@@ -105,48 +105,60 @@ const StorageClassDetail = observer(({}) => {
         <div className="panelCont">
           <table className="tb_data">
             <tbody className="tb_data_detail">
-              <tr>
-                <th>Name</th>
-                <td>{storageClass?.name ? storageClass?.name : "-"}</td>
-                <th>Cluster Name</th>
-                <td>{storageClass?.cluster ? storageClass?.cluster : "-"}</td>
-              </tr>
-              <tr>
-                <th>Reclaim Policy</th>
-                <td>
-                  {storageClass?.reclaimPolicy
-                    ? storageClass?.reclaimPolicy
-                    : "-"}
-                </td>
-                <th>Provisioner</th>
-                <td>
-                  {storageClass?.provisioner ? storageClass?.provisioner : "-"}
-                </td>
-              </tr>
-              <tr>
-                <th>VolumeBindingMode</th>
-                <td>
-                  {storageClass?.volumeBindingMode
-                    ? storageClass?.volumeBindingMode
-                    : "-"}
-                </td>
-                {/* <th>AllowVolumeExpansion</th>
+              {storageClass ? (
+                <>
+                  <tr>
+                    <th>Name</th>
+                    <td>{storageClass?.name ? storageClass?.name : "-"}</td>
+                    <th>Cluster Name</th>
+                    <td>
+                      {storageClass?.cluster ? storageClass?.cluster : "-"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Reclaim Policy</th>
+                    <td>
+                      {storageClass?.reclaimPolicy
+                        ? storageClass?.reclaimPolicy
+                        : "-"}
+                    </td>
+                    <th>Provisioner</th>
+                    <td>
+                      {storageClass?.provisioner
+                        ? storageClass?.provisioner
+                        : "-"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>VolumeBindingMode</th>
+                    <td>
+                      {storageClass?.volumeBindingMode
+                        ? storageClass?.volumeBindingMode
+                        : "-"}
+                    </td>
+                    {/* <th>AllowVolumeExpansion</th>
                 <td>
                   {storageClass?.allowVolumeExpansion
                     ? storageClass?.allowVolumeExpansion
                     : "-"}
                 </td> */}
-                <th>Created</th>
-                <td>
-                  {storageClass?.createAt
-                    ? dateFormatter(storageClass?.createAt)
-                    : "-"}
-                </td>
-              </tr>
-              {/* <tr>
-                <th>{null}</th>
-                <td>{null}</td>
-              </tr> */}
+                    <th>Created</th>
+                    <td>
+                      {storageClass?.createAt
+                        ? dateFormatter(storageClass?.createAt)
+                        : "-"}
+                    </td>
+                  </tr>
+                  {/* <tr>
+              <th>{null}</th>
+              <td>{null}</td>
+            </tr> */}
+                </>
+              ) : (
+                <LabelContainer>
+                  <p>No Detail Info</p>
+                </LabelContainer>
+              )}
             </tbody>
           </table>
         </div>
@@ -163,7 +175,7 @@ const StorageClassDetail = observer(({}) => {
                 </Label>
               ))
             ) : (
-              <p>No Labels Info.</p>
+              <p>No Labels Info</p>
             )}
           </LabelContainer>
           <br />
@@ -182,7 +194,7 @@ const StorageClassDetail = observer(({}) => {
             </table>
           ) : (
             <LabelContainer>
-              <p>No Annotations Info.</p>
+              <p>No Annotations Info</p>
             </LabelContainer>
           )}
           <br />
@@ -190,7 +202,7 @@ const StorageClassDetail = observer(({}) => {
       </CTabPanel>
       <CTabPanel value={tabvalue} index={2}>
         <div className="tb_container">
-          {scParameters ? (
+          {scParameters !== "" ? (
             <table className="tb_data" style={{ tableLayout: "fixed" }}>
               <tbody style={{ whiteSpace: "pre-line" }}>
                 {Object.entries(scParameters).map(([key, value]) => (
@@ -203,12 +215,12 @@ const StorageClassDetail = observer(({}) => {
             </table>
           ) : (
             <LabelContainer>
-              <p>No parameters Info.</p>
+              <p>No parameters Info</p>
             </LabelContainer>
           )}
         </div>
       </CTabPanel>
-      <CTabPanel value={tabvalue} index={3}>
+      {/* <CTabPanel value={tabvalue} index={3}>
         <div className="panelCont">
           <table className="tb_data">
             <tbody>
@@ -219,7 +231,7 @@ const StorageClassDetail = observer(({}) => {
             </tbody>
           </table>
         </div>
-      </CTabPanel>
+      </CTabPanel> */}
     </PanelBox>
   );
 });

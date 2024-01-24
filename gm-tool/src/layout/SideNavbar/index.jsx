@@ -34,16 +34,32 @@ const LogoArea = styled.div`
 `;
 
 const SideNavbar = () => {
+  const userRole = getItem("userRole");
+
   return (
-    <SidebarArea>
-      <LogoArea>
-        <Link to="/">
-          <img src={sideLogo} alt="GEdge Cloud" />
-        </Link>
-      </LogoArea>
-      <SideUser />
-      <SideMenu />
-    </SidebarArea>
+    <>
+      {userRole === "PA" ? (
+        <SidebarArea>
+          <LogoArea>
+            <Link to="/total">
+              <img src={sideLogo} alt="GEdge Cloud" />
+            </Link>
+          </LogoArea>
+          <SideUser />
+          <SideMenu />
+        </SidebarArea>
+      ) : (
+        <SidebarArea>
+          <LogoArea>
+            <Link to="/service">
+              <img src={sideLogo} alt="GEdge Cloud" />
+            </Link>
+          </LogoArea>
+          <SideUser />
+          <SideMenu />
+        </SidebarArea>
+      )}
+    </>
   );
 };
 

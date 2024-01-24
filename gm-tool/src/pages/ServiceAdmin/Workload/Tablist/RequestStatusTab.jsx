@@ -11,7 +11,17 @@ import { drawStatus } from "@/components/datagrids/AggridFormatter";
 const RequestStatusTab = observer(() => {
   const [reRun, setReRun] = useState(false);
 
-  const { requestList, loadRequestList, totalElements, currentPage, totalPages, viewList, goPrevPage, goNextPage } = requestStatusStore;
+  const { 
+    requestList, 
+    loadRequestList, 
+    totalElements, 
+    currentPage, 
+    totalPages, 
+    viewList, 
+    initViewList,
+    goPrevPage, 
+    goNextPage 
+  } = requestStatusStore;
 
   const [columDefs] = useState([
     {
@@ -82,6 +92,7 @@ const RequestStatusTab = observer(() => {
     loadRequestList();
     return () => {
       setReRun(false);
+      initViewList();
     };
   }, [reRun]);
 
@@ -101,7 +112,7 @@ const RequestStatusTab = observer(() => {
           <div className="tabPanelContainer">
             <div className="grid-height2">
               <AgGrid
-                rowData={viewList}
+                rowData={requestList}
                 columnDefs={columDefs}
                 totalElements={totalElements}
                 isBottom={false}

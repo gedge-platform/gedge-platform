@@ -7,7 +7,6 @@ import { serviceStore } from "@/store";
 
 const ServiceYaml = observer(() => {
   const { content, setContent } = serviceStore;
-  // console.log(content);
   return (
     <>
       <div className="step-container2">
@@ -27,7 +26,7 @@ const ServiceYaml = observer(() => {
         theme="monokai"
         name="editor"
         width="90%"
-        onChange={value => {
+        onChange={(value) => {
           // setContent(value);
         }}
         fontSize={14}

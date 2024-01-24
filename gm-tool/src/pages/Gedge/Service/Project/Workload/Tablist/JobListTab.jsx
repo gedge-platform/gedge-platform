@@ -17,7 +17,19 @@ const JobListTab = observer(() => {
     setTabvalue(newValue);
   };
 
-  const { viewList, jobList, jobDetail, totalElements, loadJobList, loadJobDetail, currentPage, totalPages, goPrevPage, goNextPage } = jobStore;
+  const {
+    viewList,
+    initViewList,
+    jobList,
+    jobDetail,
+    totalElements,
+    loadJobList,
+    loadJobDetail,
+    currentPage,
+    totalPages,
+    goPrevPage,
+    goNextPage,
+  } = jobStore;
 
   const [columDefs] = useState([
     {
@@ -39,6 +51,9 @@ const JobListTab = observer(() => {
       headerName: "워크스페이스",
       field: "workspace",
       filter: true,
+      cellRenderer: function ({ data: { workspace } }) {
+        return `<span>${workspace ? workspace : "-"}</span>`;
+      },
     },
     {
       headerName: "상태",
@@ -70,7 +85,7 @@ const JobListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     const fieldName = e.colDef.field;
     loadJobDetail(e.data.name, e.data.cluster, e.data.project);
   };
@@ -79,22 +94,23 @@ const JobListTab = observer(() => {
 
   useEffect(() => {
     loadJobList();
+    return () => {
+      initViewList();
+    };
   }, []);
 
   return (
     <div style={{ height: 900 }}>
       <CReflexBox>
         <PanelBox>
-          <CommActionBar reloadFunc={loadJobList} isSearch={true} isSelect={true} keywordList={["이름"]}>
-            <CCreateButton>생성</CCreateButton>
-          </CommActionBar>
+          <CommActionBar reloadFunc={loadJobList}></CommActionBar>
 
           <div className="tabPanelContainer">
             <CTabPanel value={tabvalue} index={0}>
               <div className="grid-height2">
                 <AgGrid
                   onCellClicked={handleClick}
-                  rowData={viewList}
+                  rowData={jobList}
                   columnDefs={columDefs}
                   isBottom={false}
                   totalElements={totalElements}

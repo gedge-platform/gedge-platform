@@ -16,8 +16,20 @@ const JobListTab = observer(() => {
   const [reRun, setReRun] = useState(false);
   const [jobName, setJobName] = useState("");
 
-  const { viewList, jobList, jobDetail, totalElements, loadJobList, loadJobDetail, deleteJob, currentPage, totalPages, goPrevPage, goNextPage } =
-    jobStore;
+  const {
+    viewList,
+    initViewList,
+    jobList,
+    jobDetail,
+    totalElements,
+    loadJobList,
+    loadJobDetail,
+    deleteJob,
+    currentPage,
+    totalPages,
+    goPrevPage,
+    goNextPage,
+  } = jobStore;
 
   const [columDefs] = useState([
     {
@@ -44,13 +56,6 @@ const JobListTab = observer(() => {
       headerName: "상태",
       field: "completions",
       filter: true,
-      // cellRenderer: ({ value }) => {
-      //   if (value === 1) {
-      //     return drawStatus("True");
-      //   } else {
-      //     return drawStatus("False");
-      //   }
-      // },
     },
     {
       headerName: "지속시간(초)",
@@ -67,10 +72,11 @@ const JobListTab = observer(() => {
       cellRenderer: function (data) {
         return `<span>${dateFormatter(data.value)}</span>`;
       },
+      sort: "desc",
     },
   ]);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     setJobName(e.data.name);
     loadJobDetail(e.data.name, e.data.cluster, e.data.project);
   };
@@ -87,7 +93,9 @@ const JobListTab = observer(() => {
     if (jobName === "") {
       swalError("Job을 선택해주세요!");
     } else {
-      swalUpdate(jobName + "을 삭제하시겠습니까?", () => deleteJob(jobName, reloadData));
+      swalUpdate(jobName + "을 삭제하시겠습니까?", () =>
+        deleteJob(jobName, reloadData)
+      );
     }
     setJobName("");
   };
@@ -100,6 +108,7 @@ const JobListTab = observer(() => {
     loadJobList();
     return () => {
       setReRun(false);
+      initViewList();
     };
   }, [reRun]);
 
@@ -107,20 +116,15 @@ const JobListTab = observer(() => {
     <>
       <CReflexBox>
         <PanelBox>
-          <CommActionBar
-            reloadFunc={reloadData}
-            // isSearch={true}
-            // isSelect={true}
-            // keywordList={["이름"]}
-          >
-            <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+          <CommActionBar reloadFunc={reloadData}>
+            &nbsp;&nbsp;
             <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
           <div className="tabPanelContainer">
             <div className="grid-height2">
               <AgGrid
                 onCellClicked={handleClick}
-                rowData={viewList}
+                rowData={jobList}
                 columnDefs={columDefs}
                 isBottom={false}
                 totalElements={totalElements}
@@ -131,8 +135,6 @@ const JobListTab = observer(() => {
               />
             </div>
           </div>
-          {/* TODO: CreateJob 팝업 작업 필요 */}
-          {/* <CreateJob type={"user"} open={open} onClose={handleClose} reloadFunc={reloadData} /> */}
         </PanelBox>
         <Detail job={jobDetail} />
       </CReflexBox>

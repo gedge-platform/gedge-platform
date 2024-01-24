@@ -33,6 +33,7 @@ const Storage = observer(() => {
     goNextPage,
     loadStorageClass,
     viewList,
+    storageClasses,
     getYamlFile,
     loadStorageClassYaml,
   } = StorageClassStore;
@@ -96,7 +97,7 @@ const Storage = observer(() => {
   const handleOpen = e => {
     let fieldName = e.colDef.field;
     loadStorageClass(e.data.name, e.data.cluster);
-    loadStorageClassYaml(e.data.name, e.data.cluster, null, "storageclasses");
+    loadStorageClassYaml(e.data.name, e.data.cluster, "storageclasses");
     if (fieldName === "yaml") {
       handleOpenYaml();
     }
@@ -143,7 +144,7 @@ const Storage = observer(() => {
               <div className="grid-height2">
                 <AgGrid
                   onCellClicked={handleOpen}
-                  rowData={viewList}
+                  rowData={storageClasses}
                   columnDefs={columDefs}
                   isBottom={false}
                   totalElements={totalElements}

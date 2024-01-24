@@ -1,16 +1,28 @@
 package controller
 
 import (
-	"fmt"
 	"gmc_api_gateway/app/common"
 	"gmc_api_gateway/app/model"
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-func GetConfigmap(c echo.Context) error {
+// Get Configmap godoc
+// @Summary Show detail Configmap
+// @Description get Configmap Details
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param name path string true "name of the Configmap"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.CONFIGMAP
+// @Router /configmaps/{name} [get]
+// @Tags Kubernetes
+func GetConfigmap(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:      "configmaps",
 		Name:      c.Param("name"),
@@ -20,12 +32,17 @@ func GetConfigmap(c echo.Context) error {
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
 	}
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
 	getData, err := common.DataRequest(params)
 	if err != nil {
 		common.ErrorMsg(c, http.StatusNotFound, err)
 		return nil
 	}
-	fmt.Println("[##########configmap", getData)
+
 	configmap := model.CONFIGMAP{
 		Name:        common.InterfaceToString(common.FindData(getData, "metadata", "name")),
 		NameSpace:   common.InterfaceToString(common.FindData(getData, "metadata", "namespace")),
@@ -36,8 +53,7 @@ func GetConfigmap(c echo.Context) error {
 		Cluster:     params.Cluster,
 	}
 
-	involvesData, _ := common.GetModelRelatedList(params)
-	log.Printf("#####involvesData", involvesData)
+	// involvesData, _ := common.GetModelRelatedList(params)
 	return c.JSON(http.StatusOK, echo.Map{
 		"data": configmap,
 		// "involvesData": "involvesData",
@@ -45,9 +61,21 @@ func GetConfigmap(c echo.Context) error {
 
 }
 
-func GetAllConfigmaps(c echo.Context) error {
+// Get Configmap godoc
+// @Summary Show List Configmap
+// @Description get Configmap List
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param workspace query string false "name of the Workspace"
+// @Param cluster query string false "name of the Cluster"
+// @Param project query string false "name of the Project"
+// @Success 200 {object} model.CONFIGMAP
+// @Router /configmaps [get]
+// @Tags Kubernetes
+func GetAllConfigmaps(c echo.Context) (err error) {
 	var configmaps []model.CONFIGMAP
-	fmt.Printf("## Configmaps", configmaps)
 	params := model.PARAMS{
 		Kind:      "configmaps",
 		Name:      c.Param("name"),
@@ -63,9 +91,16 @@ func GetAllConfigmaps(c echo.Context) error {
 	// 	common.ErrorMsg(c, http.StatusNotFound, err)
 	// 	return nil
 	// }
-
-	data := GetModelList(params)
-	fmt.Printf("####Pod data confirm : %s", data)
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+	data, err := GetModelList(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
 
 	for i, _ := range data {
 		configmap := model.CONFIGMAP{
@@ -93,6 +128,20 @@ func GetAllConfigmaps(c echo.Context) error {
 
 }
 
+// Create Configmap godoc
+// @Summary Create Configmap
+// @Description Create Configmap
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param json body string true "Configmap Info Body"
+// @Param cluster query string true "name of the Cluster"
+// @Param workspace query string true "name of the Workspace"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.Error
+// @Router /configmaps [post]
+// @Tags Kubernetes
 func CreateConfigmap(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:    "services",
@@ -108,7 +157,46 @@ func CreateConfigmap(c echo.Context) (err error) {
 		return nil
 	}
 
+	return c.JSON(http.StatusCreated, echo.Map{
+		"status": "Created",
+		"code":   http.StatusCreated,
+		"data":   postData,
+	})
+}
+
+// Delete Configmap godoc
+// @Summary Delete Configmap
+// @Description Delete Configmap
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param name path string true "name of the Configmap"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.Error
+// @Router /configmaps/{name} [delete]
+// @Tags Kubernetes
+func DeleteConfigmap(c echo.Context) (err error) {
+	params := model.PARAMS{
+		Kind:    "configmaps",
+		Name:    c.Param("name"),
+		Cluster: c.QueryParam("cluster"),
+		Project: c.QueryParam("project"),
+		Method:  c.Request().Method,
+		Body:    responseBody(c.Request().Body),
+	}
+
+	postData, err := common.DataRequest(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+
 	return c.JSON(http.StatusOK, echo.Map{
-		"info": common.StringToInterface(postData),
+		"status": "Deleted",
+		"code":   http.StatusOK,
+		"data":   postData,
 	})
 }

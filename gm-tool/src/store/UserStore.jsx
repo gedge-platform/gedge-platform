@@ -16,11 +16,67 @@ class User {
   resultList = {};
   viewList = [];
 
+  memberId = "";
+  memberName = "";
+  password = "";
+  memberRole = "";
+  email = "";
+  contact = "";
+  memberDescription = "";
+  userName = "";
+
+  inputs = [
+    {
+      memberId: "",
+      memberName: "",
+      password: "",
+      memberRole: "PA",
+      email: "",
+      contact: "",
+      memberDescription: "",
+    },
+  ];
+  inputsEdit = [
+    {
+      memberId: "",
+      memberName: "",
+      password: "",
+      memberRole: "PA",
+      email: "",
+      contact: "",
+      enabled: "",
+    },
+  ];
+
   constructor() {
     makeAutoObservable(this);
   }
 
-  setUser = user => {
+  // checkUser = (name) => {
+  //   runInAction(() => {
+  //     this.userName = name;
+  //   });
+  // };
+
+  setUserName = (e) => {
+    runInAction(() => {
+      this.userName = e;
+    });
+  };
+
+  setInputs = (inputs) => {
+    runInAction(() => {
+      this.inputs = inputs;
+    });
+  };
+
+  setInputsEdit = (inputsEdit) => {
+    runInAction(() => {
+      this.inputsEdit = inputsEdit;
+    });
+  };
+
+  setUser = (user) => {
     runInAction(() => {
       this.user = user;
       this.role = user.role;
@@ -47,13 +103,13 @@ class User {
     });
   };
 
-  setCurrentPage = n => {
+  setCurrentPage = (n) => {
     runInAction(() => {
       this.currentPage = n;
     });
   };
 
-  setTotalPages = n => {
+  setTotalPages = (n) => {
     runInAction(() => {
       this.totalPages = n;
     });
@@ -67,18 +123,20 @@ class User {
       let cntCheck = true;
       this.resultList = {};
 
-      Object.entries(apiList).map(([_, value]) => {
-        cntCheck = true;
-        tempList.push(toJS(value));
-        cnt = cnt + 1;
-        if (cnt > 10) {
-          cntCheck = false;
-          cnt = 1;
-          this.resultList[totalCnt] = tempList;
-          totalCnt = totalCnt + 1;
-          tempList = [];
-        }
-      });
+      apiList === null
+        ? (cntCheck = false)
+        : Object.entries(apiList).map(([_, value]) => {
+            cntCheck = true;
+            tempList.push(toJS(value));
+            cnt = cnt + 1;
+            if (cnt > 10) {
+              cntCheck = false;
+              cnt = 1;
+              this.resultList[totalCnt] = tempList;
+              totalCnt = totalCnt + 1;
+              tempList = [];
+            }
+          });
 
       if (cntCheck) {
         this.resultList[totalCnt] = tempList;
@@ -86,18 +144,19 @@ class User {
       }
 
       this.setTotalPages(totalCnt);
+      this.setCurrentPage(1);
       setFunc(this.resultList);
       this.setViewList(0);
     });
   };
 
-  setUserList = list => {
+  setUserList = (list) => {
     runInAction(() => {
       this.userList = list;
     });
   };
 
-  setViewList = n => {
+  setViewList = (n) => {
     runInAction(() => {
       this.viewList = this.userList[n];
     });
@@ -106,11 +165,10 @@ class User {
   loadUserList = async () => {
     await axios
       .get(`${SERVER_URL}/members`)
-      .then(res => {
+      .then((res) => {
         runInAction(() => {
           this.userList = res.data;
           this.totalElements = res.data.length;
-          // this.userDetail = res.data.data[0];
         });
       })
       .then(() => {
@@ -121,12 +179,11 @@ class User {
       });
   };
 
-  loadUserDetail = async memberId => {
-    await axios.get(`${SERVER_URL}/members/${memberId}`).then(res => {
+  loadUserDetail = async (memberId) => {
+    await axios.get(`${SERVER_URL}/members/${memberId}`).then((res) => {
       runInAction(() => {
         this.userDetail = res.data;
       });
-      console.log(this.userDetail);
     });
   };
 
@@ -138,8 +195,7 @@ class User {
     // return
     await axios
       .post(`${SERVER_URL}/members`, body)
-      .then(res => {
-        console.log(res);
+      .then((res) => {
         runInAction(() => {
           if (res.status === 201) {
             swalError("사용자가 생성되었습니다.", callback);
@@ -147,27 +203,43 @@ class User {
           }
         });
       })
-      .catch(err => false);
+      .catch((err) => false);
   };
-  updateUser = async data => {
+  updateUserList = async (userName, data) => {
     const body = data;
     const { id } = getItem("user");
-    // return
+
+    await axios
+      .put(`${SERVER_URL}/members/${userName}`, body)
+      .then((res) => {
+        runInAction(() => {
+          if (res.status === 200) {
+            swalError("사용자가 수정되었습니다.");
+            return true;
+          }
+        });
+      })
+      .catch((err) => false);
+  };
+
+  updateUser = async (data) => {
+    const body = data;
+    const { id } = getItem("user");
     await axios
       .put(`${SERVER_URL}/members/${id}`, body)
-      .then(res => {
+      .then((res) => {
         runInAction(() => {});
       })
-      .catch(err => false);
+      .catch((err) => false);
   };
 
   deleteUser = async (userName, callback) => {
     axios
       .delete(`${SERVER_URL}/members/${userName}`)
-      .then(res => {
+      .then((res) => {
         if (res.status === 200) swalError("사용자를 삭제하였습니다.", callback);
       })
-      .catch(err => {
+      .catch((err) => {
         swalError("삭제에 실패하였습니다.");
       });
   };

@@ -2,13 +2,21 @@ import { observer } from "mobx-react";
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { swalError } from "@/utils/swal-utils";
-
 import { CDialogNew } from "@/components/dialogs";
-import { claimStore, deploymentStore, projectStore, StorageClassStore, volumeStore } from "@/store";
+import {
+  claimStore,
+  deploymentStore,
+  projectStore,
+  StorageClassStore,
+  volumeStore,
+} from "@/store";
 import ClaimBasicInformation from "./ClaimBasicInformation";
-import VolumeAdvancedSetting from "../Dialog/VolumeAdvancedSetting";
+// import VolumeAdvancedSetting from "../Dialog/VolumeAdvancedSetting";
 import VolumYamlPopup from "../Dialog/VolumYamlPopup";
 import VolumePopup from "../Dialog/VolumePopup";
+import ClaimAdvancedSetting from "./ClaimAdvancedSetting";
+import ClaimYamlPopup from "./ClaimYamlPopup";
+import { stringify } from "json-to-pretty-yaml2";
 
 const Button = styled.button`
   background-color: #fff;
@@ -27,8 +35,8 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const CreateClaim = observer(props => {
-  const { open } = props;
+const CreateClaim = observer((props) => {
+  const { open, labelsList } = props;
   const [stepValue, setStepValue] = useState(1);
   const { setProjectListinWorkspace } = projectStore;
   const {
@@ -36,22 +44,32 @@ const CreateClaim = observer(props => {
     setClaimName,
     accessMode,
     volumeCapacity,
-    setVolumeCapacity,
-    responseData,
-    setResponseData,
-    content,
     setContent,
     clearAll,
     createVolumeClaim,
     setProject,
     project,
     selectClusters,
-    setSelectClusters,
-    clusterName,
-    setAccessMode,
+    labelList,
+    labels,
+    annotations,
+    labelInput,
+    annotationInput,
+    labelKey,
+    labelValue,
+    annotationKey,
+    annotationValue,
+    setTemplate,
+    setClearLA,
   } = claimStore;
+
   const { workspace, setWorkspace } = deploymentStore;
-  const { storageClass, setStorageClass, selectStorageClass, setSelectStorageClass } = StorageClassStore;
+  const {
+    storageClass,
+    setStorageClass,
+    selectStorageClass,
+    setSelectStorageClass,
+  } = StorageClassStore;
 
   const template = {
     apiVersion: "v1",
@@ -59,9 +77,8 @@ const CreateClaim = observer(props => {
     metadata: {
       name: claimName,
       namespace: project,
-      labels: {
-        app: "",
-      },
+      labels: labelInput,
+      annotations: annotationInput,
     },
     spec: {
       storageClassName: selectStorageClass,
@@ -74,9 +91,13 @@ const CreateClaim = observer(props => {
     },
   };
 
-  const onClickStepOne = e => {
+  const onClickStepOne = (e) => {
+    const checkRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])*$/;
     if (claimName === "") {
       swalError("Claim 이름을 입력해주세요");
+      return;
+    } else if (!checkRegex.test(claimName)) {
+      swalError("영어소문자와 숫자만 입력해주세요.");
       return;
     }
     if (workspace === "") {
@@ -108,7 +129,6 @@ const CreateClaim = observer(props => {
   };
 
   const handleClose = () => {
-    // 이거 때문에 500 error
     props.onClose && props.onClose();
     setProjectListinWorkspace();
     setStepValue(1);
@@ -117,29 +137,59 @@ const CreateClaim = observer(props => {
     setWorkspace("");
     setProject("");
     setSelectStorageClass("");
+    setClearLA();
   };
 
-  const onClickStepTwo = () => {
+  const onClickStepTwo = (e) => {
+    if (labelKey.length < 1 || labelValue.length < 1) {
+      swalError("Labels를 입력해주세요");
+      return;
+    }
+
+    const LabelKeyArr = [];
+    const AnnotationKeyArr = [];
+
+    labels.map((data) => LabelKeyArr.push(data.labelKey));
+    annotations.map((data) => AnnotationKeyArr.push(data.annotationKey));
     setStepValue(3);
   };
 
   const handlePreStepValue = () => {
+    setClearLA();
     setWorkspace("");
     setProject("");
   };
 
   const CreateVolume = () => {
-    // for문으로 복수의 클러스터이름 보내게
-    createVolumeClaim(require("json-to-pretty-yaml").stringify(template));
+    createVolumeClaim(stringify(template));
     handleClose();
     props.reloadFunc && props.reloadFunc();
-    // setSelectClusters();
+  };
+
+  const onClickBackStepTwo = () => {
+    setClearLA();
+    setStepValue(2);
   };
 
   useEffect(() => {
     if (stepValue === 3) {
-      const YAML = require("json-to-pretty-yaml");
-      setContent(YAML.stringify(template));
+      setTemplate(template);
+      if (template) {
+        if (
+          template.metadata?.annotations === ': ""' ||
+          isEmpty(template.metadata?.annotations)
+        ) {
+          delete template.metadata.annotations;
+        }
+        if (
+          template.metadata?.labels === ': ""' ||
+          isEmpty(template.metadata.labels)
+        ) {
+          delete template.metadata.labels;
+        }
+        setContent(stringify(template));
+      }
+      setContent(stringify(template));
     }
   }, [stepValue]);
 
@@ -163,7 +213,7 @@ const CreateClaim = observer(props => {
               }}
             >
               <Button onClick={handleClose}>취소</Button>
-              <ButtonNext onClick={e => onClickStepOne(e)}>다음</ButtonNext>
+              <ButtonNext onClick={(e) => onClickStepOne(e)}>다음</ButtonNext>
             </div>
           </div>
         </>
@@ -171,7 +221,7 @@ const CreateClaim = observer(props => {
     } else if (stepValue === 2) {
       return (
         <>
-          <VolumeAdvancedSetting />
+          <ClaimAdvancedSetting />
           <div
             style={{
               display: "flex",
@@ -194,7 +244,7 @@ const CreateClaim = observer(props => {
               >
                 이전
               </Button>
-              <ButtonNext onClick={() => onClickStepTwo()}>다음</ButtonNext>
+              <ButtonNext onClick={(e) => onClickStepTwo(e)}>다음</ButtonNext>
             </div>
           </div>
         </>
@@ -202,7 +252,7 @@ const CreateClaim = observer(props => {
     } else if (stepValue === 3) {
       return (
         <>
-          <VolumYamlPopup />
+          <ClaimYamlPopup labelsList={labelsList} />
           <div
             style={{
               display: "flex",
@@ -217,8 +267,10 @@ const CreateClaim = observer(props => {
                 justifyContent: "center",
               }}
             >
-              <Button onClick={() => setStepValue(2)}>이전</Button>
-              <ButtonNext onClick={() => CreateVolume()}>Schedule Apply</ButtonNext>
+              <Button onClick={() => onClickBackStepTwo()}>이전</Button>
+              <ButtonNext onClick={() => CreateVolume()}>
+                Schedule Apply
+              </ButtonNext>
             </div>
           </div>
         </>
@@ -227,7 +279,15 @@ const CreateClaim = observer(props => {
   };
 
   return (
-    <CDialogNew id="myDialog" open={open} maxWidth="md" title={"Create Claim"} onClose={handleClose} bottomArea={false} modules={["custom"]}>
+    <CDialogNew
+      id="myDialog"
+      open={open}
+      maxWidth="md"
+      title={"Create Claim"}
+      onClose={handleClose}
+      bottomArea={false}
+      modules={["custom"]}
+    >
       {stepOfComponent()}
     </CDialogNew>
   );

@@ -25,7 +25,7 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const CreateCluster = observer(props => {
+const CreateCluster = observer((props) => {
   const { open } = props;
   const [openAddress, setOpenAddress] = useState(false);
   const { postCluster } = clusterStore;
@@ -80,7 +80,7 @@ const CreateCluster = observer(props => {
     }
   };
 
-  const createCluster = async body => {
+  const createCluster = async (body) => {
     const result = await postCluster(body);
     handleClose();
     props.reloadFunc && props.reloadFunc();
@@ -102,12 +102,16 @@ const CreateCluster = observer(props => {
     });
   };
 
-  // useEffect(props => {
-  //   console.log("props is ", props);
-  // }, []);
-
   return (
-    <CDialogNew id="myDialog" open={open} maxWidth="md" title={`Create Cluster`} onClose={handleClose} bottomArea={false} modules={["custom"]}>
+    <CDialogNew
+      id="myDialog"
+      open={open}
+      maxWidth="md"
+      title={`Create Cluster`}
+      onClose={handleClose}
+      bottomArea={false}
+      modules={["custom"]}
+    >
       <table className="tb_data_new tb_write">
         <tbody>
           <tr>
@@ -115,7 +119,13 @@ const CreateCluster = observer(props => {
               Type <span className="requried">*</span>
             </th>
             <td style={{ width: "50%" }}>
-              <CTextField type="text" className="form_fullWidth" name="clusterType" value={clusterType} disabled />
+              <CTextField
+                type="text"
+                className="form_fullWidth"
+                name="clusterType"
+                value={clusterType}
+                disabled
+              />
             </td>
           </tr>
           {props.type == "cloud" && (
@@ -174,7 +184,14 @@ const CreateCluster = observer(props => {
               <span className="requried">*</span>
             </th>
             <td>
-              <CTextField type="text" placeholder="Token" className="form_fullWidth" name="clusterToken" onChange={onChange} value={clusterToken} />
+              <CTextField
+                type="text"
+                placeholder="Token"
+                className="form_fullWidth"
+                name="clusterToken"
+                onChange={onChange}
+                value={clusterToken}
+              />
             </td>
           </tr>
           <tr>
@@ -185,7 +202,13 @@ const CreateCluster = observer(props => {
             {clusterAddress == "" && (
               <>
                 <td>
-                  <CTextField type="text" placeholder="address" className="form_fullWidth" name="address" onClick={searchAddressOpen} />
+                  <CTextField
+                    type="text"
+                    placeholder="address"
+                    className="form_fullWidth"
+                    name="address"
+                    onClick={searchAddressOpen}
+                  />
                 </td>
               </>
             )}

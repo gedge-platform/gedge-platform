@@ -3,9 +3,9 @@ package controller
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"gmc_api_gateway/app/common"
@@ -34,8 +34,9 @@ func GetClusterDB(name string) *mongo.Collection {
 // @Param body body model.Cluster true "Cluster Info Body"
 // @ApiImplicitParam
 // @Accept  json
+// @Security Bearer
 // @Produce  json
-// @Success 200 {object} model.Cluster
+// @Success 200 {object} model.Error
 // @Header 200 {string} Token "qwerty"
 // @Router /clusters [post]
 // @Tags Cluster
@@ -53,7 +54,7 @@ func CreateCluster(c echo.Context) (err error) {
 
 	if err = validate.Struct(models); err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 		common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
 		return
@@ -61,6 +62,10 @@ func CreateCluster(c echo.Context) (err error) {
 
 	if err != nil {
 		log.Fatal(err)
+	}
+	if FindClusterDB(models.Name) != nil {
+		common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
+		return
 	}
 	if models.Type == "edge" {
 		point := GeoCoder(models.Address)
@@ -147,7 +152,6 @@ func ListCluster(c echo.Context) (err error) {
 		cluster.NodeCnt = common.InterfaceOfLen(common.FindData(getData, "items", ""))
 		tempMetric := []string{"cpu_usage", "memory_usage", "pod_running"}
 		tempresult := NowMonit("cluster", params.Cluster, "", tempMetric)
-		fmt.Println("test : ", tempresult)
 		cluster.ResourceUsage = tempresult
 		results2 = append(results2, cluster)
 	}
@@ -162,6 +166,7 @@ func ListCluster(c echo.Context) (err error) {
 // @ApiImplicitParam
 // @Accept  json
 // @Produce  json
+// @Success 200 {object} model.CLUSTER_DETAIL
 // @Security   Bearer
 // @Param name path string true "name of the Cluster"
 // @Router /clusters/{name} [get]
@@ -281,15 +286,25 @@ func FindClusterDB(value string) *model.Cluster {
 		// common.ErrorMsg(c, http.StatusNotFound, errors.New("Cluster not found."))
 		return nil
 	} else {
-		fmt.Println("[####cluster] : ", &cluster)
 		return &cluster
 	}
 }
 
+// Delete Cluster godoc
+// @Summary Delete Cluster
+// @Description delete Cluster
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.Error
+// @Security   Bearer
+// @Router /clusters/{name} [delete]
+// @Param name path string true "Name of the cluster"
+// @Tags Cluster
 func DeleteCluster(c echo.Context) (err error) {
 	cdb := GetClusterDB("cluster")
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
-	search_val := c.Param("clusterName")
+	search_val := c.Param("name")
 
 	result, err := cdb.DeleteOne(ctx, bson.M{"clusterName": search_val})
 	if err != nil {
@@ -322,7 +337,7 @@ func UpdateCluster(c echo.Context) (err error) {
 
 	if err = validate.Struct(models); err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 		common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
 		return
@@ -356,4 +371,38 @@ func UpdateCluster(c echo.Context) (err error) {
 		"status": http.StatusOK,
 		"data":   search_val + " Updated Complete",
 	})
+}
+
+func AddWorkerNode(c echo.Context) (err error) {
+	params := model.PARAMS{
+		Kind:      "secrets",
+		Name:      c.Param("name"),
+		Cluster:   c.QueryParam("cluster"),
+		User:      c.QueryParam("user"),
+		Workspace: c.QueryParam("workspace"),
+		Project:   c.QueryParam("project"),
+		Method:    c.Request().Method,
+		Body:      responseBody(c.Request().Body),
+	}
+
+	params.Project = "kube-system"
+	token := ""
+	data, err := GetModelList(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+	for _, secret := range data {
+		if strings.Contains(secret, "bootstrap-token") {
+			log.Println(secret)
+
+			token = secret
+			// kubeadm join <Kubernetes API Server:PORT> --token <2. Token 값> --discovery-token-ca-cert-hash sha256:<3. Hash 값>
+		}
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"data": token,
+	})
+	// log.Println(secret)
+
 }

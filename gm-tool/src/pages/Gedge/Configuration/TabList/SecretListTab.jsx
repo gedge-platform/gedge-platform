@@ -71,7 +71,7 @@ const SecretListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     const fieldName = e.colDef.field;
     loadsecretTabList(e.data.name, e.data.clusterName, e.data.namespace);
   };
@@ -84,7 +84,7 @@ const SecretListTab = observer(() => {
   }, []);
 
   return (
-    <>
+    <div style={{ height: 900 }}>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
@@ -102,7 +102,7 @@ const SecretListTab = observer(() => {
                 <AgGrid
                   onCellClicked={handleClick}
                   //Pagenation rowData={viewList}
-                  rowData={viewList}
+                  rowData={secretList}
                   columnDefs={columDefs}
                   //Pagenation isBottom = false
                   // isBottom={true}
@@ -120,7 +120,7 @@ const SecretListTab = observer(() => {
         </PanelBox>
         <SecretDetail secret={secretDetail} />
       </CReflexBox>
-    </>
+    </div>
   );
 });
 export default SecretListTab;

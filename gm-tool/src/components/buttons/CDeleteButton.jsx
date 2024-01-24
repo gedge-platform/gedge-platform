@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 
@@ -11,29 +11,44 @@ const useStyles = makeStyles(() =>
         height: 30,
         font: "inherit",
         color: `#fff`,
-        border: "1px solid #db007c",
+        border: "1px solid #FF6C6C",
         borderRadius: "3px",
-        background: `#e50081`,
+        background: `#FF6C6C`,
 
         "&:hover": {
-          backgroundColor: "#cc0073",
-          borderColor: "#db007c",
+          backgroundColor: "#FF6C6C",
+          borderColor: "#FF6C6C",
         },
         "&.check .MuiButton-label::after": {
           backgroundImage: "url(../images/bullet/createBtn_check.png)",
         },
       },
     },
-  }),
+  })
 );
 
-const CDeleteButton = props => {
-  const { children, type, style, icon, buttonEventType = "button", onClick, role = "ROLE_USER", ...other } = props;
+const CDeleteButton = (props) => {
+  const {
+    children,
+    type,
+    style,
+    icon,
+    buttonEventType = "button",
+    onClick,
+    role = "ROLE_USER",
+    ...other
+  } = props;
   const classes = useStyles();
 
   return (
     <>
-      <Button type={buttonEventType} className={`btn_delete ${icon}`} style={style} onClick={onClick} {...other}>
+      <Button
+        type={buttonEventType}
+        className={`btn_delete ${icon}`}
+        style={style}
+        onClick={onClick}
+        {...other}
+      >
         {children}
       </Button>
     </>

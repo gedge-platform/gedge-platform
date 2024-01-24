@@ -11,17 +11,19 @@ import (
 
 // Get Service godoc
 // @Summary Show detail Service
-// @Description get cronjob Service
+// @Description get Service Details
 // @ApiImplicitParam
 // @Accept  json
 // @Produce  json
-// @Success 200 {object} model.SERVICE
 // @Security   Bearer
 // @Param name path string true "name of the Service"
-// @Param cluster query string true "cluster Name of the Service"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.SERVICE
 // @Router /services/{name} [get]
 // @Tags Kubernetes
-func GetService(c echo.Context) error {
+func GetService(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:      "services",
 		Name:      c.Param("name"),
@@ -31,6 +33,11 @@ func GetService(c echo.Context) error {
 		Project:   c.QueryParam("project"),
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
+	}
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
 	}
 	if params.Cluster == "" || GetDB("cluster", params.Cluster, "clusterName") == nil {
 		common.ErrorMsg(c, http.StatusNotFound, errors.New("Not Found Cluster"))
@@ -66,7 +73,7 @@ func GetService(c echo.Context) error {
 		// UpdateAt:        common.InterfaceToTime(common.FindData(getData, "metadata.managedFields.#", "time")),
 	}
 
-	involvesData, _ := common.GetModelRelatedList(params) // Pods, Deployments
+	involvesData, _ := common.GetModelRelatedList(params) // Pods, Services
 	// log.Printf("#####involvesData ", involvesData)
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -75,13 +82,17 @@ func GetService(c echo.Context) error {
 	})
 }
 
-// Get All Serivces godoc
+// Get Service godoc
 // @Summary Show List Service
 // @Description get Service List
+// @ApiImplicitParam
 // @Accept  json
 // @Produce  json
+// @Security   Bearer
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
 // @Success 200 {object} model.SERVICE
-// @Security Bearer
 // @Router /services [get]
 // @Tags Kubernetes
 func GetServices(c echo.Context) (err error) {
@@ -102,7 +113,11 @@ func GetServices(c echo.Context) (err error) {
 			return nil
 		}
 	}
-	data := GetModelList(params)
+	data, err := GetModelList(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
 	// fmt.Printf("#################dataerr : %s", data)
 	for i, _ := range data {
 		service := model.SERVICE{
@@ -138,14 +153,14 @@ func GetServices(c echo.Context) (err error) {
 // Create Service godoc
 // @Summary Create Service
 // @Description Create Service
-// @Param yaml body string true "Service Info Body"
+// @Param json body string true "Service Info Body"
 // @Param cluster query string true "cluster Name of the Service"
 // @Param project query string true "project Name of the Service"
 // @ApiImplicitParam(yaml = "appUserId", value = "service yaml", required = true)
 // @Accept  json
 // @Security Bearer
 // @Produce  json
-// @Success 200 {object} model.SERVICE
+// @Success 200 {object} model.Error
 // @Header 200 {string} Token "qwerty"
 // @Router /services [post]
 // @Tags Kubernetes
@@ -164,11 +179,27 @@ func CreateService(c echo.Context) (err error) {
 		return nil
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"info": common.StringToInterface(postData),
+	return c.JSON(http.StatusCreated, echo.Map{
+		"status": "Created",
+		"code":   http.StatusCreated,
+		"data":   postData,
 	})
 }
 
+// Delete Service godoc
+// @Summary Delete Service
+// @Description Delete Service
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param name path string true "name of the Service"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.Error
+// @Router /services/{name} [delete]
+// @Tags Kubernetes
 func DeleteService(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:    "services",
@@ -186,6 +217,8 @@ func DeleteService(c echo.Context) (err error) {
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"info": common.StringToInterface(postData),
+		"status": "Deleted",
+		"code":   http.StatusOK,
+		"data":   postData,
 	})
 }

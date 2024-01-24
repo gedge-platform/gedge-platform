@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { observer } from "mobx-react";
 import ReactJson from "react-json-view";
-import { agDateColumnFilter, dateFormatter, isValidJSON, nullCheck } from "@/utils/common-utils";
-import EventAccordion from "@/components/detail/EventAccordion";
+import { dateFormatter, isValidJSON } from "@/utils/common-utils";
+
 import styled from "styled-components";
 import { StorageClassStore } from "@/store";
 
@@ -20,8 +20,9 @@ const LabelContainer = styled.div`
   flex-wrap: wrap;
   width: 100%;
   padding: 12px;
-  border-radius: 4px;
+  border: 1px double #141a30;
   background-color: #2f3855;
+  margin: 10px 0;
 
   p {
     color: rgba(255, 255, 255, 0.6);
@@ -58,7 +59,8 @@ const StorageClassDetail = observer(({}) => {
     setTabvalue(newValue);
   };
 
-  const { storageClass, events, annotations, label } = StorageClassStore;
+  const { storageClass, events, annotations, label, scParameters } =
+    StorageClassStore;
 
   const metaTable = [];
   if (storageClass?.annotations) {
@@ -68,12 +70,17 @@ const StorageClassDetail = observer(({}) => {
           <th style={{ width: "20%" }}>{key}</th>
           <td>
             {isValidJSON(value) ? (
-              <ReactJson src={JSON.parse(value)} theme="summerfruit" displayDataTypes={false} displayObjectSize={false} />
+              <ReactJson
+                src={JSON.parse(value)}
+                theme="summerfruit"
+                displayDataTypes={false}
+                displayObjectSize={false}
+              />
             ) : (
               value
             )}
           </td>
-        </tr>,
+        </tr>
       );
     });
   }
@@ -97,19 +104,37 @@ const StorageClassDetail = observer(({}) => {
               </tr>
               <tr>
                 <th>Reclaim Policy</th>
-                <td>{storageClass?.reclaimPolicy ? storageClass?.reclaimPolicy : "-"}</td>
+                <td>
+                  {storageClass?.reclaimPolicy
+                    ? storageClass?.reclaimPolicy
+                    : "-"}
+                </td>
                 <th>Provisioner</th>
-                <td>{storageClass?.provisioner ? storageClass?.provisioner : "-"}</td>
+                <td>
+                  {storageClass?.provisioner ? storageClass?.provisioner : "-"}
+                </td>
               </tr>
               <tr>
                 <th>VolumeBindingMode</th>
-                <td>{storageClass?.volumeBindingMode ? storageClass?.volumeBindingMode : "-"}</td>
+                <td>
+                  {storageClass?.volumeBindingMode
+                    ? storageClass?.volumeBindingMode
+                    : "-"}
+                </td>
                 <th>AllowVolumeExpansion</th>
-                <td>{storageClass?.allowVolumeExpansion ? storageClass?.allowVolumeExpansion : "-"}</td>
+                <td>
+                  {storageClass?.allowVolumeExpansion
+                    ? storageClass?.allowVolumeExpansion
+                    : "-"}
+                </td>
               </tr>
               <tr>
                 <th>Created</th>
-                <td>{storageClass?.createAt ? dateFormatter(storageClass?.createAt) : "-"}</td>
+                <td>
+                  {storageClass?.createAt
+                    ? dateFormatter(storageClass?.createAt)
+                    : "-"}
+                </td>
                 <th>{null}</th>
                 <td>{null}</td>
               </tr>
@@ -129,10 +154,9 @@ const StorageClassDetail = observer(({}) => {
                 </Label>
               ))
             ) : (
-              <p>No Labels Info.</p>
+              <p>No Labels Info</p>
             )}
           </LabelContainer>
-          <br />
 
           <TableTitle>Annotations</TableTitle>
           {annotations ? (
@@ -148,25 +172,30 @@ const StorageClassDetail = observer(({}) => {
             </table>
           ) : (
             <LabelContainer>
-              <p>No Annotations Info.</p>
+              <p>No Annotations Info</p>
             </LabelContainer>
           )}
-          <br />
         </div>
       </CTabPanel>
+
       <CTabPanel value={tabvalue} index={2}>
-        <EventAccordion events={events} />
-      </CTabPanel>
-      <CTabPanel value={tabvalue} index={3}>
-        <div className="panelCont">
-          <table className="tb_data">
-            <tbody>
-              <tr>
-                <th className="tb_volume_detail_th">value</th>
-                <td>{storageClass?.finalizers}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div className="tb_container">
+          {scParameters !== "" ? (
+            <table className="tb_data" style={{ tableLayout: "fixed" }}>
+              <tbody style={{ whiteSpace: "pre-line" }}>
+                {Object.entries(scParameters).map(([key, value]) => (
+                  <tr>
+                    <th className="tb_workload_detail_labels_th">{key}</th>
+                    <td style={{ whiteSpace: "pre-line" }}>{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <LabelContainer>
+              <p>No parameters Info</p>
+            </LabelContainer>
+          )}
         </div>
       </CTabPanel>
     </PanelBox>

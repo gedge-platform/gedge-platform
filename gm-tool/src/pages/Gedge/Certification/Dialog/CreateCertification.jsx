@@ -7,6 +7,8 @@ import { certificationStore } from "@/store";
 import SelectProvider from "./SelectProvider";
 import CreateAWS from "./CreateAWS";
 import CreateOPENSTACK from "./CreateOPENSTACK";
+import CreateGCP from "./CreateGCP";
+import { Domain } from "@mui/icons-material";
 
 const Button = styled.button`
   background-color: #fff;
@@ -25,12 +27,23 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const CreateCertification = observer(props => {
+const CreateCertification = observer((props) => {
   const { open } = props;
   const [stepValue, setStepValue] = useState(1);
 
-  const { CredentialName, ProviderName, ClientId, ClientSecret, IdentityEndPoint, Username, Password, DomainName, ProjectID, Region, Zone } =
-    certificationStore;
+  const {
+    CredentialName,
+    ProviderName,
+    ClientId,
+    ClientSecret,
+    IdentityEndPoint,
+    Username,
+    Password,
+    DomainName,
+    ProjectID,
+    Region,
+    Zone,
+  } = certificationStore;
 
   const { postCredential } = certificationStore;
 
@@ -43,13 +56,11 @@ const CreateCertification = observer(props => {
     if (ProviderName === "") {
       swalError("Provider Name를 선택해주세요");
       return;
-    }
-    if (ProviderName === "AWS") {
-      console.log(ProviderName);
+    } else if (ProviderName === "AWS") {
       setStepValue(2);
-    }
-    if (ProviderName === "OPENSTACK") {
-      console.log(ProviderName);
+    } else if (ProviderName === "OPENSTACK") {
+      setStepValue(2);
+    } else if (ProviderName === "GCP") {
       setStepValue(2);
     } else {
       return;
@@ -84,10 +95,6 @@ const CreateCertification = observer(props => {
     if (Region === "") {
       swalError("Region을 입력해주세요");
       return;
-    }
-    if (Zone === "") {
-      swalError("Zone을 입력해주세요");
-      return;
     } else {
       createCredential();
     }
@@ -118,8 +125,37 @@ const CreateCertification = observer(props => {
     }
   };
 
+  const onClickCreateGCP = () => {
+    if (CredentialName === "") {
+      swalError("Name을 입력해주세요");
+      return;
+    }
+    if (ProjectID === "") {
+      swalError("ProjectID를 입력해주세요");
+      return;
+    }
+    if (ClientId === "") {
+      swalError("ClientEmail를 입력해주세요");
+      return;
+    }
+    if (ClientSecret === "") {
+      swalError("PrivateKey을 입력해주세요");
+      return;
+    }
+    if (Region === "") {
+      swalError("Region을 입력해주세요");
+      return;
+    }
+    if (Zone === "") {
+      swalError("Zone을 입력해주세요");
+      return;
+    } else {
+      createCredential();
+    }
+  };
+
   const createCredential = async () => {
-    if (ProviderName === "AWS") {
+    if (ProviderName === "OPENSTACK") {
       const inputs = {
         CredentialName: CredentialName,
         ProviderName: ProviderName,
@@ -128,10 +164,11 @@ const CreateCertification = observer(props => {
         Password: Password,
         ProjectID: ProjectID,
         Region: Region,
+        DomainName: DomainName,
         Zone: Zone,
       };
       const result = await postCredential(inputs);
-    } else if (ProviderName === "OPENSTACK") {
+    } else if (ProviderName === "AWS") {
       const inputs = {
         CredentialName: CredentialName,
         ProviderName: ProviderName,
@@ -141,16 +178,20 @@ const CreateCertification = observer(props => {
         Zone: Zone,
       };
       const result = await postCredential(inputs);
-      console.log("result is : ", result);
+    } else if (ProviderName === "GCP") {
+      const inputs = {
+        CredentialName: CredentialName,
+        ProviderName: ProviderName,
+        ProjectID: ProjectID,
+        ClientId: ClientId,
+        ClientSecret: ClientSecret,
+        Region: Region,
+      };
+      const result = await postCredential(inputs);
     }
     handleClose();
     props.reloadFunc && props.reloadFunc();
   };
-
-  // useEffect(() => {
-  //   const YAML = require("json-to-pretty-yaml");
-  //   setContent(YAML.stringify(template));
-  // });
 
   const stepOfComponent = () => {
     if (stepValue === 1) {
@@ -225,11 +266,43 @@ const CreateCertification = observer(props => {
           </div>
         </>
       );
+    } else if (stepValue === 2 && ProviderName == "GCP") {
+      return (
+        <>
+          <CreateGCP />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: "32px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                width: "240px",
+                justifyContent: "center",
+              }}
+            >
+              <Button onClick={handleClose}>취소</Button>
+              <ButtonNext onClick={onClickCreateGCP}>생성</ButtonNext>
+            </div>
+          </div>
+        </>
+      );
     }
   };
 
   return (
-    <CDialogNew id="myDialog" open={open} maxWidth="md" title={"Create Credential"} onClose={handleClose} bottomArea={false} modules={["custom"]}>
+    <CDialogNew
+      id="myDialog"
+      open={open}
+      maxWidth="md"
+      title={"Create Credential"}
+      onClose={handleClose}
+      bottomArea={false}
+      modules={["custom"]}
+    >
       {stepOfComponent()}
     </CDialogNew>
   );

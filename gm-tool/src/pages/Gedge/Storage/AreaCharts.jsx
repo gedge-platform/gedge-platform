@@ -4,16 +4,14 @@ import { observer } from "mobx-react";
 
 const AreaCharts = observer((props) => {
   const { seriesData } = props;
-  console.log(seriesData)
   const categoryArray = ["enero", "febrero", "marzo", "abril", "mayo"];
-
 
   const option = {
     chart: {
       // stacked: true,
       width: "100%",
       toolbar: {
-        show: false
+        show: false,
       },
       // stackType: "normal"
     },
@@ -32,7 +30,7 @@ const AreaCharts = observer((props) => {
     },
     stroke: {
       width: 1,
-      colors: ["#fff"]
+      colors: ["#fff"],
     },
     legend: {
       position: "top",
@@ -42,27 +40,28 @@ const AreaCharts = observer((props) => {
         colors: "#fff",
       },
       markers: {
-        radius: 12
-      }
+        radius: 12,
+      },
     },
     grid: {
       show: false,
       yaxis: {
         lines: {
-          show: true
-        }
+          show: true,
+        },
       },
       xaxis: {
         lines: {
-          show: false
-        }
+          show: false,
+        },
+        // tickAmount: 6
       },
       padding: {
-        bottom: 20
-      }
+        bottom: 20,
+      },
     },
     dataLabels: {
-      enabled: false
+      enabled: false,
     },
     // plotOptions: {
     //   bar: {
@@ -82,26 +81,25 @@ const AreaCharts = observer((props) => {
       labels: {
         show: true,
         style: {
-          colors: 'white',
-          fontSize: '12px'
+          colors: "white",
+          fontSize: "12px",
         },
-      }
-
+      },
     },
     yaxis: {
       labels: {
         show: true,
         style: {
           colors: ["#fff"],
-        }
-      }
+        },
+      },
     },
     tooltip: {
       enabled: true,
       theme: "dark",
-    }
+    },
   };
-  const series = seriesData
+  const series = seriesData;
   //   [
   //   {
   //     name: "applied",
@@ -138,10 +136,8 @@ const AreaCharts = observer((props) => {
   //   }
   // ]
 
-
-
   return (
-    <div >
+    <div>
       <Chart
         options={option}
         series={series}
@@ -149,8 +145,7 @@ const AreaCharts = observer((props) => {
         width="100%"
         height="100%"
       />
-    </div >)
-    ;
-
+    </div>
+  );
 });
 export default AreaCharts;

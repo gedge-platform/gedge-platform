@@ -1,12 +1,17 @@
 import { observer } from "mobx-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { deploymentStore } from "@/store";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/theme-monokai";
 
 const DeploymentYaml = observer(() => {
-  const { content, setContent } = deploymentStore;
+  const { content, setTemplateAnnotation, setTemplateLabel } = deploymentStore;
+
+  useEffect(() => {
+    setTemplateAnnotation();
+    setTemplateLabel();
+  }, [content]);
 
   return (
     <>
@@ -35,9 +40,6 @@ const DeploymentYaml = observer(() => {
         theme="monokai"
         name="editor"
         width="90%"
-        onChange={value => {
-          // setContent(value);
-        }}
         fontSize={14}
         showPrintMargin={true}
         showGutter={true}

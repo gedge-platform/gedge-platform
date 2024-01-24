@@ -1,23 +1,37 @@
 import React from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { observer } from "mobx-react";
 import { monitoringStore } from "@/store";
 import { ClusterMetricTypes } from "../../Utils/MetricsVariables";
-import { unixToTime, unixStartTime, unixCurrentTime } from "../../Utils/MetricsVariableFormatter";
+import {
+  unixToTime,
+  unixStartTime,
+  unixCurrentTime,
+} from "../../Utils/MetricsVariableFormatter";
 
 const SchedulerAreaChart = observer(({ value }) => {
   const { allMetrics, lastTime, interval } = monitoringStore;
-  console.log(allMetrics);
 
   let title = "";
   let metrics = [];
 
-  const searchMetrics = filter => {
+  const searchMetrics = (filter) => {
     Object.entries(allMetrics).map(([key, value]) => {
-      console.log(["key: ", key, "value:", value]);
       if (key === filter) {
         if (value?.length === 0) {
-          for (let index = unixStartTime(lastTime.value); index < unixCurrentTime(); index = index + 60 * interval.value) {
+          for (
+            let index = unixStartTime(lastTime.value);
+            index < unixCurrentTime();
+            index = index + 60 * interval.value
+          ) {
             const tempMetrics = {
               time: unixToTime(index),
               value: 0,
@@ -25,7 +39,7 @@ const SchedulerAreaChart = observer(({ value }) => {
             metrics.push(tempMetrics);
           }
         } else {
-          value[0]?.values.forEach(element => {
+          value[0]?.values.forEach((element) => {
             const tempMetrics = {
               time: unixToTime(element[0]),
               value: element[1],
@@ -39,7 +53,7 @@ const SchedulerAreaChart = observer(({ value }) => {
 
   switch (value) {
     case ClusterMetricTypes.SCHEDULER_ATTEMPTS_TOTAL:
-      title = "Scheduler Attpemts Total";
+      title = "Scheduler Attempts Total";
       searchMetrics(value);
       break;
     case ClusterMetricTypes.SCHEDULER_FAIL_TOTAL:
@@ -85,7 +99,12 @@ const SchedulerAreaChart = observer(({ value }) => {
           <XAxis tickLine="false" dataKey="time" />
           <YAxis />
           <Tooltip />
-          <Area type="monotone" dataKey="value" stroke="#007EFF" fill="#0080ff30" />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="#007EFF"
+            fill="#0080ff30"
+          />
         </AreaChart>
       </ResponsiveContainer>
     </div>

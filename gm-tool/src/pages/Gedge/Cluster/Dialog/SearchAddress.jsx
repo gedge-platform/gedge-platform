@@ -4,11 +4,11 @@ import { CDialogNew } from "@/components/dialogs";
 import { addressStore } from "@/store";
 import DaumPostcode from "react-daum-postcode";
 
-const SearchAddress = observer(props => {
+const SearchAddress = observer((props) => {
   const { open } = props;
   const { setAddress } = addressStore;
 
-  const handleComplete = data => {
+  const handleComplete = (data) => {
     let fullAddress = data.address;
     let extraAddress = "";
 
@@ -17,11 +17,10 @@ const SearchAddress = observer(props => {
         extraAddress += data.bname;
       }
       if (data.buildingName !== "") {
-        extraAddress += extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
+        extraAddress +=
+          extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
       }
     }
-
-    console.log(fullAddress);
     setAddress(fullAddress);
   };
 
@@ -29,12 +28,18 @@ const SearchAddress = observer(props => {
     props.onClose && props.onClose();
   };
 
-  useEffect(props => {
-    console.log("props is ", props);
-  }, []);
+  useEffect((props) => {}, []);
 
   return (
-    <CDialogNew id="myDialog" open={open} maxWidth="md" title={`Search Address`} onClose={handleClose} bottomArea={false} modules={["custom"]}>
+    <CDialogNew
+      id="myDialog"
+      open={open}
+      maxWidth="md"
+      title={`Search Address`}
+      onClose={handleClose}
+      bottomArea={false}
+      modules={["custom"]}
+    >
       <DaumPostcode onComplete={handleComplete} {...props} />
     </CDialogNew>
   );

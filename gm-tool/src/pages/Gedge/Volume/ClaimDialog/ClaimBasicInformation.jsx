@@ -3,61 +3,52 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { CTextField } from "@/components/textfields";
 import FormControl from "@material-ui/core/FormControl";
-import { claimStore, deploymentStore, projectStore, StorageClassStore, workspaceStore, volumeStore } from "@/store";
+import {
+  claimStore,
+  deploymentStore,
+  projectStore,
+  StorageClassStore,
+  workspaceStore,
+  volumeStore,
+} from "@/store";
 
-const Button = styled.button`
-  background-color: #fff;
-  border: 1px solid black;
-  color: black;
-  padding: 10px 35px;
-  margin-right: 10px;
-  border-radius: 4px;
-`;
-
-const ButtonNext = styled.button`
-  background-color: #0f5ce9;
-  color: white;
-  border: none;
-  padding: 10px 35px;
-  border-radius: 4px;
-`;
-
-const ClaimBasicInformation = observer(props => {
-  const { loadWorkSpaceList, workSpaceList, loadWorkspaceDetail, projectList } = workspaceStore;
+const ClaimBasicInformation = observer((props) => {
+  const { loadWorkSpaceList, workSpaceList, loadWorkspaceDetail, projectList } =
+    workspaceStore;
 
   const [projectEnable, setProjectEnable] = useState(true);
   const [clusterEnable, setClusterEnable] = useState(true);
   const [storageClassEnable, setStorageClassEnable] = useState(true);
-  const { selectClusterInfo, setSelectClusterInfo, loadProjectDetail } = projectStore;
+  const { selectClusterInfo, setSelectClusterInfo, loadProjectDetail } =
+    projectStore;
   const { setWorkspace } = deploymentStore;
 
-  // const {setSelectClusters} = volumeStore;
-
   const {
-    setVolumeName,
     setClaimName,
     setAccessMode,
     setVolumeCapacity,
     volumeCapacity,
-    volumeName,
     claimName,
     setProject,
-    selectClusters,
     setSelectClusters,
   } = claimStore;
 
-  const { setSelectStorageClass, loadStorageClassName, setStorageClass, storageClassNameData } = StorageClassStore;
+  const { setSelectStorageClass, loadStorageClassName, storageClassNameData } =
+    StorageClassStore;
 
-  const onChange = async e => {
+  const onChange = async (e) => {
     const { value, name } = e.target;
     if (name === "claimName") {
       setClaimName(value);
-    } else if (name === "workspace") {
+    }
+    if (name === "workspace") {
+      setSelectClusterInfo([]);
       loadWorkspaceDetail(value);
       setWorkspace(value);
       setProjectEnable(false);
       return;
-    } else if (name === "project") {
+    }
+    if (name === "project") {
       if (value === "") {
         setSelectClusterInfo([]);
         return;
@@ -66,18 +57,22 @@ const ClaimBasicInformation = observer(props => {
       setSelectClusters([...selectClusterInfo]);
       setProject(value);
       setClusterEnable(false);
-      setStorageClassEnable(false);
       return;
-    } else if (name === "selectClusters") {
+    }
+    if (name === "selectClusters") {
       setSelectClusters(value);
+
       return;
-    } else if (name === "selectStorageClass") {
+    }
+    if (name === "selectStorageClass") {
       setSelectStorageClass(value);
       return;
-    } else if (name === "accessMode") {
+    }
+    if (name === "accessMode") {
       setAccessMode(value);
       return;
-    } else if (name === "volumeCapacity") {
+    }
+    if (name === "volumeCapacity") {
       setVolumeCapacity(value);
       return;
     }
@@ -87,6 +82,7 @@ const ClaimBasicInformation = observer(props => {
     if (checked) {
       setSelectClusters(clusterName);
       loadStorageClassName(clusterName);
+      setStorageClassEnable(false);
     }
   };
 
@@ -119,11 +115,11 @@ const ClaimBasicInformation = observer(props => {
       <table className="tb_data_new tb_write">
         <tbody>
           <tr>
-            <th>
+            <th style={{ width: "200px" }}>
               VolumeClaim Name
               <span className="requried">*</span>
             </th>
-            <td>
+            <td colSpan="3">
               <CTextField
                 type="text"
                 placeholder="Volume Claim Name"
@@ -133,92 +129,157 @@ const ClaimBasicInformation = observer(props => {
                 value={claimName}
               />
             </td>
-            <th></th>
           </tr>
           <tr>
             <th>
               Workspace <span className="requried">*</span>
             </th>
-            <td style={{ width: "50%" }}>
+            <td colSpan="3">
               <FormControl className="form_fullWidth">
                 <select name="workspace" onChange={onChange}>
-                  <option value={""}>Select Workspace</option>
-                  {workSpaceList.map(item => (
-                    <option value={item.workspaceName}>{item.workspaceName}</option>
+                  <option value={""} selected disabled hidden>
+                    Select Workspace
+                  </option>
+                  {workSpaceList?.map((item) => (
+                    <option value={item.workspaceName}>
+                      {item.workspaceName}
+                    </option>
                   ))}
                 </select>
               </FormControl>
             </td>
-            <th></th>
           </tr>
           <tr>
             <th>
               Project <span className="requried">*</span>
             </th>
-            <td>
+            <td colSpan="3">
               <FormControl className="form_fullWidth">
-                <select disabled={projectEnable} name="project" onChange={onChange}>
-                  <option value={""}>Select Project</option>
-                  {projectList.map(project => (
-                    <option value={project.projectName}>{project.projectName}</option>
-                  ))}
-                </select>
+                {projectList !== 0 ? (
+                  <select
+                    disabled={projectEnable}
+                    name="project"
+                    onChange={onChange}
+                  >
+                    <option value={""} selected disabled hidden>
+                      Select Project
+                    </option>
+                    {projectList.map((project) => (
+                      <option value={project.projectName}>
+                        {project.projectName}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <select
+                    disabled={projectEnable}
+                    name="project"
+                    onChange={onChange}
+                  >
+                    <option value={""} selected disabled hidden>
+                      Select Project
+                    </option>
+                    <option value={"NoData"}>No Data</option>
+                  </select>
+                )}
               </FormControl>
             </td>
-            <th></th>
           </tr>
+
           <tr>
             <th>
               Cluster <span className="requried">*</span>
             </th>
-            <td>
+            <td colSpan="3">
               <table className="tb_data_new">
-                <tbody className="tb_data_nodeInfo">
-                  <tr>
-                    <th></th>
-                    <th>이름</th>
-                    <th>타입</th>
-                    <th>IP</th>
-                  </tr>
-                  {selectClusterInfo.map(({ clusterName, clusterType, clusterEndpoint }) => (
+                {projectList !== 0 ? (
+                  <tbody className="tb_data_nodeInfo">
                     <tr>
-                      <td style={{ textAlign: "center" }}>
-                        <input type="checkbox" name="selectClusters" onChange={e => checkCluster(e, clusterName)} />
-                      </td>
-                      <td>{clusterName}</td>
-                      <td>{clusterType}</td>
-                      <td>{clusterEndpoint}</td>
+                      <th></th>
+                      <th>이름</th>
+                      <th>타입</th>
+                      <th>IP</th>
                     </tr>
-                  ))}
-                </tbody>
+                    {selectClusterInfo
+                      ? selectClusterInfo.map(
+                          ({ clusterName, clusterType, clusterEndpoint }) => (
+                            <tr>
+                              <td style={{ textAlign: "center" }}>
+                                <input
+                                  type="checkbox"
+                                  name="selectClusters"
+                                  onChange={(e) => checkCluster(e, clusterName)}
+                                />
+                              </td>
+                              <td>{clusterName}</td>
+                              <td>{clusterType}</td>
+                              <td>{clusterEndpoint}</td>
+                            </tr>
+                          )
+                        )
+                      : ""}
+                  </tbody>
+                ) : (
+                  <tbody className="tb_data_nodeInfo">
+                    <tr>
+                      <th></th>
+                      <th>이름</th>
+                      <th>타입</th>
+                      <th>IP</th>
+                    </tr>
+                  </tbody>
+                )}
               </table>
             </td>
-            <th></th>
           </tr>
           <tr>
             <th>
               StorageClass <span className="requried">*</span>
             </th>
-            <td>
+            <td colSpan="3">
               <FormControl className="form_fullWidth">
-                <select disabled={storageClassEnable} name="selectStorageClass" onChange={onChange}>
-                  <option value={""}>Select StorageClass</option>
-                  {storageClassNameData
-                    ? storageClassNameData.map(storageClass => <option value={storageClass.name}>{storageClass.name}</option>)
-                    : ""}
-                </select>
+                {projectList !== 0 ? (
+                  <select
+                    disabled={storageClassEnable}
+                    name="selectStorageClass"
+                    onChange={onChange}
+                  >
+                    <option value={""} selected disabled hidden>
+                      Select StorageClass
+                    </option>
+                    {storageClassNameData
+                      ? storageClassNameData.map((storageClass) => (
+                          <option value={storageClass.name}>
+                            {storageClass.name}
+                          </option>
+                        ))
+                      : ""}
+                  </select>
+                ) : (
+                  <select
+                    disabled={storageClassEnable}
+                    name="selectStorageClass"
+                    onChange={onChange}
+                  >
+                    <option value={""} selected disabled hidden>
+                      Select StorageClass
+                    </option>
+                    <option value={"NoData"}>No Data</option>
+                  </select>
+                )}
               </FormControl>
             </td>
-            <th></th>
           </tr>
           <tr>
             <th>
               Access Mode <span className="requried">*</span>
             </th>
-            <td>
+            <td colSpan="3">
               <FormControl className="form_fullWidth">
                 <select name="accessMode" onChange={onChange}>
-                  <option value="Select Access Mode">Select Access Mode</option>
+                  <option value={""} selected disabled hidden>
+                    Select Access Mode
+                  </option>
                   <option value="ReadWriteOnce">ReadWriteOnce</option>
                   <option value="ReadOnlyMany">ReadOnlyMany</option>
                   <option value="ReadWriteMany">ReadWriteMany</option>
@@ -226,14 +287,13 @@ const ClaimBasicInformation = observer(props => {
                 </select>
               </FormControl>
             </td>
-            <th></th>
           </tr>
           <tr>
             <th>
               Volume Capacity
               <span className="requried">*</span>
             </th>
-            <td>
+            <td colSpan="3">
               <CTextField
                 type="number"
                 placeholder="Volume Capacity"
@@ -243,7 +303,6 @@ const ClaimBasicInformation = observer(props => {
                 value={volumeCapacity || ""}
               />
             </td>
-            <th></th>
           </tr>
         </tbody>
       </table>

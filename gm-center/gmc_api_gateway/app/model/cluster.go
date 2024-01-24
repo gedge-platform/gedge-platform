@@ -13,19 +13,21 @@ type Cluster struct {
 	Name       string             `json:"clusterName,omitempty" bson:"clusterName" validate:"required"`
 	Token      string             `json:"token,omitempty" bson:"token" validate:"required"`
 	Status     string             `json:"status,omitempty" bson:"status" `
+	CloudType  string             `json:"cloudType,omitempty" bson:"cloudType" `
 	Address    string             `json:"address,omitempty" bson:"address" `
 	Point      interface{}        `json:"point,omitempty" bson:"point" `
 	Created_at time.Time          `json:"created_at,omitempty"`
 }
 
 type RequestCluster struct {
-	_id      primitive.ObjectID `json:"objectId,omitempty" bson:"_id"`
-	Endpoint string             `json:"clusterEndpoint,omitempty" bson:"clusterEndpoint"`
-	Type     string             `json:"clusterType,omitempty" bson:"clusterType"`
-	Name     string             `json:"clusterName,omitempty" bson:"clusterName"`
-	Token    string             `json:"token,omitempty" bson:"token"`
-	Status   string             `json:"status,omitempty" bson:"status" `
-	Address  string             `json:"address,omitempty" bson:"address" `
+	_id       primitive.ObjectID `json:"objectId,omitempty" bson:"_id"`
+	Endpoint  string             `json:"clusterEndpoint,omitempty" bson:"clusterEndpoint"`
+	Type      string             `json:"clusterType,omitempty" bson:"clusterType"`
+	Name      string             `json:"clusterName,omitempty" bson:"clusterName"`
+	Token     string             `json:"token,omitempty" bson:"token"`
+	Status    string             `json:"status,omitempty" bson:"status" `
+	Address   string             `json:"address,omitempty" bson:"address" `
+	CloudType string             `json:"cloudType,omitempty" bson:"cloudType" `
 }
 
 type CLUSTER struct {

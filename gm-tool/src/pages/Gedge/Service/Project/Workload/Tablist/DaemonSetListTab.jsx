@@ -12,6 +12,7 @@ import Detail from "../DaemonSetDetail";
 import { daemonSetStore } from "@/store";
 
 const DaemonSetListTab = observer(() => {
+  const [open, setOpen] = useState(false);
   const [tabvalue, setTabvalue] = useState(0);
   const handleTabChange = (event, newValue) => {
     setTabvalue(newValue);
@@ -26,6 +27,7 @@ const DaemonSetListTab = observer(() => {
     currentPage,
     totalPages,
     viewList,
+    initViewList,
     goPrevPage,
     goNextPage,
   } = daemonSetStore;
@@ -47,11 +49,6 @@ const DaemonSetListTab = observer(() => {
       filter: true,
     },
     {
-      headerName: "워크스페이스",
-      field: "workspace",
-      filter: true,
-    },
-    {
       headerName: "생성날짜",
       field: "createAt",
       filter: "agDateColumnFilter",
@@ -64,31 +61,36 @@ const DaemonSetListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     const fieldName = e.colDef.field;
     loadDaemonSetDetail(e.data.name, e.data.cluster, e.data.project);
+  };
+
+  const handleCreateOpen = () => {
+    setOpen(true);
   };
 
   const history = useHistory();
 
   useEffect(() => {
     loadDaemonSetList();
+    return () => {
+      initViewList();
+    };
   }, []);
 
   return (
     <div style={{ height: 900 }}>
       <CReflexBox>
         <PanelBox>
-          <CommActionBar reloadFunc={loadDaemonSetList} isSearch={true} isSelect={true} keywordList={["이름"]}>
-            <CCreateButton>생성</CCreateButton>
-          </CommActionBar>
+          <CommActionBar reloadFunc={loadDaemonSetList}></CommActionBar>
 
           <div className="tabPanelContainer">
             <CTabPanel value={tabvalue} index={0}>
               <div className="grid-height2">
                 <AgGrid
                   onCellClicked={handleClick}
-                  rowData={viewList}
+                  rowData={daemonSetList}
                   columnDefs={columDefs}
                   isBottom={false}
                   totalElements={totalElements}

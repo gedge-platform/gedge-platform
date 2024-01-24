@@ -21,15 +21,12 @@ const PlatfromServiceListTab = observer(() => {
   };
 
   const {
-    platformProjectList,
+    platformProjectLists,
     totalElements,
     loadPlatformProjectList,
     platformDetil,
-    loadPlatformDetail,
-    loadCluster,
     currentPage,
     totalPages,
-    viewList,
     goPrevPage,
     goNextPage,
     loadPlatformProjectDetail,
@@ -67,12 +64,8 @@ const PlatfromServiceListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
-    const fieldName = e.colDef.field;
-    // console.log(e.data.projectName);
-    // loadPlatformProjectList()
+  const handleClick = (e) => {
     loadPlatformProjectDetail(e.data.projectName, e.data.clusterName);
-    // loadPlatformDetail(e.data.projectName);
   };
 
   const history = useHistory();
@@ -106,7 +99,7 @@ const PlatfromServiceListTab = observer(() => {
               <div className="grid-height2">
                 <AgGrid
                   onCellClicked={handleClick}
-                  rowData={viewList}
+                  rowData={platformProjectLists}
                   columnDefs={columDefs}
                   isBottom={false}
                   totalElements={totalElements}
@@ -118,7 +111,12 @@ const PlatfromServiceListTab = observer(() => {
               </div>
             </CTabPanel>
           </div>
-          <CreateProject reloadFunc={loadPlatformProjectList} type={"admin"} open={open} onClose={handleClose} />
+          <CreateProject
+            reloadFunc={loadPlatformProjectList}
+            type={"admin"}
+            open={open}
+            onClose={handleClose}
+          />
         </PanelBox>
         <Detail platformDetil={platformDetil} />
       </CReflexBox>

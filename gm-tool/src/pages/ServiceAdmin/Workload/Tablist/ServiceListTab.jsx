@@ -15,10 +15,13 @@ const ServiceListTab = observer(() => {
   const [open, setOpen] = useState(false);
   const [reRun, setReRun] = useState(false);
   const [serviceName, setServiceName] = useState("");
+  const [clusterName, setClusterName] = useState("");
+  const [projectName, setProjectName] = useState("");
 
   const {
     pServiceList,
     viewList,
+    initViewList,
     serviceList,
     serviceDetail,
     totalElements,
@@ -70,8 +73,10 @@ const ServiceListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     setServiceName(e.data.name);
+    setClusterName(e.data.cluster);
+    setProjectName(e.data.project);
     loadServiceDetail(e.data.name, e.data.cluster, e.data.project);
   };
 
@@ -87,7 +92,9 @@ const ServiceListTab = observer(() => {
     if (serviceName === "") {
       swalError("Service를 선택해주세요!");
     } else {
-      swalUpdate(serviceName + "를 삭제하시겠습니까?", () => deleteService(serviceName, reloadData));
+      swalUpdate(serviceName + "를 삭제하시겠습니까?", () =>
+        deleteService(serviceName, clusterName, projectName, reloadData())
+      );
     }
     setServiceName("");
   };
@@ -100,6 +107,7 @@ const ServiceListTab = observer(() => {
     loadServiceList();
     return () => {
       setReRun(false);
+      initViewList();
     };
   }, [reRun]);
 
@@ -114,13 +122,14 @@ const ServiceListTab = observer(() => {
             // keywordList={["이름"]}
           >
             <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            &nbsp;&nbsp;
             <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
           <div className="tabPanelContainer">
             <div className="grid-height2">
               <AgGrid
                 onCellClicked={handleClick}
-                rowData={viewList}
+                rowData={serviceList}
                 columnDefs={columDefs}
                 isBottom={false}
                 totalElements={totalElements}
@@ -131,7 +140,11 @@ const ServiceListTab = observer(() => {
               />
             </div>
           </div>
-          <CreateService open={open} onClose={handleClose} reloadFunc={reloadData} />
+          <CreateService
+            open={open}
+            onClose={handleClose}
+            reloadFunc={reloadData}
+          />
         </PanelBox>
         <Detail service={serviceDetail} />
       </CReflexBox>

@@ -9,8 +9,7 @@ import { observer } from "mobx-react";
 import workspaceStore from "@/store/WorkSpace";
 import CreateWorkSpace from "@/pages/Gedge/WorkSpace/Dialog/CreateWorkSpace";
 import { swalUpdate, swalError } from "@/utils/swal-utils";
-import Detail from "../Detail";
-import { AgGrid2 } from "@/components/datagrids/AgGrid2";
+import WorkspaceDetail from "../Detail";
 
 const WorkspaceListTab = observer(() => {
   const [open, setOpen] = useState(false);
@@ -18,7 +17,6 @@ const WorkspaceListTab = observer(() => {
   const [workspaceName, setWorkspaceName] = useState("");
 
   const {
-    workSpaceList,
     loadWorkSpaceList,
     totalElements,
     deleteWorkspace,
@@ -29,6 +27,7 @@ const WorkspaceListTab = observer(() => {
     goPrevPage,
     goNextPage,
     currentPage,
+    workSpaceList,
   } = workspaceStore;
 
   const [columDefs] = useState([
@@ -36,22 +35,35 @@ const WorkspaceListTab = observer(() => {
       headerName: "이름",
       field: "workspaceName",
       filter: true,
+      cellRenderer: function ({ data: { workspaceName } }) {
+        return `<span>${workspaceName}</span>`;
+      },
+      // cellRenderer: function ({ data: { workspaceName } }) {
+      //   return `<span>${workspaceName.split("-")[0]}</span>`;
+      // },
     },
     {
       headerName: "설명",
       field: "workspaceDescription",
       filter: true,
-    },
-    {
-      headerName: "클러스터",
-      field: "memberName",
-      filter: true,
-      cellRenderer: function ({ data: { selectCluster } }) {
-        return `<span>${selectCluster.map(item => item.clusterName)}</span>`;
+      cellRenderer: function ({ data: { workspaceDescription } }) {
+        return `<span>${
+          workspaceDescription ? workspaceDescription : "-"
+        }</span>`;
       },
     },
     {
-      headerName: "CREATOR",
+      headerName: "클러스터",
+      field: "clusterName",
+      filter: true,
+      cellRenderer: function ({ data: { selectCluster } }) {
+        return `<span>${selectCluster.map((item) =>
+          item.clusterName ? " " + item.clusterName : ""
+        )}</span>`;
+      },
+    },
+    {
+      headerName: "생성자",
       field: "memberName",
       filter: true,
     },
@@ -68,9 +80,9 @@ const WorkspaceListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
-    console.log("e is ", e.data.workspaceName);
+  const handleClick = (e) => {
     setWorkspaceName(e.data.workspaceName);
+    loadWorkspaceDetail(e.data.workspaceName);
   };
 
   const handleOpen = () => {
@@ -85,7 +97,9 @@ const WorkspaceListTab = observer(() => {
     if (workspaceName === "") {
       swalError("워크스페이스를 선택해주세요!");
     } else {
-      swalUpdate(workspaceName + "를 삭제하시겠습니까?", () => deleteWorkspace(workspaceName, reloadData));
+      swalUpdate(workspaceName + "를 삭제하시겠습니까?", () =>
+        deleteWorkspace(workspaceName, reloadData)
+      );
     }
     setWorkspaceName("");
   };
@@ -112,6 +126,7 @@ const WorkspaceListTab = observer(() => {
             // keywordList={["이름"]}
           >
             <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            &nbsp;&nbsp;
             <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
@@ -119,7 +134,7 @@ const WorkspaceListTab = observer(() => {
             <div className="grid-height2">
               <AgGrid
                 onCellClicked={handleClick}
-                rowData={viewList}
+                rowData={workSpaceList}
                 columnDefs={columDefs}
                 isBottom={false}
                 totalElements={totalElements}
@@ -130,9 +145,14 @@ const WorkspaceListTab = observer(() => {
               />
             </div>
           </div>
-          <CreateWorkSpace type={"user"} open={open} onClose={handleClose} reloadFunc={reloadData} />
+          <CreateWorkSpace
+            type={"user"}
+            open={open}
+            onClose={handleClose}
+            reloadFunc={reloadData}
+          />
         </PanelBox>
-        <Detail workSpace={workSpaceDetail} />
+        <WorkspaceDetail workSpace={workSpaceDetail} />
       </CReflexBox>
     </div>
   );

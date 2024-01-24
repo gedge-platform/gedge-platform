@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"gmc_api_gateway/app/common"
 	"gmc_api_gateway/app/model"
 	"net/http"
@@ -20,12 +19,17 @@ func GetMetallb(c echo.Context) error {
 		Body:      responseBody(c.Request().Body),
 	}
 	var metallbDetail model.METALLB_DETAIL
+
 	// data, err := common.DataRequest(params)
 	// if err != nil {
 	// 	common.ErrorMsg(c, http.StatusNotFound, err)
 	// 	return nil
 	// }
-	data := GetModelList(params)
+	data, err := GetModelList(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
 	// fmt.Printf("## data2", data2)
 	// params.Name = "config"
 	// params.Project = "metallb-system"
@@ -59,7 +63,12 @@ func GetMetallb(c echo.Context) error {
 	// 	return nil
 	// }
 	var ServiceList []model.LoadBalancerService
-	serviceList := GetModelList(params2)
+	serviceList, err := GetModelList(params2)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+
 	for _, service := range serviceList {
 		if common.InterfaceToString(common.FindData(service, "spec", "type")) == "LoadBalancer" {
 			Service := model.LoadBalancerService{
@@ -102,7 +111,7 @@ func GetMetallb(c echo.Context) error {
 
 func GetAllMetallb(c echo.Context) error {
 	var metallbs []model.METALLB
-	fmt.Printf("## Configmaps", metallbs)
+	// fmt.Printf("## Configmaps", metallbs)
 
 	params := model.PARAMS{
 		Kind:      "metallb",
@@ -121,8 +130,11 @@ func GetAllMetallb(c echo.Context) error {
 	// }
 	// params.Name = "config"
 	// params.Project = "metallb-system"
-	data := GetModelList(params)
-	fmt.Printf("#### data confirm : %s", data)
+	data, err := GetModelList(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
 
 	for i, _ := range data {
 		// IP := common.InterfaceToString(common.FindData(data[i], "spec", "addresses"))
@@ -169,6 +181,7 @@ func GetAllMetallb(c echo.Context) error {
 // 	}
 
 // 	return c.JSON(http.StatusOK, echo.Map{
-// 		"info": common.StringToInterface(postData),
+// 				"status": http.StatusOK,
+// "data":   postData,
 // 	})
 // }

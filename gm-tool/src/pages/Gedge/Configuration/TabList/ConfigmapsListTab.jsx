@@ -64,7 +64,7 @@ const ConfigmapsListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     const fieldName = e.colDef.field;
     loadconfigmapsTabList(e.data.name, e.data.cluster, e.data.namespace);
   };
@@ -76,7 +76,7 @@ const ConfigmapsListTab = observer(() => {
   }, []);
 
   return (
-    <>
+    <div style={{ height: 900 }}>
       <CReflexBox>
         <PanelBox>
           <CommActionBar
@@ -93,7 +93,7 @@ const ConfigmapsListTab = observer(() => {
               <div className="grid-height2">
                 <AgGrid
                   onCellClicked={handleClick}
-                  rowData={viewList}
+                  rowData={configmapsList}
                   columnDefs={columDefs}
                   isBottom={false}
                   totalElements={totalElements}
@@ -108,7 +108,7 @@ const ConfigmapsListTab = observer(() => {
         </PanelBox>
         <ConfigmapsDetail configmapsDetail={configmapsDetail} />
       </CReflexBox>
-    </>
+    </div>
   );
 });
 export default ConfigmapsListTab;

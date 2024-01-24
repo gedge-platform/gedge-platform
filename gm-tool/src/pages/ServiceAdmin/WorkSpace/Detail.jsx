@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { observer } from "mobx-react";
@@ -8,67 +8,20 @@ import "@grapecity/wijmo.styles/wijmo.css";
 import { dateFormatter } from "@/utils/common-utils";
 import EventAccordion from "@/components/detail/EventAccordion";
 
-const EventWrap = styled.div`
-  .MuiInputBase-input {
-    color: rgba(255, 255, 255, 0.8);
-    width: 200px;
-    margin: 10px;
-    font-weight: 400;
-    font-size: 15px;
-  }
-
-  .MuiInputBase-root {
-    font: inherit;
-    line-height: inherit;
-  }
-
-  .MuiPopover-paper {
-    color: red;
-  }
-
-  .MuiOutlinedInput-notchedOutline {
-    border: none;
-  }
-
-  .MuiSvgIcon-root {
-    color: white;
-  }
-
-  .MuiOutlinedInput-input {
-    padding: 8px;
-    box-sizing: content-box;
-  }
-
-  .MuiPopover-paper {
-    color: rgba(255, 255, 255, 0.8);
-  }
-
-  .MuiPaper-elevation8 {
-    height: 40px;
-  }
-`;
-
 const TableTitle = styled.p`
   font-size: 14px;
   font-weight: 500;
   margin: 8px 0;
   color: rgba(255, 255, 255, 0.8);
 `;
-
-const ClusterTitle = styled.p`
-  font-size: 13px;
-  font-weight: 500;
-  margin: 6px 0;
-  color: rgba(255, 255, 255, 0.7);
-`;
-
 const LabelContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   width: 100%;
   padding: 12px;
-  border-radius: 4px;
+  border: 1px double #141a30;
   background-color: #2f3855;
+  margin: 10px 0;
 
   p {
     color: rgba(255, 255, 255, 0.6);
@@ -97,7 +50,7 @@ const Label = styled.span`
   }
 `;
 
-const Detail = observer(() => {
+const WorkspaceDetail = observer(() => {
   const {
     workSpaceDetail,
     labels,
@@ -108,7 +61,6 @@ const Detail = observer(() => {
     changeProject,
     selectClusterInfo,
   } = workspaceStore;
-  console.log(detailInfo);
   const [tabvalue, setTabvalue] = useState(0);
 
   const projectChange = (e) => {
@@ -118,7 +70,6 @@ const Detail = observer(() => {
   const clusterResourceTable = () => {
     return (
       <>
-        {/* <ClusterTitle>{workSpaceDetail.workspaceName}</ClusterTitle> */}
         <table className="tb_data">
           <tbody className="tb_workload_detail_th">
             <tr>
@@ -147,32 +98,24 @@ const Detail = observer(() => {
           <table className="tb_data" style={{ tableLayout: "fixed" }}>
             <tbody className="project_table">
               <tr>
-                {detailInfo ? (
-                  <>
-                    <tr>
-                      <th> Name</th>
-                      <td>{project?.projectName}</td>
-                      <th>Cluster</th>
-                      <td style={{ whiteSpace: "pre-wrap" }}>
-                        {selectClusterInfo.map(
-                          (item) => item.clusterName + "\n"
-                        )}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>Created</th>
-                      <td>{dateFormatter(project?.created_at)}</td>
-                      <th>Creator</th>
-                      <td>
-                        {project?.projectCreator
-                          ? project?.projectCreator
-                          : "-"}
-                      </td>
-                    </tr>
-                  </>
-                ) : (
-                  <></>
-                )}
+                <th> Name</th>
+                <td>{project?.projectName}</td>
+                <th>Cluster</th>
+                <td style={{ whiteSpace: "pre-wrap" }}>
+                  {selectClusterInfo.map((item) => item.clusterName + "\n")}
+                </td>
+              </tr>
+              <tr>
+                <th>Created</th>
+                <td>
+                  {project?.created_at
+                    ? dateFormatter(project?.created_at)
+                    : "-"}
+                </td>
+                <th>Creator</th>
+                <td>
+                  {project?.projectCreator ? project?.projectCreator : "-"}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -180,38 +123,15 @@ const Detail = observer(() => {
         </>
       ))
     ) : (
-      <>
-        <table className="tb_data" style={{ tableLayout: "fixed" }}>
-          <tbody className="project_table">
-            <tr>
-              {
-                <>
-                  <tr>
-                    <th> Name</th>
-                    <td>-</td>
-                    <th>Cluster</th>
-                    <td>-</td>
-                  </tr>
-                  <tr>
-                    <th>Created</th>
-                    <td>-</td>
-                    <th>Creator</th>
-                    <td>-</td>
-                  </tr>
-                </>
-              }
-            </tr>
-          </tbody>
-        </table>
-        <br />
-      </>
+      <LabelContainer>
+        <p>No Detail Info</p>
+      </LabelContainer>
     );
   };
 
   const resourcesTable = () => {
     return (
       <>
-        {/* <ClusterTitle>{workSpaceDetail.workspaceName}</ClusterTitle> */}
         <table className="tb_data" style={{ tableLayout: "fixed" }}>
           <tbody>
             {workSpaceDetail.resource ? (
@@ -268,20 +188,44 @@ const Detail = observer(() => {
         <div className="tb_container">
           <table className="tb_data" style={{ tableLayout: "fixed" }}>
             <tbody>
-              <tr className="tb_workload_detail_th">
-                <th>Workspace Name</th>
-                <td>{workSpaceDetail.workspaceName}</td>
-                <th>Description</th>
-                <td>{workSpaceDetail.workspaceDescription}</td>
-              </tr>
-              <tr>
-                <th>Cluster Name</th>
-                <td style={{ whiteSpace: "pre-wrap" }}>
-                  {selectClusterInfo.map((item) => item.clusterName + "\n")}
-                </td>
-                <th>Creator</th>
-                <td>{workSpaceDetail.memberName}</td>
-              </tr>
+              {workSpaceDetail ? (
+                <>
+                  <tr className="tb_workload_detail_th">
+                    <th>Workspace Name</th>
+                    <td>
+                      {workSpaceDetail.workspaceName
+                        ? workSpaceDetail.workspaceName
+                        : "-"}
+                    </td>
+                    <th>Description</th>
+                    <td>
+                      {workSpaceDetail.workspaceDescription
+                        ? workSpaceDetail.workspaceDescription
+                        : "-"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Cluster Name</th>
+                    <td style={{ whiteSpace: "pre-wrap" }}>
+                      {selectClusterInfo
+                        ? selectClusterInfo.map(
+                            (item) => item.clusterName + "\n"
+                          )
+                        : "-"}
+                    </td>
+                    <th>Creator</th>
+                    <td>
+                      {workSpaceDetail.memberName
+                        ? workSpaceDetail.memberName
+                        : "-"}
+                    </td>
+                  </tr>
+                </>
+              ) : (
+                <LabelContainer>
+                  <p>No Detail Info</p>
+                </LabelContainer>
+              )}
             </tbody>
           </table>
         </div>
@@ -297,13 +241,15 @@ const Detail = observer(() => {
                         <tr>
                           <th style={{ width: "307px" }}>CPU</th>
                           <td style={{ width: "307px" }}>
-                            {dataUsage?.cpu_usage}
+                            {dataUsage?.cpu_usage ? dataUsage?.cpu_usage : "-"}
                           </td>
                         </tr>
                         <tr>
                           <th style={{ width: "307px" }}>MEMORY</th>
                           <td style={{ width: "307px" }}>
-                            {dataUsage?.memory_usage}
+                            {dataUsage?.memory_usage
+                              ? dataUsage?.memory_usage
+                              : "-"}
                           </td>
                         </tr>
                       </tbody>
@@ -335,10 +281,10 @@ const Detail = observer(() => {
                 </Label>
               ))
             ) : (
-              <p>No Labels Info.</p>
+              <p>No Labels Info</p>
             )}
           </LabelContainer>
-          <br />
+
           <TableTitle>Annotations</TableTitle>
           {annotations ? (
             <table className="tb_data" style={{ tableLayout: "fixed" }}>
@@ -353,7 +299,7 @@ const Detail = observer(() => {
             </table>
           ) : (
             <LabelContainer>
-              <p>No Annotations Info.</p>
+              <p>No Annotations Info</p>
             </LabelContainer>
           )}
           <br />
@@ -365,4 +311,4 @@ const Detail = observer(() => {
     </PanelBox>
   );
 });
-export default Detail;
+export default WorkspaceDetail;

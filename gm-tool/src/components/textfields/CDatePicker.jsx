@@ -3,7 +3,6 @@ import DatePicker from "react-datepicker";
 import { ko } from "date-fns/esm/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import { CButton } from "@/components/buttons";
-import {includes} from "lodash";
 
 const CDatePicker = () => {
     const [startDate, setStartDate] = useState(new Date());

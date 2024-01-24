@@ -12,6 +12,8 @@ var (
 	ErrNotFound          = errors.New("Not Found")
 	ErrClusterNotFound   = errors.New("Cluster Not Found")
 	ErrWorkspaceNotFound = errors.New("Workspace Not Found")
+	ErrProjectNotFound   = errors.New("Project Not Found")
+	ErrMemberNotFound    = errors.New("Member Not Found")
 	ErrWorkspaceInvalid  = errors.New("Workspace Empty")
 	ErrProjectInvalid    = errors.New("Project Empty")
 	ErrDetailNameInvalid = errors.New("Detail Name Empty")

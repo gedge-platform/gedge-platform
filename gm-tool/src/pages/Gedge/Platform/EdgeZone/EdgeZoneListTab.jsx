@@ -21,8 +21,18 @@ const EdgeZoneListTab = observer(() => {
     setTabvalue(newValue);
   };
 
-  const { clusterDetail, clusterList, totalElements, loadClusterList, loadCluster, currentPage, totalPages, viewList, goPrevPage, goNextPage } =
-    clusterStore;
+  const {
+    clusterDetail,
+    clusterList,
+    totalElements,
+    loadClusterList,
+    loadCluster,
+    currentPage,
+    totalPages,
+    viewList,
+    goPrevPage,
+    goNextPage,
+  } = clusterStore;
 
   const [columDefs] = useState([
     {
@@ -75,7 +85,7 @@ const EdgeZoneListTab = observer(() => {
 
   const history = useHistory();
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     loadCluster(e.data.clusterName);
   };
 
@@ -95,12 +105,7 @@ const EdgeZoneListTab = observer(() => {
     <Layout currentPageTitle={currentPageTitle}>
       <CReflexBox>
         <PanelBox>
-          <CommActionBar
-          // reloadFunc={() => loadClusterList("edge")}
-          // isSearch={true}
-          // isSelect={true}
-          // keywordList={["이름"]}
-          >
+          <CommActionBar>
             <CCreateButton onClick={handleOpen}>생성</CCreateButton>
           </CommActionBar>
 
@@ -108,7 +113,7 @@ const EdgeZoneListTab = observer(() => {
             <CTabPanel value={tabvalue} index={0}>
               <div className="grid-height2">
                 <AgGrid
-                  rowData={viewList}
+                  rowData={clusterList}
                   columnDefs={columDefs}
                   isBottom={false}
                   totalElements={totalElements}

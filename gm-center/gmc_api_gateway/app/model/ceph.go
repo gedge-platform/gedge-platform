@@ -1,7 +1,7 @@
 package model
 
 type CEPH struct {
-	ClusterStatus     string      `json:"clusterStatus"`
+	ClusterStatus     float64     `json:"clusterStatus"`
 	Hosts             int         `json:"hostNum"`
 	Pgs_per_osd       float64     `json:"pgs_per_osd"`
 	PoolNum           int         `json:"poolNum"`

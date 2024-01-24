@@ -1,13 +1,11 @@
 version: "3.7"
 services:
   gm-tool:
-    image: gm-tool:220707
     container_name: gm-tool
-    # command: npm start
     restart: unless-stopped
-    stdin_open: true
     build:
       context: .
       dockerfile: Dockerfile
+    stdin_open: true
     ports:
-      - "8080:8080"
+      - "8080:80"

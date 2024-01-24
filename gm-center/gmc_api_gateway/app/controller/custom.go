@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -348,7 +347,7 @@ func HttpRequest2(c echo.Context, url string, check bool) (data string, err erro
 	passBody := responseBody(c.Request().Body)
 	// auth := strings.SplitN(c.Request().Header["Authorization"], " ", 2)
 	tokens, ok := c.Request().Header["Authorization"]
-	fmt.Printf("tokens : %s\n", tokens)
+	log.Printf("tokens : %s\n", tokens)
 	// tokens, ok := c.Request().Header["Authorization"]
 	// if ok && len(tokens) >= 1 {
 	// 	token = tokens[0]
@@ -424,7 +423,7 @@ func HttpRequest(c echo.Context, url string, check bool) (data string, err error
 	passBody := responseBody(c.Request().Body)
 	// auth := strings.SplitN(c.Request().Header["Authorization"], " ", 2)
 	tokens, ok := c.Request().Header["Authorization"]
-	fmt.Printf("tokens : %s\n", tokens)
+	log.Printf("tokens : %s\n", tokens)
 	// tokens, ok := c.Request().Header["Authorization"]
 	// if ok && len(tokens) >= 1 {
 	// 	token = tokens[0]
@@ -1019,7 +1018,7 @@ func RequsetKube(url string, method string, reqdata []byte, token string) int {
 
 		res, err := client.Do(req)
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal("err : ", err)
 			return 0
 		}
 		defer res.Body.Close()
@@ -1043,7 +1042,7 @@ func RequsetKube(url string, method string, reqdata []byte, token string) int {
 
 		res, err := client.Do(req)
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err)
 			return 500
 		}
 

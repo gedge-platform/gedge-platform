@@ -19,19 +19,21 @@ const CloudClusterListTab = observer(() => {
   const [clusterName, setClusterName] = useState("");
 
   const {
-    setInitViewList,
     deleteCluster,
     clusterDetail,
     clusterList,
     totalElements,
     loadClusterList,
     loadCluster,
-
+    clusterListInWorkspace,
     currentPage,
     totalPages,
     viewList,
+    initViewList,
+    initClusterList,
     goPrevPage,
     goNextPage,
+    loadClusterDetail,
   } = clusterStore;
 
   const [columDefs] = useState([
@@ -76,8 +78,9 @@ const CloudClusterListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     loadCluster(e.data.clusterName);
+    loadClusterDetail(e.data.clusterName);
     setClusterName(e.data.clusterName);
   };
 
@@ -94,7 +97,9 @@ const CloudClusterListTab = observer(() => {
       swalError("클러스터를 선택해주세요!");
       return;
     } else {
-      swalUpdate(clusterName + "를 삭제하시겠습니까?", () => deleteCluster(clusterName, reloadData));
+      swalUpdate(clusterName + "를 삭제하시겠습니까?", () =>
+        deleteCluster(clusterName, reloadData)
+      );
     }
     setClusterName("");
   };
@@ -104,7 +109,8 @@ const CloudClusterListTab = observer(() => {
   };
 
   useLayoutEffect(() => {
-    setInitViewList();
+    initViewList();
+    initClusterList();
     loadClusterList("cloud");
     return () => {
       setReRun(false);
@@ -115,15 +121,16 @@ const CloudClusterListTab = observer(() => {
     <div style={{ height: 900 }}>
       <CReflexBox>
         <PanelBox>
-          <CommActionBar>
+          <CommActionBar reloadFunc={reloadData}>
             <CCreateButton onClick={handleCreateOpen}>생성</CCreateButton>
+            &nbsp;&nbsp;
             <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
           <div className="tabPanelContainer">
             <div className="grid-height2">
               <AgGrid
-                rowData={viewList}
+                rowData={clusterList}
                 columnDefs={columDefs}
                 isBottom={false}
                 totalElements={totalElements}
@@ -136,7 +143,12 @@ const CloudClusterListTab = observer(() => {
             </div>
             {/* </CTabPanel> */}
           </div>
-          <CreateCluster type="cloud" open={Create} onClose={handleCreateClose} reloadFunc={reloadData} />
+          <CreateCluster
+            type="cloud"
+            open={Create}
+            onClose={handleCreateClose}
+            reloadFunc={reloadData}
+          />
         </PanelBox>
         <Detail cluster={clusterDetail} />
       </CReflexBox>

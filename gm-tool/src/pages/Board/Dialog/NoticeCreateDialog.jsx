@@ -42,7 +42,7 @@ const NoticeCreateDialog = (props) => {
                     <td colSpan={3}>
                         <textarea
                             placeholder="내용을 입력하세요."
-                            rows="20"
+                            minRows="20"
                         />
                     </td>
                 </tr>

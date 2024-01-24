@@ -1,12 +1,20 @@
 import { observer } from "mobx-react";
-import React from "react";
+import React, { useEffect } from "react";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/theme-monokai";
 import { podStore } from "@/store";
+import { stringify } from "json-to-pretty-yaml2";
 
 const PodYaml = observer(() => {
-  const { content, setContent } = podStore;
+  const { content, setContent, setTemplateAnnotation, setTemplateLabel } =
+    podStore;
+
+  useEffect(() => {
+    setTemplateAnnotation();
+    setTemplateLabel();
+  }, [content]);
+
   return (
     <>
       <div className="step-container">
@@ -16,7 +24,11 @@ const PodYaml = observer(() => {
           </div>
           <div className="arr"></div>
           <div className="step">
-            <span>Pod 설정</span>
+            <span>고급 설정</span>
+          </div>
+          <div className="arr"></div>
+          <div className="step">
+            <span>스케줄러</span>
           </div>
           <div className="arr"></div>
           <div className="step current">
@@ -24,16 +36,15 @@ const PodYaml = observer(() => {
           </div>
         </div>
       </div>
-
       <AceEditor
         placeholder="Placeholder Text"
         mode="javascript"
         theme="monokai"
         name="editor"
         width="90%"
-        onChange={value => {
-          // setContent(value);
-        }}
+        // onChange={(value) => {
+        //   setContent(value);
+        // }}
         fontSize={14}
         showPrintMargin={true}
         showGutter={true}

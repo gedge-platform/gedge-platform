@@ -129,7 +129,6 @@ const ApplicationResource = observer(() => {
 
   const playCalledMetrics = () => {
     setPlay(true);
-    console.log(play);
     setPlayMetrics(
       setInterval(() => {
         calledRealClusterMetrics();
@@ -140,7 +139,6 @@ const ApplicationResource = observer(() => {
 
   const stopCalledMetrics = () => {
     setPlay(false);
-    console.log(play);
     clearInterval(playMetrics);
     setPlayMetrics(null);
   };

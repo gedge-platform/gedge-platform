@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
 
-export const swal = (text) => {
+export const swal = text => {
   return Swal.fire({
     text: text,
     width: 270,
@@ -9,7 +9,7 @@ export const swal = (text) => {
   });
 };
 
-export const swalConfirm = (text) => {
+export const swalConfirm = text => {
   return Swal.fire({
     text: text,
     width: 270,
@@ -25,7 +25,7 @@ export const swalError = (text, callback) => {
     width: 400,
     confirmButtonText: "확인",
     reverseButtons: true,
-  }).then((result) => {
+  }).then(result => {
     if (result.isConfirmed) {
       callback ? callback() : console.log("success");
     }
@@ -40,11 +40,39 @@ export const swalUpdate = (text, callback) => {
     cancelButtonText: "취소",
     confirmButtonText: "확인",
     reverseButtons: true,
-  }).then((result) => {
+  }).then(result => {
     if (result.isConfirmed) {
       callback ? callback() : console.log("success");
     } else {
       console.log("fail");
+    }
+  });
+};
+
+let timerInterval;
+export const swalLoading = (text, timer, html, callback) => {
+  return Swal.fire({
+    title: text,
+    // width: 350,
+    width: 400,
+    confirmButtonText: "확인",
+    reverseButtons: true,
+    html: html,
+    timer: timer,
+    timerProgressBar: true,
+    didOpen: () => {
+      Swal.showLoading();
+      const b = Swal.getHtmlContainer().querySelector("b");
+      timerInterval = setInterval(() => {
+        b.textContent = Swal.getTimerLeft();
+      }, 100);
+    },
+    willClose: () => {
+      clearInterval(timerInterval);
+    },
+  }).then(result => {
+    if (result.isConfirmed) {
+      callback ? callback() : console.log("success");
     }
   });
 };

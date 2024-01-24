@@ -6,6 +6,7 @@ import ServiceBasicInformation from "../Dialog/ServiceBasicInformation";
 import ServiceYaml from "./ServiceYaml";
 import { CDialogNew } from "@/components/dialogs";
 import { randomString } from "@/utils/common-utils";
+import { stringify } from "json-to-pretty-yaml2";
 
 const Button = styled.button`
   background-color: #fff;
@@ -26,14 +27,26 @@ const ButtonNext = styled.button`
   /* box-shadow: 0 8px 16px 0 rgb(35 45 65 / 28%); */
 `;
 
-const CreatePod = observer(props => {
+const CreatePod = observer((props) => {
   const { open } = props;
   const [stepValue, setStepValue] = useState(1);
   const [loading, setLoading] = useState(false);
   const { setProjectListinWorkspace } = projectStore;
   const { postWorkload, postScheduler } = schedulerStore;
 
-  const { serviceName, appName, protocol, port, targetPort, workspace, project, content, clearAll, setContent, postService } = serviceStore;
+  const {
+    serviceName,
+    appName,
+    protocol,
+    port,
+    targetPort,
+    workspace,
+    project,
+    content,
+    clearAll,
+    setContent,
+    postService,
+  } = serviceStore;
 
   const template = {
     apiVersion: "v1",
@@ -72,8 +85,7 @@ const CreatePod = observer(props => {
 
   useEffect(() => {
     if (stepValue === 2) {
-      const YAML = require("json-to-pretty-yaml");
-      setContent(YAML.stringify(template));
+      setContent(stringify(template));
     }
   }, [stepValue]);
 
@@ -121,41 +133,24 @@ const CreatePod = observer(props => {
               }}
             >
               <Button onClick={() => setStepValue(1)}>이전</Button>
-              <ButtonNext onClick={createService}>Schedule Apply</ButtonNext>
+              <ButtonNext onClick={createService}>생성</ButtonNext>
             </div>
           </div>
         </>
       );
-    } else if (stepValue === 3) {
-      return (
-        <>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginTop: "10px",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                width: "430px",
-                justifyContent: "space-around",
-              }}
-            >
-              <Button onClick={handleClose}>취소</Button>
-              <Button onClick={() => setStepValue(2)}>이전</Button>
-              <ButtonNext onClick={() => console.log("")}>Schedule Apply</ButtonNext>
-              <ButtonNext onClick={() => console.log("")}>Default Apply</ButtonNext>
-            </div>
-          </div>
-        </>
-      );
-    } else return <>4</>;
+    }
   };
 
   return (
-    <CDialogNew id="myDialog" open={open} maxWidth="md" title={"Create Service"} onClose={handleClose} bottomArea={false} modules={["custom"]}>
+    <CDialogNew
+      id="myDialog"
+      open={open}
+      maxWidth="md"
+      title={"Create Service"}
+      onClose={handleClose}
+      bottomArea={false}
+      modules={["custom"]}
+    >
       {stepOfComponent()}
     </CDialogNew>
   );

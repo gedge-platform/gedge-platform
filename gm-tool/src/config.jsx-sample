@@ -3,3 +3,6 @@ export const SERVER_URL = `${API_URL}/gmcapi/v2`;
 export const MONITORING_URL = `${API_URL}/kube/v1/monitoring`;
 export const SOCKET_URL = "ws://localhost:3111";
 export const BASIC_AUTH = { username: "admin", password: "password" };
+export const LOG_URL = "http://localhost:32368/GEP/GSCH";
+export const SPIDER_URL = "http://localhost:1024";
+export const REQUEST_URL2 = "";

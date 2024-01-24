@@ -7,6 +7,7 @@ import (
 type PV struct {
 	Name          string      `json:"name"`
 	UserName      string      `json:"user,omitempty"`
+	Namespace     string      `json:"namespace,omitempty"`
 	Capacity      string      `json:"capacity"`
 	AccessMode    []string    `json:"accessMode"`
 	ReclaimPolicy string      `json:"reclaimPolicy",`

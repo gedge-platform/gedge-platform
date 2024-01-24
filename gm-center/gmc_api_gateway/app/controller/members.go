@@ -2,8 +2,8 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -35,7 +35,8 @@ func GetMemberDB(name string) *mongo.Collection {
 // @ApiImplicitParam
 // @Accept  json
 // @Produce  json
-// @Success 200 {object} model.Member
+// @Security Bearer
+// @Success 200 {object} model.Error
 // @Header 200 {string} Token "qwerty"
 // @Router /members [post]
 // @Tags User
@@ -49,6 +50,7 @@ func CreateMember(c echo.Context) (err error) {
 		// Method:    c.Request().Method,
 		// Body:      responseBody(c.Request().Body),
 	}
+
 	cdb := GetMemberDB("member")
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
@@ -62,7 +64,7 @@ func CreateMember(c echo.Context) (err error) {
 	}
 	if err = validate.Struct(models); err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 		common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
 		return
@@ -71,10 +73,8 @@ func CreateMember(c echo.Context) (err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("models : ", models)
 	params.User = models.Id
 	memberCheck := FindMemberDB(params)
-	fmt.Println("check : ", memberCheck)
 	if memberCheck.Id != "" {
 		msg := common.ErrorMsg2(http.StatusNotFound, common.ErrDuplicated)
 		return c.JSON(http.StatusNotFound, echo.Map{
@@ -139,6 +139,7 @@ func ListMember(c echo.Context) (err error) {
 // @ApiImplicitParam
 // @Accept  json
 // @Produce  json
+// @Success 200 {object} model.Member
 // @Security   Bearer
 // @Param name path string true "name of the Member"
 // @Router /members/{name} [get]
@@ -158,6 +159,17 @@ func FindMember(c echo.Context) (err error) {
 	}
 }
 
+// Delete User godoc
+// @Summary Delete User
+// @Description delete User
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.Error
+// @Security   Bearer
+// @Router /members/{name} [delete]
+// @Param name path string true "Name of the User"
+// @Tags User
 func DeleteMember(c echo.Context) (err error) {
 	cdb := GetMemberDB("member")
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
@@ -180,50 +192,77 @@ func DeleteMember(c echo.Context) (err error) {
 }
 
 func UpdateMember(c echo.Context) (err error) {
+	params := model.PARAMS{
+		// Name:      c.Param("name"),
+		// Cluster:   c.QueryParam("cluster"),
+		// Workspace: c.QueryParam("workspace"),
+		// Project:   c.QueryParam("project"),
+		User: c.QueryParam("user"),
+		// Method:    c.Request().Method,
+		Body: responseBody(c.Request().Body),
+	}
 	cdb := GetMemberDB("member")
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 	search_val := c.Param("memberId")
 
-	models := new(model.RequestMember)
-	validate := validator.New()
-
-	if err = c.Bind(models); err != nil {
-		common.ErrorMsg(c, http.StatusBadRequest, err)
+	params.User = c.Param("memberId")
+	member := FindMemberDB(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
 		return nil
 	}
+	var body primitive.M
+	json.Unmarshal([]byte(params.Body), &body)
+	// common.Transcode(params.Body, &body)
+	filter := bson.D{{"_id", member.ObjectId}}
+	update := bson.D{{"$set", body}}
 
-	if err = validate.Struct(models); err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println(err)
-		}
-		common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
-		return
-	}
-
+	result, err := cdb.UpdateOne(ctx, filter, update)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	var update primitive.M
-	// switch models.조건{
-	// case nil :
-	// update = bson.M{"memberName": models.Name, "email": models.Email, "password":models.Password, "contact": models.Contact, "memberRole": models.RoleName}
-	// default :
-	update = bson.M{"memberName": models.Name, "email": models.Email, "password": models.Password, "contact": models.Contact, "memberRole": models.RoleName}
-	// }
-
-	result, err := cdb.UpdateOne(ctx, bson.M{"memberId": search_val}, bson.M{"$set": update})
-	if err != nil {
-		common.ErrorMsg(c, http.StatusNotFound, errors.New("failed to update."))
-		return
-	}
-
 	if result.MatchedCount == 1 {
 		if err := cdb.FindOne(ctx, bson.M{"memberId": search_val}).Decode(&cdb); err != nil {
 			common.ErrorMsg(c, http.StatusNotFound, errors.New("failed to match Member."))
 			return nil
 		}
 	}
+	// models := new(model.RequestMember)
+	// validate := validator.New()
+
+	// if err = c.Bind(models); err != nil {
+	// 	common.ErrorMsg(c, http.StatusBadRequest, err)
+	// 	return nil
+	// }
+
+	// if err = validate.Struct(models); err != nil {
+	// 	for _, err := range err.(validator.ValidationErrors) {
+	// 		fmt.Println(err)
+	// 	}
+	// 	common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
+	// 	return
+	// }
+
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// var update primitive.M
+
+	// update = bson.M{"memberName": models.Name, "email": models.Email, "password": models.Password, "contact": models.Contact, "memberRole": models.RoleName}
+
+	// result, err := cdb.UpdateOne(ctx, bson.M{"memberId": search_val}, bson.M{"$set": update})
+	// if err != nil {
+	// 	common.ErrorMsg(c, http.StatusNotFound, errors.New("failed to update."))
+	// 	return
+	// }
+
+	// if result.MatchedCount == 1 {
+	// 	if err := cdb.FindOne(ctx, bson.M{"memberId": search_val}).Decode(&cdb); err != nil {
+	// 		common.ErrorMsg(c, http.StatusNotFound, errors.New("failed to match Member."))
+	// 		return nil
+	// 	}
+	// }
 	return c.JSON(http.StatusOK, echo.Map{
 		"status": http.StatusOK,
 		"data":   search_val + " Updated Complete",

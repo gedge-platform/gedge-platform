@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"gmc_api_gateway/app/common"
 	"gmc_api_gateway/app/model"
 	"net/http"
@@ -9,17 +8,20 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// GetPods godoc
-// @Summary Show detail pods
-// @Description get pods Details
+// Get Pod godoc
+// @Summary Show detail Pod
+// @Description get Pod Details
+// @ApiImplicitParam
 // @Accept  json
 // @Produce  json
+// @Security   Bearer
+// @Param name path string true "name of the Pod"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
 // @Success 200 {object} model.POD
 // @Router /pods/{name} [get]
-// @Security   Bearer
-// @Param name path string true "name of the pods"
-// @Param cluster query string true "cluster Name of the pods"
-// @Param workspace query string true "workspace Name of the pods"
+// @Tags Kubernetes
 func GetPods(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:      "pods",
@@ -29,6 +31,11 @@ func GetPods(c echo.Context) (err error) {
 		Project:   c.QueryParam("project"),
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
+	}
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
 	}
 	getData, err := common.DataRequest(params)
 	// if err != nil {
@@ -94,19 +101,21 @@ func GetPods(c echo.Context) (err error) {
 	})
 }
 
-// GetPods godoc
-// @Summary Show List pods
-// @Description get pods List
+// Get Pod godoc
+// @Summary Show List Pod
+// @Description get Pod List
+// @ApiImplicitParam
 // @Accept  json
 // @Produce  json
+// @Security   Bearer
+// @Param workspace query string false "name of the Workspace"
+// @Param cluster query string false "name of the Cluster"
+// @Param project query string false "name of the Project"
 // @Success 200 {object} model.POD
 // @Router /pods [get]
-// @Security   Bearer
-// @Param cluster query string false "cluster Name of the pods"
-// @Param workspace query string  false "workspace Name of the pods"
+// @Tags Kubernetes
 func GetAllPods(c echo.Context) error {
 	var pods []model.POD
-	fmt.Printf("## pods", pods)
 	params := model.PARAMS{
 		Kind:      "pods",
 		Name:      c.Param("name"),
@@ -117,8 +126,12 @@ func GetAllPods(c echo.Context) error {
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
 	}
-	data := GetModelList(params)
-	fmt.Printf("####Pod data confirm : %s", data)
+	data, err := GetModelList(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+	// fmt.Printf("####Pod data confirm : %s", data)
 
 	for i, _ := range data {
 		var restart int
@@ -167,6 +180,20 @@ func GetAllPods(c echo.Context) error {
 	})
 }
 
+// Create Pod godoc
+// @Summary Create Pod
+// @Description Create Pod
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param json body string true "Pod Info Body"
+// @Param cluster query string true "name of the Cluster"
+// @Param workspace query string true "name of the Workspace"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.Error
+// @Router /pods [post]
+// @Tags Kubernetes
 func CreatePod(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:    "pods",
@@ -182,11 +209,27 @@ func CreatePod(c echo.Context) (err error) {
 		return nil
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"info": common.StringToInterface(postData),
+	return c.JSON(http.StatusCreated, echo.Map{
+		"status": "Created",
+		"code":   http.StatusCreated,
+		"data":   postData,
 	})
 }
 
+// Delete Pod godoc
+// @Summary Delete Pod
+// @Description Delete Pod
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param name path string true "name of the Pod"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.Error
+// @Router /pods/{name} [delete]
+// @Tags Kubernetes
 func DeletePod(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:    "pods",
@@ -204,6 +247,7 @@ func DeletePod(c echo.Context) (err error) {
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"info": common.StringToInterface(postData),
+		"status": http.StatusOK,
+		"data":   postData,
 	})
 }

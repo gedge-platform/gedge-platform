@@ -6,7 +6,6 @@ import { CReflexBox } from "@/layout/Common/CReflexBox";
 import UserDetail from "../../User/UserDetail";
 import { observer } from "mobx-react";
 import userStore from "@/store/UserStore";
-
 import { swalUpdate } from "@/utils/swal-utils";
 import axios from "axios";
 import { SERVER_URL } from "@/config.jsx";
@@ -19,18 +18,26 @@ const RoleListTab = observer(() => {
   const [open, setOpen] = useState(false);
   const [open2, setOpen2] = useState(false);
 
-  const { userDetail, loadUserList, loadUserDetail, totalElements, currentPage, totalPages, viewList, goPrevPage, goNextPage } = userStore;
+  const {
+    userDetail,
+    loadUserList,
+    loadUserDetail,
+    totalElements,
+    currentPage,
+    totalPages,
+    viewList,
+    goPrevPage,
+    goNextPage,
+  } = userStore;
 
   const [columnDefs] = useState([
     {
-      headerName: "NO",
-      field: "memberNum",
-      filter: false,
-      minWidth: 80,
-      maxWidth: 80,
+      headerName: "아이디",
+      field: "memberId",
+      filter: true,
     },
     {
-      headerName: "사용자 이름",
+      headerName: "닉네임",
       field: "memberName",
       filter: true,
     },
@@ -70,7 +77,7 @@ const RoleListTab = observer(() => {
     setOpen2(false);
   };
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     const fieldName = e.colDef.field;
     loadUserDetail(e.data.memberId);
   };
@@ -91,7 +98,7 @@ const RoleListTab = observer(() => {
           swalError("User 삭제에 실패하였습니다.");
         }
       })
-      .catch(e => console.log(e));
+      .catch((e) => console.log(e));
   };
 
   useEffect(() => {
@@ -102,8 +109,9 @@ const RoleListTab = observer(() => {
     <>
       <CReflexBox>
         <PanelBox>
-          {/* <CommActionBar isSearch={true} isSelect={true} keywordList={["이름"]}> */}
-          <CommActionBar>{/* <CCreateButton>생성</CCreateButton> */}</CommActionBar>
+          <CommActionBar>
+            {/* <CCreateButton>생성</CCreateButton> */}
+          </CommActionBar>
           <div className="grid-height2">
             <AgGrid
               rowData={viewList}

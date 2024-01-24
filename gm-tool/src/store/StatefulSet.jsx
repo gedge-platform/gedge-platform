@@ -7,7 +7,8 @@ class StatefulSet {
   currentPage = 1;
   totalPages = 1;
   resultList = {};
-  viewList = [];
+  viewList = null;
+  adminList = [];
   pStatefulSetList = [];
   statefulSetList = [];
   statefulSetDetail = {
@@ -47,17 +48,25 @@ class StatefulSet {
     },
   ];
   totalElements = 0;
-  containers = [{ env: [], ports: [], volumeMounts: [] }];
+  containers = [];
+  // containers = [{}];
 
   constructor() {
     makeAutoObservable(this);
   }
 
+  initViewList = () => {
+    runInAction(() => {
+      this.viewList = null;
+      this.currentPage = 1;
+    });
+  };
+
   goPrevPage = () => {
     runInAction(() => {
       if (this.currentPage > 1) {
         this.currentPage = this.currentPage - 1;
-        this.setViewList(this.currentPage - 1);
+        this.paginationList();
         this.loadStatefulSetDetail(
           this.viewList[0].name,
           this.viewList[0].cluster,
@@ -71,7 +80,7 @@ class StatefulSet {
     runInAction(() => {
       if (this.totalPages > this.currentPage) {
         this.currentPage = this.currentPage + 1;
-        this.setViewList(this.currentPage - 1);
+        this.paginationList();
         this.loadStatefulSetDetail(
           this.viewList[0].name,
           this.viewList[0].cluster,
@@ -81,61 +90,14 @@ class StatefulSet {
     });
   };
 
-  setCurrentPage = (n) => {
+  paginationList = () => {
     runInAction(() => {
-      this.currentPage = n;
-    });
-  };
-
-  setTotalPages = (n) => {
-    runInAction(() => {
-      this.totalPages = n;
-    });
-  };
-
-  convertList = (apiList, setFunc) => {
-    runInAction(() => {
-      let cnt = 1;
-      let totalCnt = 0;
-      let tempList = [];
-      let cntCheck = true;
-      this.resultList = {};
-
-      apiList === null
-        ? "-"
-        : Object.entries(apiList).map(([_, value]) => {
-            cntCheck = true;
-            tempList.push(toJS(value));
-            cnt = cnt + 1;
-            if (cnt > 10) {
-              cntCheck = false;
-              cnt = 1;
-              this.resultList[totalCnt] = tempList;
-              totalCnt = totalCnt + 1;
-              tempList = [];
-            }
-          });
-
-      if (cntCheck) {
-        this.resultList[totalCnt] = tempList;
-        totalCnt = totalCnt === 0 ? 1 : totalCnt + 1;
+      if (this.statefulSetList !== null) {
+        this.viewList = this.statefulSetList.slice(
+          (this.currentPage - 1) * 10,
+          this.currentPage * 10
+        );
       }
-
-      this.setTotalPages(totalCnt);
-      setFunc(this.resultList);
-      this.setViewList(0);
-    });
-  };
-
-  setPStatefulSetList = (list) => {
-    runInAction(() => {
-      this.pStatefulSetList = list;
-    });
-  };
-
-  setViewList = (n) => {
-    runInAction(() => {
-      this.viewList = this.pStatefulSetList[n];
     });
   };
 
@@ -146,30 +108,61 @@ class StatefulSet {
       .get(`${SERVER_URL}/statefulsets?user=${id}`)
       .then((res) => {
         runInAction(() => {
-          // this.totalElements =
-          //   res.data.data === null ? 0 : res.data.data.length;
-          this.statefulSetList = res.data.data;
-          // this.statefulSetDetail = list[0];
-          res.data.data === null
-            ? (this.totalElements = 0)
-            : (this.totalElements = this.statefulSetList.length);
+          if (res.data.data !== null) {
+            this.statefulSetList = res.data.data;
+            this.statefulSetDetail = res.data.data[0];
+            this.totalPages = Math.ceil(res.data.data.length / 10);
+            this.totalElements = res.data.data.length;
+          } else {
+            this.statefulSetList = [];
+          }
         });
-        console.log(this.statefulSetList);
       })
       .then(() => {
-        this.convertList(this.statefulSetList, this.setPStatefulSetList);
+        this.paginationList();
+      })
+      .catch(() => {
+        this.statefulSetList = [];
+        this.paginationList();
       });
-    // await axios.get(`${SERVER_URL}/statefulsets`).then((res) => {
-    //   runInAction(() => {
-    //     const list = res.data.data.filter((item) => item.projectType === type);
-    //     this.statefulSetList = list;
-    //     // this.statefulSetDetail = list[0];
-    //     this.totalElements = list.length;
-    //   });
-    // })
-    //   .then(() => {
-    //     this.convertList(this.statefulSetList, this.setPStatefulSetList);
-    //   })
+    this.statefulSetList === null
+      ? ((this.statefulSetDetail = null),
+        (this.label = null),
+        (this.annotations = null))
+      : this.loadStatefulSetDetail(
+          this.statefulSetList[0].name,
+          this.statefulSetList[0].cluster,
+          this.statefulSetList[0].project
+        );
+  };
+
+  loadAdminStatefulSetList = async () => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
+    await axios
+      .get(`${SERVER_URL}/statefulsets?user=${id}`)
+      .then((res) => {
+        runInAction(() => {
+          this.adminList = res.data.data;
+          this.statefulSetList = this.adminList.filter(
+            (data) => data.cluster === "gm-cluster"
+          );
+          if (this.statefulSetList.length !== 0) {
+            this.statefulSetDetail = this.statefulSetList[0];
+            this.totalPages = Math.ceil(this.statefulSetList.length / 10);
+            this.totalElements = this.statefulSetList.length;
+          } else {
+            this.statefulSetList = [];
+          }
+        });
+      })
+      .then(() => {
+        this.paginationList();
+      })
+      .catch(() => {
+        this.statefulSetList = [];
+        this.paginationList();
+      });
     this.statefulSetList === null
       ? ((this.statefulSetDetail = null),
         (this.label = null),

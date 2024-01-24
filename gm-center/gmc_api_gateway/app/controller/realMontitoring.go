@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"gmc_api_gateway/app/common"
 	"gmc_api_gateway/config"
 	"log"
@@ -236,7 +235,7 @@ func RealMetrics(c echo.Context) (err error) {
 		kind = findKind(metrics)
 	}
 
-	fmt.Println(kind, "-kind check-")
+	// fmt.Println(kind, "-kind check-")
 
 	var result []interface{}
 	for _, v := range metrics {
@@ -446,11 +445,11 @@ func realQueryMetric(m string, q string, k string) map[string]interface{} {
 			valueResult = append(valueResult, t)
 
 			if result.Err() != nil {
-				fmt.Printf("Query error: %s\n", result.Err().Error())
+				log.Printf("Query error: %s\n", result.Err().Error())
 			}
 
 		} else {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		// Ensures background processes finishes
 		client.Close()
@@ -490,7 +489,7 @@ func realQueryMetric(m string, q string, k string) map[string]interface{} {
 			valueResult = append(valueResult, t)
 
 			if result.Err() != nil {
-				fmt.Printf("Query error: %s\n", result.Err().Error())
+				log.Printf("Query error: %s\n", result.Err().Error())
 			}
 
 		}
@@ -534,7 +533,7 @@ func realQueryMetric(m string, q string, k string) map[string]interface{} {
 			valueResult = append(valueResult, t)
 
 			if result.Err() != nil {
-				fmt.Printf("Query error: %s\n", result.Err().Error())
+				log.Printf("Query error: %s\n", result.Err().Error())
 			}
 
 		}

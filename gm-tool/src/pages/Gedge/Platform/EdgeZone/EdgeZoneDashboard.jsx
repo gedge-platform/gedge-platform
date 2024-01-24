@@ -55,7 +55,7 @@ const EdgeZoneDashboard = observer(() => {
             <ClusterInfo />
           </div>
           <div className="ClusterMapWrap">
-            <MapContent zoom={setMapZoom(2)} />
+            <MapContent zoom={setMapZoom(6)} />
           </div>
 
           <div className="SummaryWrap">

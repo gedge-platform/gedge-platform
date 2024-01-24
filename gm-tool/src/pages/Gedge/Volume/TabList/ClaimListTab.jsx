@@ -19,54 +19,50 @@ const ClaimListTab = observer(() => {
   const [claimName, setClaimName] = useState("");
   const [openYaml, setOpenYaml] = useState(false);
   const {
-    pvClaims,
     pvClaim,
     totalElements,
-    pvClaimEvents,
-    pvClaimYamlFile,
     pvClaimAnnotations,
     pvClaimLables,
-    loadVolumeYaml,
+    loadClaimYaml,
     deletePvClaim,
     getYamlFile,
-    // pvClaimEvents,
     loadPVClaims,
     loadPVClaim,
     currentPage,
     totalPages,
-    viewList,
+    pvClaimLists,
     goPrevPage,
     goNextPage,
   } = claimStore;
 
   const [columDefs] = useState([
     {
-      headerName: "Name",
+      headerName: "이름",
       field: "name",
       filter: true,
     },
     {
-      headerName: "Namespace",
+      headerName: "프로젝트",
       field: "namespace",
       filter: true,
     },
     {
-      headerName: "Cluster",
+      headerName: "클러스터",
       field: "clusterName",
       filter: true,
     },
     {
-      headerName: "Capacity",
+      headerName: "용량",
       field: "capacity",
       filter: true,
     },
     {
-      headerName: "Access Mode",
+      headerName: "접근모드",
       field: "accessMode",
       filter: true,
     },
     {
-      headerName: "Status",
+      headerName: "상태",
       field: "status",
       filter: true,
       cellRenderer: ({ value }) => {
@@ -74,17 +70,23 @@ const ClaimListTab = observer(() => {
       },
     },
     {
-      headerName: "Volume",
+      headerName: "볼륨",
       field: "volume",
       filter: true,
+      cellRenderer: function ({ data: { volume } }) {
+        return `<span>${volume ? volume : "-"}`;
+      },
     },
     {
-      headerName: "StorageClass",
+      headerName: "스토리지클래스",
       field: "storageClass",
       filter: true,
+      cellRenderer: function ({ data: { storageClass } }) {
+        return `<span>${storageClass ? storageClass : "-"}`;
+      },
     },
     {
-      headerName: "Create At",
+      headerName: "생성일",
       field: "createAt",
       filter: "agDateColumnFilter",
       filterParams: agDateColumnFilter(),
@@ -93,6 +95,7 @@ const ClaimListTab = observer(() => {
       cellRenderer: function (data) {
         return `<span>${dateFormatter(data.value)}</span>`;
       },
+      // sort: "desc",
     },
     {
       headerName: "Yaml",
@@ -105,11 +108,16 @@ const ClaimListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     let fieldName = e.colDef.field;
     setClaimName(e.data.name);
     loadPVClaim(e.data.name, e.data.clusterName, e.data.namespace);
-    loadVolumeYaml(e.data.name, e.data.clusterName, e.data.namespace, "persistentvolumeclaims");
+    loadClaimYaml(
+      e.data.name,
+      e.data.clusterName,
+      e.data.namespace,
+      "persistentvolumeclaims"
+    );
     if (fieldName === "yaml") {
       handleOpenYaml();
     }
@@ -135,7 +143,9 @@ const ClaimListTab = observer(() => {
     if (claimName === "") {
       swalError("Claim를 선택해주세요!");
     } else {
-      swalUpdate(claimName + "를 삭제하시겠습니까?", () => deletePvClaim(claimName, reloadData));
+      swalUpdate(claimName + "를 삭제하시겠습니까?", () =>
+        deletePvClaim(claimName, reloadData)
+      );
     }
     setClaimName("");
   };
@@ -155,13 +165,9 @@ const ClaimListTab = observer(() => {
     <>
       <CReflexBox>
         <PanelBox>
-          <CommActionBar
-            reloadFunc={reloadData}
-            // isSearch={true}
-            // isSelect={true}
-            // keywordList={["이름"]}
-          >
+          <CommActionBar reloadFunc={reloadData}>
             <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            &nbsp;&nbsp;
             <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
@@ -169,7 +175,7 @@ const ClaimListTab = observer(() => {
             <div className="grid-height2">
               <AgGrid
                 onCellClicked={handleClick}
-                rowData={viewList}
+                rowData={pvClaimLists}
                 columnDefs={columDefs}
                 isBottom={false}
                 totalElements={totalElements}
@@ -180,14 +186,21 @@ const ClaimListTab = observer(() => {
               />
             </div>
           </div>
-          <ViewYaml open={openYaml} yaml={getYamlFile} onClose={handleCloseYaml} />
-          <CreateClaim open={open} onClose={handleClose} reloadFunc={reloadData} />
+          <ViewYaml
+            open={openYaml}
+            yaml={getYamlFile}
+            onClose={handleCloseYaml}
+          />
+          <CreateClaim
+            open={open}
+            onClose={handleClose}
+            reloadFunc={reloadData}
+          />
         </PanelBox>
         <ClaimDetail
           pvClaim={pvClaim}
           metadata={pvClaimAnnotations}
           lables={pvClaimLables}
-          // events={pvClaimEvents}
         />
       </CReflexBox>
     </>

@@ -1,7 +1,14 @@
 import { observer } from "mobx-react";
 import React from "react";
 import { styled } from "@mui/material/styles";
-import { Table, TableBody, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import {
+  Table,
+  TableBody,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
 import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import { clusterStore, dashboardStore } from "@/store";
 import { dateFormatter } from "@/utils/common-utils";
@@ -53,16 +60,29 @@ const NodeList = observer(() => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {nodeInfo.map(node => (
-            <StyledTableRow key={node.name}>
-              <StyledTableCell>{node.name}</StyledTableCell>
-              <StyledTableCell>{node.type}</StyledTableCell>
-              <StyledTableCell>{node.nodeIP}</StyledTableCell>
-              <StyledTableCell>{node.kubeVersion}</StyledTableCell>
-              <StyledTableCell>{node.os}</StyledTableCell>
-              <StyledTableCell>{dateFormatter(node.created_at)}</StyledTableCell>
+          {nodeInfo ? (
+            nodeInfo.map((node) => (
+              <StyledTableRow key={node.name}>
+                <StyledTableCell>{node.name}</StyledTableCell>
+                <StyledTableCell>{node.type}</StyledTableCell>
+                <StyledTableCell>{node.nodeIP}</StyledTableCell>
+                <StyledTableCell>{node.kubeVersion}</StyledTableCell>
+                <StyledTableCell>{node.os}</StyledTableCell>
+                <StyledTableCell>
+                  {dateFormatter(node.created_at)}
+                </StyledTableCell>
+              </StyledTableRow>
+            ))
+          ) : (
+            <StyledTableRow>
+              <StyledTableCell>-</StyledTableCell>
+              <StyledTableCell>-</StyledTableCell>
+              <StyledTableCell>-</StyledTableCell>
+              <StyledTableCell>-</StyledTableCell>
+              <StyledTableCell>-</StyledTableCell>
+              <StyledTableCell>-</StyledTableCell>
             </StyledTableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </TableContainer>

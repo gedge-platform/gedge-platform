@@ -14,8 +14,7 @@ const FindID = () => {
   });
   const { username, phone } = inputs;
 
-  const onChange = e => {
-    // console.log(e.target.value);
+  const onChange = (e) => {
     const { value, name } = e.target;
     setInputs({
       ...inputs,
@@ -33,28 +32,6 @@ const FindID = () => {
       return;
     }
   };
-
-  // const findIdCheck = async (e) => {
-  //   e.preventDefault();
-  //   nextSteps();
-  //   // console.log("tt");
-  //   await axios
-  //     .post(`${SERVER_URL}/user/search/id`, {
-  //       username,
-  //       phone,
-  //     })
-  //     .then((res) => {
-  //       // console.log(res.data);
-  //       if (res.data) {
-  //         setUserId(res.data.id);
-  //         setIsResult(true);
-  //         // swal(`아이디는 ${res.data.id}입니다.`);
-  //       } else {
-  //         swal("일치하는 정보가 없습니다.");
-  //       }
-  //     })
-  //     .catch((e) => console.log(e));
-  // };
 
   return (
     <div id="login" className="wrap">
@@ -78,7 +55,9 @@ const FindID = () => {
                 <p className="find-result-id">
                   아이디는 <strong>{userId}</strong> 입니다.
                 </p>
-                <p className="find-result-txt">로그인하시면 서비스를 이용하실 수 있습니다.</p>
+                <p className="find-result-txt">
+                  로그인하시면 서비스를 이용하실 수 있습니다.
+                </p>
               </div>
               <div className="memberBtns">
                 <Link className="btn_contained submit" to="/Login">
@@ -124,20 +103,24 @@ const FindID = () => {
                   <li>
                     <label className="tit">&nbsp;</label>
                     <div className="data">
-                      <input type="text" placeholder="인증번호를 입력하세요." name="" className="input_confirm" />
+                      <input
+                        type="text"
+                        placeholder="인증번호를 입력하세요."
+                        name=""
+                        className="input_confirm"
+                      />
                     </div>
                   </li>
                 </ul>
                 <div className="memberBtns">
-                  <button type="button" className="btn_contained" onClick={() => history.back()}>
+                  <button
+                    type="button"
+                    className="btn_contained"
+                    onClick={() => history.back()}
+                  >
                     취소
                   </button>
-                  <button
-                    type="submit"
-                    className="btn_contained submit"
-                    // onClick={findIdCheck}
-                    // setIsResult(true);
-                  >
+                  <button type="submit" className="btn_contained submit">
                     확인
                   </button>
                 </div>

@@ -25,7 +25,7 @@ func SearchNestedValue(obj interface{}, key string, uniq string) (interface{}, b
 	case map[string]interface{}:
 		if v, ok := t[key]; ok {
 			if strings.Compare(InterfaceToString(v), uniq) == 0 {
-				log.Printf("[#1] sfsdfs v is %s, uniq is %s, ok is %t", v, uniq, ok)
+				// log.Printf("[#1] sfsdfs v is %s, uniq is %s, ok is %t", v, uniq, ok)
 				return v, ok
 			}
 		}
@@ -123,7 +123,7 @@ func FindDataStr(data string, findPath, findValue string) string {
 
 	}
 
-	log.Println("findValue is ", findValue)
+	// log.Println("findValue is ", findValue)
 	findValueCheck := strings.Compare(findValue, "") != 0
 	if findValueCheck {
 		// findValue 입력이 있을 경우
@@ -133,8 +133,8 @@ func FindDataStr(data string, findPath, findValue string) string {
 		// findValue 가 "" 일 경우
 	}
 
-	log.Println("최종 data is : ", data)
-	fmt.Println("type:", reflect.ValueOf(data).Type())
+	// log.Println("최종 data is : ", data)
+	// fmt.Println("type:", reflect.ValueOf(data).Type())
 
 	return data
 }
@@ -179,27 +179,27 @@ func FindDataArr(i interface{}, p, f, u string) (interface{}, error) {
 
 			dataInterface := StringToMapInterface(arr[t].String())
 
-			if v, ok := SearchNestedValue(dataInterface, f, u); ok {
-				fmt.Printf("Arr[%d] Found it ! \n", t)
-				fmt.Printf("Unique is : %+v\n", v)
-				fmt.Printf("data is %s\n", arr[t])
+			if _, ok := SearchNestedValue(dataInterface, f, u); ok {
+				// fmt.Printf("Arr[%d] Found it ! \n", t)
+				// fmt.Printf("Unique is : %+v\n", v)
+				// fmt.Printf("data is %s\n", arr[t])
 				err := json.Unmarshal([]byte(arr[t].String()), &result)
 				if err != nil {
-					fmt.Println("[!53] error")
+					log.Println("[!53] error")
 				}
 				results = append(results, result)
-				fmt.Printf("[%d] result Data is %s", t, results)
+				// fmt.Printf("[%d] result Data is %s", t, results)
 			} else {
-				fmt.Printf("Arr[%d] Key not found\n", t)
+				// log.Printf("Arr[%d] Key not found\n", t)
 			}
 		}
 
 		if len == 1 {
 			log.Println("[#7-2] len == 1, list")
 			dataInterface := StringToInterface(arr[0].String())
-			if v, ok := SearchNestedValue(dataInterface, f, u); ok {
-				fmt.Println("Found it !")
-				fmt.Printf("Unique is : %+v\n", v)
+			if _, ok := SearchNestedValue(dataInterface, f, u); ok {
+				// fmt.Println("Found it !")
+				// fmt.Printf("Unique is : %+v\n", v)
 				return StringToInterface(arr[0].String()), nil
 			} else {
 				return nil, nil
@@ -249,32 +249,32 @@ func FindDataArrStr(i interface{}, p, f, u string) (string, error) {
 	if len > 0 {
 		// list
 		arr = data.Array()
-		log.Println("[#7-1] len > 0, list")
+		// log.Println("[#7-1] len > 0, list")
 		for t, _ := range arr {
 
 			dataInterface := StringToMapInterface(arr[t].String())
 
-			if v, ok := SearchNestedValue(dataInterface, f, u); ok {
-				fmt.Printf("Arr[%d] Found it ! \n", t)
-				fmt.Printf("Unique is : %+v\n", v)
-				fmt.Printf("data is %s\n", arr[t])
+			if _, ok := SearchNestedValue(dataInterface, f, u); ok {
+				// fmt.Printf("Arr[%d] Found it ! \n", t)
+				// fmt.Printf("Unique is : %+v\n", v)
+				// fmt.Printf("data is %s\n", arr[t])
 				err := json.Unmarshal([]byte(arr[t].String()), &result)
 				if err != nil {
-					fmt.Println("[!53] error")
+					log.Println("[!53] error")
 				}
 				results = append(results, result)
-				fmt.Printf("[%d] result Data is %s", t, results)
+				// log.Printf("[%d] result Data is %s", t, results)
 			} else {
-				fmt.Printf("Arr[%d] Key not found\n", t)
+				// log.Printf("Arr[%d] Key not found\n", t)
 			}
 		}
 
 		if len == 1 {
-			log.Println("[#7-2] len == 1, list")
+			// log.Println("[#7-2] len == 1, list")
 			dataInterface := StringToInterface(arr[0].String())
-			if v, ok := SearchNestedValue(dataInterface, f, u); ok {
-				fmt.Println("Found it !")
-				fmt.Printf("Unique is : %+v\n", v)
+			if _, ok := SearchNestedValue(dataInterface, f, u); ok {
+				// fmt.Println("Found it !")
+				// fmt.Printf("Unique is : %+v\n", v)
 				return arr[0].String(), nil
 			} else {
 				return "nil", nil
@@ -289,11 +289,11 @@ func FindDataArrStr(i interface{}, p, f, u string) (string, error) {
 	}
 }
 func FindDataArrStr2(i interface{}, p, f, u string) ([]string, error) {
-	log.Println("[In #FindDataArr]")
-	log.Println("[#1] Data is ", i)
-	log.Println("[#2] find path string is ", p)
-	log.Println("[#2] find key string is ", f)
-	log.Println("[#3] uniq string is ", u)
+	// log.Println("[In #FindDataArr]")
+	// log.Println("[#1] Data is ", i)
+	// log.Println("[#2] find path string is ", p)
+	// log.Println("[#2] find key string is ", f)
+	// log.Println("[#3] uniq string is ", u)
 
 	// var itemCheck bool
 	var parse, data gjson.Result
@@ -303,7 +303,7 @@ func FindDataArrStr2(i interface{}, p, f, u string) ([]string, error) {
 	ia := InterfaceToString(i)
 
 	parse = gjson.Parse(ia)
-	log.Println("[#4] Parse is ", parse)
+	// log.Println("[#4] Parse is ", parse)
 
 	pathCheck := strings.Compare(p, "") != 0
 	// itemCheck = len(parse.Get("items").Array()) > 0
@@ -311,45 +311,45 @@ func FindDataArrStr2(i interface{}, p, f, u string) ([]string, error) {
 
 	if pathCheck {
 		data = parse.Get(p)
-		log.Println("[#5] filter data is ", data)
+		// log.Println("[#5] filter data is ", data)
 	} else {
 		data = parse
-		log.Println("[#5] filter data is ", data)
+		// log.Println("[#5] filter data is ", data)
 	}
 
 	len := len(data.Array())
-	log.Println("[#6] len(data) is ", len)
+	// log.Println("[#6] len(data) is ", len)
 
 	if len > 0 {
 		// list
 		arr = data.Array()
-		log.Println("[#7-1] len > 0, list")
+		// log.Println("[#7-1] len > 0, list")
 		for t, _ := range arr {
 
 			dataInterface := StringToMapInterface(arr[t].String())
 
-			if v, ok := SearchNestedValue(dataInterface, f, u); ok {
-				fmt.Printf("Arr[%d] Found it ! \n", t)
-				fmt.Printf("Unique is : %+v\n", v)
-				fmt.Printf("data is %s\n", arr[t])
+			if _, ok := SearchNestedValue(dataInterface, f, u); ok {
+				// fmt.Printf("Arr[%d] Found it ! \n", t)
+				// fmt.Printf("Unique is : %+v\n", v)
+				// fmt.Printf("data is %s\n", arr[t])
 				// err := json.Unmarshal([]byte(arr[t].String()), &result)
 				// if err != nil {
 				// 	fmt.Println("[!53] error")
 				// }
 				results = append(results, arr[t].String())
-				fmt.Printf("[%d] result Data is %s", t, results)
+				// fmt.Printf("[%d] result Data is %s", t, results)
 			} else {
-				fmt.Printf("Arr[%d] Key not found\n", t)
+				// log.Printf("Arr[%d] Key not found\n", t)
 			}
 		}
 
 		if len == 1 {
-			log.Println("[#7-2] len == 1, list")
+			// log.Println("[#7-2] len == 1, list")
 			dataInterface := StringToInterface(arr[0].String())
-			if v, ok := SearchNestedValue(dataInterface, f, u); ok {
-				fmt.Println("Found it !")
-				fmt.Printf("Unique is : %+v\n", v)
-				fmt.Printf("data is %s\n", arr[0])
+			if _, ok := SearchNestedValue(dataInterface, f, u); ok {
+				// fmt.Println("Found it !")
+				// fmt.Printf("Unique is : %+v\n", v)
+				// fmt.Printf("data is %s\n", arr[0])
 				results = append(results, arr[0].String())
 				return results, nil
 			} else {
@@ -413,7 +413,7 @@ func Typeof(v interface{}) string {
 func StringToInterface(i string) interface{} {
 	var x interface{}
 	if err := json.Unmarshal([]byte(i), &x); err != nil {
-		fmt.Printf("Error : %s\n", err)
+		log.Printf("Error : %s\n", err)
 	}
 	return x
 }
@@ -432,7 +432,7 @@ func InterfaceToString(i interface{}) string {
 func StringToMapInterface(i string) map[string]interface{} {
 	x := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(i), &x); err != nil {
-		fmt.Printf("Error : %s\n", err)
+		log.Printf("Error : %s\n", err)
 	}
 	return x
 }
@@ -477,9 +477,6 @@ func GetModelRelatedList(params model.PARAMS) (interface{}, error) {
 		// if err != nil {
 		// 	return nil, err
 		// }
-		fmt.Println("########################endPointData", endPointData)
-
-		fmt.Println("sdfsdfdsfdfs", Filter(endPointData, "subsets.#.addresses"))
 
 		var Pods []model.SERVICEPOD
 		var PodNameList []string
@@ -495,7 +492,7 @@ func GetModelRelatedList(params model.PARAMS) (interface{}, error) {
 				PodNameList = append(PodNameList, (gjson.Get(PodData[i].String(), "targetRef.name")).String())
 			}
 		}
-		fmt.Println("########################PodNameList", PodNameList)
+		// fmt.Println("########################PodNameList", PodNameList)
 		// log.Printf("# pod list확인 ", podRefer)
 		params.Kind = "pods"
 		params.Name = ""
@@ -584,7 +581,7 @@ func GetModelRelatedList(params model.PARAMS) (interface{}, error) {
 
 		for x, _ := range podDataList {
 			containerStatusesData := FindData(podDataList[x], "status", "containerStatuses.0.restartCount")
-			fmt.Printf("##containerStatusesData :%+v\n", containerStatusesData)
+			// fmt.Printf("##containerStatusesData :%+v\n", containerStatusesData)
 
 			if InterfaceToString(FindData(podDataList[x], "status", "phase")) == "Running" {
 				PodNames = append(PodNames, InterfaceToString(FindData(podDataList[x], "metadata", "name")))
@@ -612,7 +609,7 @@ func GetModelRelatedList(params model.PARAMS) (interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
-			fmt.Printf("[##]svcData :%+v\n", svcData)
+			// fmt.Printf("[##]svcData :%+v\n", svcData)
 			// fmt.Printf("[##]svcDataName :%s\n", InterfaceToString(FindData(svcData[0], "metadata", "name")))
 			if len(svcData) > 0 {
 				svcList := model.DEPLOYMENTSVC{
@@ -652,7 +649,7 @@ func GetModelRelatedList(params model.PARAMS) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf("podData : %s", podData)
+		// fmt.Printf("podData : %s", podData)
 		var PodsInfo []model.ReferPodList
 		for i := range podData {
 			PodData := model.ReferPodList{
@@ -670,8 +667,8 @@ func GetModelRelatedList(params model.PARAMS) (interface{}, error) {
 		// // log.Printf("# pod list확인 ", podRefer)
 		// Transcode(PodsData, &PodsInfo)
 		// log.Printf("# job list확인22 ", PodsInfo)
-		fmt.Println("[########]tesdfsdef")
-		fmt.Printf("[########]OnwerRefer : %+v", OnwerRefer)
+		// fmt.Println("[########]tesdfsdef")
+		// fmt.Printf("[########]OnwerRefer : %+v", OnwerRefer)
 		ReferDataJob := model.ReferDataJob{
 			ReferPodList: PodsInfo,
 		}
@@ -819,12 +816,12 @@ func GetModelRelatedList(params model.PARAMS) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf("[##]podsData :%s\n", podsData)
+		// fmt.Printf("[##]podsData :%s\n", podsData)
 		podData, err := FindDataArrStr2(podsData, "items", "name", daemonsetName)
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf("[##]podData :%s\n", podData)
+		// fmt.Printf("[##]podData :%s\n", podData)
 
 		// splits := strings.Split(podData, ",")
 		var Pods []model.DEPLOYMENTPOD
@@ -838,7 +835,7 @@ func GetModelRelatedList(params model.PARAMS) (interface{}, error) {
 
 			containerStatusesData := FindData(podData[x], "status", "containerStatuses.0.restartCount")
 
-			fmt.Printf("##containerStatusesData :%+v\n", containerStatusesData)
+			// fmt.Printf("##containerStatusesData :%+v\n", containerStatusesData)
 
 			if InterfaceToString(FindData(podData[x], "status", "phase")) == "Running" {
 				PodNames = append(PodNames, InterfaceToString(FindData(podData[x], "metadata", "name")))
@@ -868,7 +865,7 @@ func GetModelRelatedList(params model.PARAMS) (interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
-			fmt.Printf("[##]svcData :%+v\n", svcData)
+			// fmt.Printf("[##]svcData :%+v\n", svcData)
 			// fmt.Printf("[##]svcDataName :%s\n", InterfaceToString(FindData(svcData[0], "metadata", "name")))
 			if len(svcData) > 0 {
 				svcList := model.DEPLOYMENTSVC{

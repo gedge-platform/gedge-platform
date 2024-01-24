@@ -44,13 +44,13 @@ func DataRequest_spider(params model.PARAMS) (data string, err error) {
 
 	endPoint = config.URL.Spider
 
-	log.Printf("[#endPoint] is %s", endPoint)
+	// log.Printf("[#endPoint] is %s", endPoint)
 
-	log.Printf("[#params.Name] is %s", params.Name)
-	log.Printf("[#params.Kind] is %s", params.Kind)
-	log.Printf("[#params.Action] is %s", params.Action)
-	log.Printf("[#params.Body] is %s", params.Body)
-	log.Printf("[#############]")
+	// log.Printf("[#params.Name] is %s", params.Name)
+	// log.Printf("[#params.Kind] is %s", params.Kind)
+	// log.Printf("[#params.Action] is %s", params.Action)
+	// log.Printf("[#params.Body] is %s", params.Body)
+	// log.Printf("[#############]")
 
 	url := UrlExpr_spider(endPoint, params.Name, params.Kind, params.Action)
 
@@ -63,7 +63,7 @@ func DataRequest_spider(params model.PARAMS) (data string, err error) {
 		return "", ErrDetailNameInvalid
 	}
 
-	log.Printf("[#31] url is %s", url)
+	// log.Printf("[#31] url is %s", url)
 	var responseString, token string
 	r := io.NopCloser(strings.NewReader(params.Body))
 	reqMethod := params.Method
@@ -72,7 +72,7 @@ func DataRequest_spider(params model.PARAMS) (data string, err error) {
 
 	//body := ResponseBody(_body)
 
-	log.Printf("[#32] passBody is %s", passBody)
+	// log.Printf("[#32] passBody is %s", passBody)
 	token = token_value
 
 	client := resty.New()

@@ -12,7 +12,7 @@ type JOB struct {
 	Duration     interface{} `json:"duration"`
 	CreationTime time.Time   `json:"created_at,omitempty"`
 }
-type JOB_DETAL struct {
+type JOB_DETAIL struct {
 	JOB
 	Status       int         `json:"status,omitempty"`
 	Lable        interface{} `json:"label,omitempty"`
@@ -56,10 +56,10 @@ type Conditions struct {
 	LastProbeTime time.Time `json:"lastProbeTime,omitempty"`
 }
 
-// type JOBEvent struct {
-// 	Reason  string `json:"reson,omitempty"`
-// 	Message string `json:"type,omitempty"`
-// }
+//	type JOBEvent struct {
+//		Reason  string `json:"reson,omitempty"`
+//		Message string `json:"type,omitempty"`
+//	}
 type ReferDataJob struct {
 	ReferPodList []ReferPodList `json:"podList"`
 	// OnwerReferInfo

@@ -17,9 +17,23 @@ const PodListTab = observer(() => {
   const [open, setOpen] = useState(false);
   const [reRun, setReRun] = useState(false);
   const [podName, setPodName] = useState("");
+  const [clusterName, setClusterName] = useState("");
+  const [projectName, setProjectName] = useState("");
 
-  const { podList, podDetail, totalElements, loadPodList, loadPodDetail, deletePod, currentPage, totalPages, goPrevPage, goNextPage, viewList } =
-    podStore;
+  const {
+    podList,
+    podDetail,
+    totalElements,
+    loadPodList,
+    loadPodDetail,
+    deletePod,
+    currentPage,
+    totalPages,
+    goPrevPage,
+    goNextPage,
+    viewList,
+    initViewList,
+  } = podStore;
 
   const [columDefs] = useState([
     {
@@ -65,12 +79,14 @@ const PodListTab = observer(() => {
       cellRenderer: function (data) {
         return `<span>${dateFormatter(data.value)}</span>`;
       },
+      sort: "desc",
     },
   ]);
 
-  const handleClick = e => {
-    console.log("e is ", e.data.name);
+  const handleClick = (e) => {
     setPodName(e.data.name);
+    setClusterName(e.data.cluster);
+    setProjectName(e.data.project);
     const data = e.data.status;
     if (data === "Failed") {
       return;
@@ -90,7 +106,9 @@ const PodListTab = observer(() => {
     if (podName === "") {
       swalError("Pod를 선택해주세요!");
     } else {
-      swalUpdate(podName + "를 삭제하시겠습니까?", () => deletePod(podName, reloadData));
+      swalUpdate(podName + "를 삭제하시겠습니까?", () =>
+        deletePod(podName, clusterName, projectName, reloadData())
+      );
     }
     setPodName("");
   };
@@ -103,6 +121,7 @@ const PodListTab = observer(() => {
     loadPodList();
     return () => {
       setReRun(false);
+      initViewList();
     };
   }, [reRun]);
 
@@ -117,6 +136,7 @@ const PodListTab = observer(() => {
             // keywordList={["이름"]}
           >
             <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            &nbsp;&nbsp;
             <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
@@ -124,7 +144,7 @@ const PodListTab = observer(() => {
             <div className="grid-height2">
               <AgGrid
                 onCellClicked={handleClick}
-                rowData={viewList}
+                rowData={podList}
                 columnDefs={columDefs}
                 isBottom={false}
                 totalElements={totalElements}
@@ -135,7 +155,11 @@ const PodListTab = observer(() => {
               />
             </div>
           </div>
-          <CreatePod open={open} onClose={handleClose} reloadFunc={reloadData} />
+          <CreatePod
+            open={open}
+            onClose={handleClose}
+            reloadFunc={reloadData}
+          />
         </PanelBox>
         <Detail pod={podDetail} />
       </CReflexBox>

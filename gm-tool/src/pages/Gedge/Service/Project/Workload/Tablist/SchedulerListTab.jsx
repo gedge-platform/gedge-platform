@@ -8,7 +8,7 @@ import { CCreateButton, CSelectButton } from "@/components/buttons";
 import { CTabs, CTab, CTabPanel } from "@/components/tabs";
 import { useHistory } from "react-router";
 import { observer } from "mobx-react";
-import { podStore } from "@/store";
+import { schedulerStore } from "@/store";
 import CreateScheduler from "../Dialog/CreateScheduler";
 import { drawStatus } from "@/components/datagrids/AggridFormatter";
 
@@ -19,7 +19,17 @@ const SchedulerListTab = observer(() => {
     setTabvalue(newValue);
   };
 
-  const { podList, podDetail, totalYElements, loadPodList, loadPodDetail, currentYPage, totalYPages, viewYList, goPrevPage, goNextPage } = podStore;
+  const {
+    totalElements,
+    loadYamlList,
+    yamlList,
+    currentPage,
+    totalPages,
+    viewList,
+    initViewList,
+    goPrevPage,
+    goNextPage,
+  } = schedulerStore;
   const [columDefs] = useState([
     {
       headerName: "파드 이름",
@@ -75,7 +85,7 @@ const SchedulerListTab = observer(() => {
     setOpen(false);
   };
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     const fieldName = e.colDef.field;
     loadPodDetail(e.data.name, e.data.cluster, e.data.project);
   };
@@ -83,14 +93,17 @@ const SchedulerListTab = observer(() => {
   const history = useHistory();
 
   useEffect(() => {
-    loadPodList();
+    loadYamlList();
+    return () => {
+      initViewList();
+    };
   }, []);
 
   return (
     <>
       <CReflexBox>
         <PanelBox>
-          <CommActionBar isSearch={true} isSelect={true} keywordList={["이름"]}>
+          <CommActionBar reloadFunc={loadYamlList}>
             <CCreateButton onClick={handleCreateOpen}>Load YAML</CCreateButton>
           </CommActionBar>
 
@@ -99,19 +112,24 @@ const SchedulerListTab = observer(() => {
               <div className="grid-height2">
                 <AgGrid
                   onCellClicked={handleClick}
-                  rowData={viewYList}
+                  rowData={yamlList}
+                  rowPerPage={20}
                   columnDefs={columDefs}
                   isBottom={false}
-                  totalElements={totalYElements}
-                  totalPages={totalYPages}
-                  currentPage={currentYPage}
+                  totalElements={totalElements}
+                  totalPages={totalPages}
+                  currentPage={currentPage}
                   goNextPage={goNextPage}
                   goPrevPage={goPrevPage}
                 />
               </div>
             </CTabPanel>
           </div>
-          <CreateScheduler open={open} onClose={handleClose} reloadFunc={loadPodList} />
+          <CreateScheduler
+            open={open}
+            onClose={handleClose}
+            reloadFunc={loadYamlList}
+          />
         </PanelBox>
       </CReflexBox>
     </>

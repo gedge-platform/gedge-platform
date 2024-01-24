@@ -6,6 +6,12 @@ import { CTextField } from "@/components/textfields";
 import styled from "styled-components";
 import { userStore } from "@/store";
 import { swalError } from "@/utils/swal-utils";
+import UserInfo from "../TabList/UserInfo";
+import CreateWorkSpace from "../../WorkSpace/Dialog/CreateWorkSpace";
+import UserProject from "../TabList/UserProject,";
+import workspaceStore from "../../../../store/WorkSpace";
+import clusterStore from "../../../../store/Cluster";
+import { CDialogUser } from "../../../../components/dialogs/CDialogUser";
 
 const Button = styled.button`
   background-color: #fff;
@@ -24,20 +30,20 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const CreateUser = observer(props => {
+const CreateUser = observer((props) => {
   const { open } = props;
-  const [inputs, setInputs] = useState({
-    memberId: "",
-    memberName: "",
-    password: "",
-    email: "",
-    contact: "",
-    memberDescription: "",
-    memberRole: "PA",
-  });
-  const { memberId, memberName, password, memberRole, email, contact, memberDescription } = inputs;
+  const [stepValue, setStepValue] = useState(1);
 
-  const { postUser } = userStore;
+  const { postUser, inputs, setInputs } = userStore;
+  const {
+    check,
+    workspaceName,
+    workspaceDescription,
+    createWorkspace,
+    setWorkspaceName,
+    setWorkspaceDescription,
+  } = workspaceStore;
+  const { selectCluster, setSelectCluster } = clusterStore;
 
   const handleClose = () => {
     props.onClose && props.onClose();
@@ -50,6 +56,10 @@ const CreateUser = observer(props => {
       memberDescription: "",
       memberRole: "PA",
     });
+    setWorkspaceName("");
+    setWorkspaceDescription("");
+    setSelectCluster([]);
+    setStepValue(1);
   };
 
   const onChange = ({ target: { name, value } }) => {
@@ -60,27 +70,28 @@ const CreateUser = observer(props => {
   };
 
   const onClickCreateUser = () => {
-    if (memberId === "") {
+    if ((inputs.memberId === "") | (inputs.memberId === undefined)) {
       swalError("ID를 입력해주세요");
       return;
     }
-    if (password === "") {
+    if ((inputs.password === "") | (inputs.password === undefined)) {
       swalError("Password를 입력해주세요");
       return;
     }
-    if (memberName === "") {
+    if ((inputs.memberName === "") | (inputs.memberName === undefined)) {
       swalError("Name을 입력해주세요");
       return;
     }
-    if (email === "") {
+    if ((inputs.email === "") | (inputs.email === undefined)) {
       swalError("Email을 입력해주세요");
       return;
     }
-    if (contact === "") {
+    if ((inputs.contact === "") | (inputs.contact === undefined)) {
       swalError("Contact를 입력해주세요");
       return;
     } else {
-      createUser();
+      createUser(inputs);
+      setStepValue(2);
     }
   };
 
@@ -90,111 +101,97 @@ const CreateUser = observer(props => {
     props.reloadFunc && props.reloadFunc();
   };
 
+  const create = async () => {
+    if (!check) {
+      swalError("중복확인이 필요합니다!");
+      return;
+    }
+    if (selectCluster.length === 0) {
+      swalError("클러스터를 확인해주세요!");
+      return;
+    }
+    createWorkspace(
+      workspaceName,
+      workspaceDescription,
+      selectCluster,
+      handleClose
+    );
+
+    props.reloadFunc && props.reloadFunc();
+  };
+
   useEffect(() => {}, []);
 
+  const stepOfComponent = () => {
+    if (stepValue === 1) {
+      return (
+        <>
+          <UserInfo />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: "32px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                width: "300px",
+                justifyContent: "center",
+              }}
+            >
+              <Button onClick={handleClose}>취소</Button>
+              <ButtonNext onClick={() => onClickCreateUser()}>다음</ButtonNext>
+            </div>
+          </div>
+        </>
+      );
+    } else if (stepValue === 2) {
+      return (
+        <>
+          <UserProject />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: "32px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                width: "240px",
+                justifyContent: "center",
+              }}
+            >
+              {/* <Button
+                onClick={() => {
+                  // handlePreStepValue();
+                  setStepValue(1);
+                }}
+              >
+                이전
+              </Button> */}
+              <ButtonNext onClick={create}>생성</ButtonNext>
+            </div>
+          </div>
+        </>
+      );
+    }
+  };
   return (
-    <CDialogNew id="myDialog" open={open} maxWidth="md" title={`Create Member`} onClose={handleClose} bottomArea={false} modules={["custom"]}>
-      <table className="tb_data_new tb_write">
-        <tbody>
-          <tr>
-            <th>
-              Member Id
-              <span className="requried">*</span>
-            </th>
-            <td>
-              <CTextField type="text" placeholder="Mermber Id" className="form_fullWidth" name="memberId" onChange={onChange} value={memberId} />
-            </td>
-          </tr>
-          <tr>
-            <th>
-              Member Password
-              <span className="requried">*</span>
-            </th>
-            <td>
-              <CTextField
-                type="password"
-                placeholder="Mermber Password"
-                className="form_fullWidth"
-                name="password"
-                onChange={onChange}
-                value={password}
-              />
-            </td>
-          </tr>
-          <tr>
-            <th>
-              Member Name
-              <span className="requried">*</span>
-            </th>
-            <td>
-              <CTextField type="text" placeholder="Member Name" className="form_fullWidth" name="memberName" onChange={onChange} value={memberName} />
-            </td>
-          </tr>
-          <tr>
-            <th>
-              Member Email
-              <span className="requried">*</span>
-            </th>
-            <td>
-              <CTextField type="text" placeholder="Member Email" className="form_fullWidth" name="email" onChange={onChange} value={email} />
-            </td>
-          </tr>
-          <tr>
-            <th>
-              Member Contact
-              <span className="requried">*</span>
-            </th>
-            <td>
-              <CTextField type="text" placeholder="Member Contact" className="form_fullWidth" name="contact" onChange={onChange} value={contact} />
-            </td>
-          </tr>
-          {/* <tr>
-            <th>Member Description</th>
-            <td>
-              <CTextField
-                type="text"
-                placeholder="Member Description"
-                className="form_fullWidth"
-                name="memberDescription"
-                onChange={onChange}
-                value={memberDescription}
-              />
-            </td>
-          </tr> */}
-          <tr>
-            <th>
-              Member Role <span className="requried">*</span>
-            </th>
-            <td style={{ width: "50%" }}>
-              <FormControl className="form_fullWidth">
-                <select name="memberRole" onChange={onChange}>
-                  <option value={"PA"}>PA</option>
-                  <option value={"SA"}>SA</option>
-                </select>
-              </FormControl>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: "32px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            width: "240px",
-            justifyContent: "center",
-          }}
-        >
-          <Button onClick={handleClose}>취소</Button>
-          <ButtonNext onClick={onClickCreateUser}>생성</ButtonNext>
-        </div>
-      </div>
-    </CDialogNew>
+    <CDialogUser
+      id="myDialog"
+      open={open}
+      maxWidth="md"
+      title={`Create Member`}
+      onClose={handleClose}
+      bottomArea={false}
+      modules={["custom"]}
+    >
+      {stepOfComponent()}
+    </CDialogUser>
   );
 });
 export default CreateUser;

@@ -16,7 +16,7 @@ type Member struct {
 	Enabled    bool               `json:"enabled,omitempty" bson:"enabled"`
 	RoleName   string             `json:"memberRole,omitempty" bson:"memberRole"`
 	Created_at time.Time          `json:"created_at,omitempty bson:"created_at"`
-	Logined_at primitive.DateTime `json:"logined_at,omitempty"`
+	Logined_at time.Time          `json:"logined_at,omitempty bson:"logined_at"`
 }
 
 type RequestMember struct {

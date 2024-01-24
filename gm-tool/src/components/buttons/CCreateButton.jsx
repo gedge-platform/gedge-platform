@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
-import theme from "@/styles/theme";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -14,27 +13,42 @@ const useStyles = makeStyles(() =>
         color: `#fff`,
         border: "1px solid #0189f2",
         borderRadius: "3px",
-        background: `${theme.colors.primaryBtn}`,
+        background: `#0189f2`,
 
         "&:hover": {
-          backgroundColor: "#008aff",
-          borderColor: "#007cdb",
+          backgroundColor: "#0189f2",
+          borderColor: "#0189f2",
         },
         "&.check .MuiButton-label::after": {
           backgroundImage: "url(../images/bullet/createBtn_check.png)",
         },
       },
     },
-  }),
+  })
 );
 
-const CCreateButton = props => {
-  const { children, type, style, icon, buttonEventType = "button", onClick, role = "ROLE_USER", ...other } = props;
+const CCreateButton = (props) => {
+  const {
+    children,
+    type,
+    style,
+    icon,
+    buttonEventType = "button",
+    onClick,
+    role = "ROLE_USER",
+    ...other
+  } = props;
   const classes = useStyles();
 
   return (
     <>
-      <Button type={buttonEventType} className={`btn_create ${icon}`} style={style} onClick={onClick} {...other}>
+      <Button
+        type={buttonEventType}
+        className={`btn_create ${icon}`}
+        style={style}
+        onClick={onClick}
+        {...other}
+      >
         {children}
       </Button>
     </>

@@ -32,13 +32,12 @@ const CloudZoneDashboard = observer(() => {
     setTabvalue(newValue);
   };
 
-  // const { clusterDetail, loadClusterList } = clusterStore;
-  const { loadCloudZoneDashboard, loadCloudZoneDetailDashboard } = dashboardStore;
+  const { loadCloudZoneDashboard, loadCloudZoneDetailDashboard } =
+    dashboardStore;
   const history = useHistory();
 
   useLayoutEffect(() => {
     loadCloudZoneDashboard();
-    loadCloudZoneDetailDashboard();
   }, []);
 
   return (
@@ -61,35 +60,11 @@ const CloudZoneDashboard = observer(() => {
         </PanelBox>
         <div className="panel_summary">
           <CReflexBox>
-            {/* <Detail cluster={clusterDetail} /> */}
             <NodeList />
           </CReflexBox>
         </div>
       </CloudZoneWrap>
     </>
-
-    // <Layout currentPageTitle={currentPageTitle}>
-    //   <CloudZoneWrap>
-    //     <PanelBox className="panel_summary">
-    //       <div className="ClusterInfoWrap">
-    //         <ClusterInfo />
-    //       </div>
-
-    //       <div className="ClusterSliderWrap">
-    //         <CloudZoneSlider />
-    //       </div>
-
-    //       <div className="SummaryWrap">
-    //         <CloudZoneSummary />
-    //       </div>
-    //     </PanelBox>
-    //     <div className="panel_summary">
-    //       <CReflexBox>
-    //         <Detail cluster={clusterDetail} />
-    //       </CReflexBox>
-    //     </div>
-    //   </CloudZoneWrap>
-    // </Layout>
   );
 });
 

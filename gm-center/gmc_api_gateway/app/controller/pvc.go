@@ -1,28 +1,30 @@
 package controller
 
 import (
-	"fmt"
 	"gmc_api_gateway/app/common"
 	"gmc_api_gateway/app/model"
+	"log"
 
-	// "log"
 	"net/http"
 	// "github.com/tidwall/sjson"
 	"github.com/labstack/echo/v4"
 )
 
-// GetPvs godoc
-// @Summary Show app PVCs
-// @Description get pvc List
-// @Requestbody
+// Get PVC godoc
+// @Summary Show List PVC
+// @Description get PVC List
+// @ApiImplicitParam
 // @Accept  json
 // @Produce  json
+// @Security   Bearer
+// @Param workspace query string false "name of the Workspace"
+// @Param cluster query string false "name of the Cluster"
+// @Param project query string false "name of the Project"
 // @Success 200 {object} model.PVC
-// @Header 200 {string} Token "qwerty"
 // @Router /pvcs [get]
+// @Tags Kubernetes
 func GetAllPVCs(c echo.Context) error {
 	var pvcs []model.PVC
-	fmt.Printf("## PVCs", pvcs)
 	params := model.PARAMS{
 		Kind:      "persistentvolumeclaims",
 		Name:      c.Param("name"),
@@ -33,8 +35,11 @@ func GetAllPVCs(c echo.Context) error {
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
 	}
-	data := GetModelList(params)
-	fmt.Printf("####Pod data confirm : %s", data)
+	data, err := GetModelList(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
 	// Name        string           `json:"name"`
 	// Capacity   string           `json:"capacity"`
 	// AccessMode      []string `json:"accessMode"`
@@ -72,17 +77,21 @@ func GetAllPVCs(c echo.Context) error {
 	})
 }
 
-// GetPvs godoc
-// @Summary Show detail PVs
-// @Description get PVs Details
+// Get PVC godoc
+// @Summary Show detail PVC
+// @Description get PVC Details
+// @ApiImplicitParam
 // @Accept  json
 // @Produce  json
-// @Success 200 {object} model.POD
-// @Header 200 {string} Token "qwerty"
-// @Router /pvs/:name [get]
-func GetPVC(c echo.Context) error {
-	var pvcs []model.PVC
-	fmt.Printf("## PVCs", pvcs)
+// @Security   Bearer
+// @Param name path string true "name of the PVC"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.PVC
+// @Router /pvcs/{name} [get]
+// @Tags Kubernetes
+func GetPVC(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:      "persistentvolumeclaims",
 		Name:      c.Param("name"),
@@ -91,6 +100,11 @@ func GetPVC(c echo.Context) error {
 		Project:   c.QueryParam("project"),
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
+	}
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
 	}
 	getData, err := common.DataRequest(params)
 	// if err != nil {
@@ -103,8 +117,6 @@ func GetPVC(c echo.Context) error {
 			"error": msg,
 		})
 	}
-
-	fmt.Printf("####PV data confirm : %s", getData)
 	pvc := model.PVC{
 		Name:         common.InterfaceToString(common.FindData(getData, "metadata", "name")),
 		Namespace:    common.InterfaceToString(common.FindData(getData, "metadata", "namespace")),
@@ -127,6 +139,20 @@ func GetPVC(c echo.Context) error {
 	})
 }
 
+// Create PVC godoc
+// @Summary Create PVC
+// @Description Create PVC
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param json body string true "PVC Info Body"
+// @Param cluster query string true "name of the Cluster"
+// @Param workspace query string true "name of the Workspace"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.Error
+// @Router /pvcs [post]
+// @Tags Kubernetes
 func CreatePVC(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:    "persistentvolumeclaims",
@@ -137,16 +163,33 @@ func CreatePVC(c echo.Context) (err error) {
 	}
 	postData, err := common.DataRequest(params)
 	if err != nil {
+		log.Println("err : ", err)
 		common.ErrorMsg(c, http.StatusNotFound, err)
 		return nil
 	} else {
 		return c.JSON(http.StatusCreated, echo.Map{
-			"info": common.StringToInterface(postData),
+			"status": "Created",
+			"code":   http.StatusCreated,
+			"data":   postData,
 		})
 	}
 
 }
 
+// Delete PVC godoc
+// @Summary Delete PVC
+// @Description Delete PVC
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param name path string true "name of the PVC"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.Error
+// @Router /pvcs/{name} [delete]
+// @Tags Kubernetes
 func DeletePVC(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:    "persistentvolumeclaims",
@@ -163,6 +206,8 @@ func DeletePVC(c echo.Context) (err error) {
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"info": common.StringToInterface(postData),
+		"status": "Deleted",
+		"code":   http.StatusOK,
+		"data":   postData,
 	})
 }

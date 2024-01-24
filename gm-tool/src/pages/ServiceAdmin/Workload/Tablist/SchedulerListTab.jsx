@@ -14,7 +14,17 @@ const SchedulerListTab = observer(() => {
   const [open, setOpen] = useState(false);
   const [reRun, setReRun] = useState(false);
 
-  const { loadYamlList, yamlList, totalElements, currentPage, totalPages, goPrevPage, goNextPage, viewList } = schedulerStore;
+  const {
+    loadYamlList,
+    totalElements,
+    currentPage,
+    totalPages,
+    goPrevPage,
+    goNextPage,
+    viewList,
+    yamlLists,
+    initViewList,
+  } = schedulerStore;
 
   const [columDefs] = useState([
     {
@@ -84,6 +94,7 @@ const SchedulerListTab = observer(() => {
     loadYamlList();
     return () => {
       setReRun(false);
+      initViewList();
     };
   }, [reRun]);
 
@@ -104,7 +115,8 @@ const SchedulerListTab = observer(() => {
             <div className="grid-height2">
               <AgGrid
                 // onCellClicked={handleClick}
-                rowData={viewList}
+                rowData={yamlLists}
+                rowPerPage={20}
                 columnDefs={columDefs}
                 isBottom={false}
                 totalElements={totalElements}
@@ -115,7 +127,11 @@ const SchedulerListTab = observer(() => {
               />
             </div>
           </div>
-          <CreateScheduler open={open} onClose={handleClose} reloadFunc={reloadData} />
+          <CreateScheduler
+            open={open}
+            onClose={handleClose}
+            reloadFunc={reloadData}
+          />
         </PanelBox>
       </CReflexBox>
     </>

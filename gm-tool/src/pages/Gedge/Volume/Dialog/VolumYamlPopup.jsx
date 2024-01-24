@@ -1,15 +1,13 @@
 import { observer } from "mobx-react";
 import React from "react";
-import { claimStore } from "@/store";
+import { volumeStore } from "@/store";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/theme-monokai";
 
 const VolumYamlPopup = observer(() => {
   // const { content, setContent, volumeName } = volumeStore;
-  const { content, claimName } = claimStore;
-  // console.log("claim " + claimName);
-  console.log(content);
+  const { content, claimName } = volumeStore;
 
   return (
     <>
@@ -34,7 +32,7 @@ const VolumYamlPopup = observer(() => {
         theme="monokai"
         name="editor"
         width="90%"
-        onChange={value => {
+        onChange={(value) => {
           // setContent(value);
         }}
         fontSize={14}

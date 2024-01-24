@@ -22,7 +22,7 @@ const PanelBox = styled.div`
   }
   &::after {
     right: 0;
-    border-right: 1px solid #232f47;
+    border-right: 1px solid #141a30;
   }
   .panelTitBar {
     display: flex;

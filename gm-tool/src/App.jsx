@@ -18,16 +18,13 @@ import {
   Configuration,
   Certification,
   PlatformUser,
-  Topology,
-  Loadbalancer,
   Storage,
   CreateUser,
-  PlatformControl,
-  Template,
   StorageDashboard,
-  // PlatformServiceListTab,
   PlatformProject,
   CloudZone,
+  FaaS,
+  GsLink,
 } from "@/pages";
 
 import PlatformDashboard from "./pages/Gedge/Platform/PlatformDashboard";
@@ -37,8 +34,14 @@ import DeploymentPopup from "./pages/ServiceAdmin/Workload/Dialog/DeploymentPopu
 import { getItem } from "./utils/sessionStorageFn";
 import axios from "axios";
 import ServiceAdminDashboard from "./pages/Gedge/ServiceAdminDashboard/ServiceAdminDashboard";
+import ServiceAdminMapDashboard from "./pages/Gedge/ServiceAdminDashboard/ServiceAdminMapDashboard";
 import { Redirect } from "react-router-dom";
 import ServiceAdminChart from "./pages/Gedge/ServiceAdminDashboard/ServiceAdminChart";
+import { AdminZoneDashboard } from "./pages";
+import AdminZoneListTab from "./pages/Gedge/Platform/AdminZone/AdminZoneDashboard";
+import ClusterOverviewAdminTab from "./pages/Gedge/Platform/AdminZone/AdminMonitoring/ClusterOverviewAdminTab";
+import AdminMonitoring from "./pages/Gedge/Platform/AdminZone/AdminMonitoring/MonitoringAdmin";
+import TotalClusterResources from "./pages/Dashboard/DashboardCont/TotalClusterResources";
 
 export const App = () => {
   const navigate = useHistory();
@@ -55,18 +58,6 @@ export const App = () => {
   //   }
   // }, []);
 
-  // const setMainPage = () => {
-  //   if (userRole) {
-  //     switch (userRole) {
-  //       case "PA":
-  //         return <TotalDashboard />;
-  //         break;
-  //       case "SA":
-  //         return <ServiceAdminDashboard />;
-  //         break;
-  //     }
-  //   }
-  // };
   if (userRole === "PA") {
     return (
       <>
@@ -87,15 +78,18 @@ export const App = () => {
           <AuthRoute path="/certification" component={Certification} />
           <AuthRoute path="/platformUser" component={PlatformUser} />
           <AuthRoute path="/edgeZone" component={EdgeClusterListTab} />
+          <AuthRoute path="/adminZone" component={AdminZoneDashboard} />
           <AuthRoute path="/cloudZone" component={CloudZone} />
           <AuthRoute path="/platformDashboard" component={PlatformDashboard} />
           <AuthRoute path="/topology" component={NotFound} />
           <AuthRoute path="/loadbalancer" component={NotFound} />
           <AuthRoute path="/storage" component={Storage} />
           <AuthRoute path="/workload" component={Workload} />
+          <AuthRoute path="/faas" component={FaaS} />
+          <AuthRoute path="/glink" component={GsLink} />
+          <AuthRoute path="/adminMonitoring" component={AdminMonitoring} />
 
           <AuthRoute path="/platformControl" component={NotFound} />
-          <AuthRoute path="/template" component={NotFound} />
           <AuthRoute path="/StorageDashboard" component={StorageDashboard} />
 
           <Route path="/login" component={Login} />
@@ -111,9 +105,11 @@ export const App = () => {
         <AuthRoute path="/service" component={ServiceAdminDashboard} exact />
         <AuthRoute path="/" component={ServiceAdminDashboard} exact />
         <Switch>
+          <AuthRoute path="/service/map" component={ServiceAdminMapDashboard} />
           <AuthRoute path="/service/project" component={ServiceProject} />
           <AuthRoute path="/service/workload" component={ServiceWorkload} />
           <AuthRoute path="/service/Workspace" component={ServiceWorkSpace} />
+          <AuthRoute path="/service/faas" component={FaaS} />
           <AuthRoute path="/service/volumes" component={Volume} />
 
           <Route path="/login" component={Login} />

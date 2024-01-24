@@ -11,15 +11,17 @@ import CreateDeployment from "../Dialog/CreateDeployment";
 import { agDateColumnFilter, dateFormatter } from "@/utils/common-utils";
 import { drawStatus } from "@/components/datagrids/AggridFormatter";
 import { swalUpdate, swalError } from "@/utils/swal-utils";
+import TamplateCreate from "../../../Gedge/Service/Project/Workload/Dialog/TamplateCreate";
 
 const DeploymentListTab = observer(() => {
   const [open, setOpen] = useState(false);
   const [reRun, setReRun] = useState(false);
   const [deploymentName, setDeploymentName] = useState("");
+  const [clusterName, setClusterName] = useState("");
+  const [projectName, setProjectName] = useState("");
+  const [tamplateOpen, setTemplateOpen] = useState(false);
 
   const {
-    deploymentList,
-    deploymentDetail,
     totalElements,
     loadDeploymentList,
     loadDeploymentDetail,
@@ -27,9 +29,12 @@ const DeploymentListTab = observer(() => {
     setWorkspace,
     currentPage,
     totalPages,
+    initViewList,
     viewList,
     goPrevPage,
     goNextPage,
+    initAppInfo,
+    deploymentList,
   } = deploymentStore;
 
   const [columDefs] = useState([
@@ -74,11 +79,14 @@ const DeploymentListTab = observer(() => {
       cellRenderer: function (data) {
         return `<span>${dateFormatter(data.value)}</span>`;
       },
+      sort: "desc",
     },
   ]);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     setDeploymentName(e.data.name);
+    setClusterName(e.data.cluster);
+    setProjectName(e.data.project);
     loadDeploymentDetail(e.data.name, e.data.cluster, e.data.project);
   };
 
@@ -89,15 +97,22 @@ const DeploymentListTab = observer(() => {
   const handleClose = () => {
     setWorkspace("");
     setOpen(false);
+    setTemplateOpen(false);
   };
 
   const handleDelete = () => {
     if (deploymentName === "") {
       swalError("Deployment를 선택해주세요!");
     } else {
-      swalUpdate(deploymentName + "를 삭제하시겠습니까?", () => deleteDeployment(deploymentName, reloadData));
+      swalUpdate(deploymentName + "를 삭제하시겠습니까?", () =>
+        deleteDeployment(deploymentName, clusterName, projectName, reloadData)
+      );
     }
     setDeploymentName("");
+  };
+
+  const handleTamplateCreateOpen = () => {
+    setTemplateOpen(true);
   };
 
   const reloadData = () => {
@@ -105,9 +120,15 @@ const DeploymentListTab = observer(() => {
   };
 
   useEffect(() => {
+    initAppInfo();
+  }, [tamplateOpen]);
+
+  useEffect(() => {
     loadDeploymentList();
     return () => {
       setReRun(false);
+      // 다른 탭으로 이동 시 viewList 초기화
+      initViewList();
     };
   }, [reRun]);
 
@@ -122,13 +143,18 @@ const DeploymentListTab = observer(() => {
             // keywordList={["이름"]}
           >
             <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            &nbsp;&nbsp;
             <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
+            &nbsp;&nbsp;
+            <CCreateButton onClick={handleTamplateCreateOpen}>
+              템플릿
+            </CCreateButton>
           </CommActionBar>
           <div className="tabPanelContainer">
             <div className="grid-height2">
               <AgGrid
                 onCellClicked={handleClick}
-                rowData={viewList}
+                rowData={deploymentList}
                 columnDefs={columDefs}
                 isBottom={false}
                 totalElements={totalElements}
@@ -139,7 +165,16 @@ const DeploymentListTab = observer(() => {
               />
             </div>
           </div>
-          <CreateDeployment open={open} onClose={handleClose} reloadFunc={reloadData} />
+          <CreateDeployment
+            open={open}
+            onClose={handleClose}
+            reloadFunc={reloadData}
+          />
+          <TamplateCreate
+            open={tamplateOpen}
+            onClose={handleClose}
+            reloadFunc={loadDeploymentList}
+          />
         </PanelBox>
         <Detail />
       </CReflexBox>

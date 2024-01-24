@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -19,6 +18,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/google/uuid"
 )
 
 func GetWorkspaceDB(name string) *mongo.Collection {
@@ -35,7 +35,8 @@ func GetWorkspaceDB(name string) *mongo.Collection {
 // @ApiImplicitParam
 // @Accept  json
 // @Produce  json
-// @Success 200 {object} model.Workspace
+// @Security Bearer
+// @Success 200 {object} model.Error
 // @Header 200 {string} Token "qwerty"
 // @Router /workspaces [post]
 // @Tags Workspace
@@ -44,22 +45,42 @@ func CreateWorkspace(c echo.Context) (err error) {
 	cdb2 := GetProjectDB("member")
 	cdb3 := GetProjectDB("cluster")
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
-
 	models := new(model.Workspace)
 	validate := validator.New()
-
+	// log.Println("workspaceBody : ", responseBody(c.Request().Body))
 	if err = c.Bind(models); err != nil {
 		common.ErrorMsg(c, http.StatusBadRequest, err)
 		return nil
 	}
+	if err = validate.Struct(models); err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			log.Fatal(err)
+		}
+		common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
+		return
+	}
 
-	memberObjectId, err := cdb2.Find(ctx, bson.M{"memberName": models.MemberName})
+	// log.Fatal(checkModel)
+	// log.Fatal(models.Name)
+	// log.Fatal(FindWorkspaceDB(models.Name))
+	// if FindWorkspaceDB(models.Name) !=nil {
+	// 	log.Fatal("test")
+	// 	common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
+	// 	return
+	// }
+	// log.Fatal("test2")
+	memberObjectId, err := cdb2.Find(ctx, bson.M{"memberId": models.MemberName})
 
 	var clusterObjectId2 []bson.D
 	var clusterObjectId3 *mongo.Cursor
 	var memberObjectId2 []bson.D
 	var slice []primitive.ObjectID
 
+	checkModel := model.Workspace{}
+	if err := cdb.FindOne(ctx, bson.M{"workspaceName": models.Name}).Decode(&checkModel); err == nil {
+		common.ErrorMsg(c, http.StatusUnprocessableEntity, common.ErrDuplicated)
+		return nil
+	}
 	for i := 0; i < len(models.ClusterName); i++ {
 		clusterObjectId3, _ = cdb3.Find(ctx, bson.M{"clusterName": models.ClusterName[i]})
 		clusterObjectId3.All(ctx, &clusterObjectId2)
@@ -72,7 +93,7 @@ func CreateWorkspace(c echo.Context) (err error) {
 
 	if err = validate.Struct(models); err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 		common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
 		return
@@ -80,25 +101,29 @@ func CreateWorkspace(c echo.Context) (err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	uuid := uuid.New()
 	newWorkspace := model.NewWorkspace{
-		Name:          models.Name,
+		Name:          models.Name + "-" + uuid.String(),
+		Tag: models.Name,
+		UUID:  uuid.String(),
 		Description:   models.Description,
 		Owner:         memberObjectId2[0][0].Value.(primitive.ObjectID),
 		Creator:       memberObjectId2[0][0].Value.(primitive.ObjectID),
 		Selectcluster: slice,
 	}
-	models.Created_at = time.Now()
+
+	newWorkspace.Created_at = time.Now()
 	result, err := cdb.InsertOne(ctx, newWorkspace)
 	if err != nil {
-		common.ErrorMsg(c, http.StatusInternalServerError, err)
+		common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
 		return nil
 	}
 
 	return c.JSON(http.StatusCreated, echo.Map{
 		"status": "Created",
 		"code":   http.StatusCreated,
-		"data":   result,
+		"result" :result,
+		"data":   newWorkspace.Name,
 	})
 }
 
@@ -123,6 +148,12 @@ func ListWorkspace(c echo.Context) (err error) {
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
 	}
+
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
 	var showsWorkspace []bson.M
 	var Workspace []model.DBWorkspace
 
@@ -140,16 +171,6 @@ func ListWorkspace(c echo.Context) (err error) {
 		if err = cur.All(ctx, &showsWorkspace); err != nil {
 			panic(err)
 		}
-		// for cur.Next(context.TODO()) {
-		// 	lookupCluster := bson.D{{"$lookup", bson.D{{"from", "cluster"}, {"localField", "selectCluster"}, {"foreignField", "_id"}, {"as", "selectCluster"}}}}
-
-		// 	fmt.Println("ttt : ", mongo.Pipeline{lookupCluster})
-		// 	showWorkspaceCursor, err := cdb.Aggregate(ctx, mongo.Pipeline{lookupCluster})
-
-		// 	if err = showWorkspaceCursor.All(ctx, &showsWorkspace); err != nil {
-		// 		panic(err)
-		// 	}
-		// }
 
 		if err := cur.Err(); err != nil {
 			log.Fatal(err)
@@ -178,9 +199,10 @@ func ListWorkspace(c echo.Context) (err error) {
 // @ApiImplicitParam
 // @Accept  json
 // @Produce  json
+// @Success 200 {object} model.Workspace
 // @Security   Bearer
 // @Param name path string true "name of the workspace"
-// @Router /workspace/{name} [get]
+// @Router /workspaces/{name} [get]
 // @Tags Workspace
 func FindWorkspace(c echo.Context) (err error) {
 	params := model.PARAMS{
@@ -192,6 +214,11 @@ func FindWorkspace(c echo.Context) (err error) {
 		User:      c.QueryParam("user"),
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
+	}
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
 	}
 	var deployment_count int
 	var daemonset_count int
@@ -207,10 +234,10 @@ func FindWorkspace(c echo.Context) (err error) {
 	var EventList []model.EVENT
 	params.Workspace = params.Name
 	workspace := GetDBWorkspace(params)
-	if workspace.Name == "" {
-		common.ErrorMsg(c, http.StatusNotFound, errors.New("Not Found Workspace"))
-		return
-	}
+	// if workspace.Name == "" {
+	// 	common.ErrorMsg(c, http.StatusNotFound, errors.New("Not Found Workspace"))
+	// 	return
+	// }
 	var Workspace model.Workspace_detail
 	var projectList []model.Workspace_project
 	Workspace.DBWorkspace = workspace
@@ -227,8 +254,6 @@ func FindWorkspace(c echo.Context) (err error) {
 			}
 		}
 		// resourceCnt2, resourceUsage, eventList := GetUserProjectResource(params, tmp_project.Selectcluster)
-		// fmt.Println("resourceCnt : ", resourceCnt2)
-		// fmt.Println("resourceUsage : ", resourceUsage)
 		EventList = append(EventList, List...)
 		// EventList = EventList + common.InterfaceToString(eventList)
 		project := model.Workspace_project{
@@ -271,52 +296,25 @@ func FindWorkspace(c echo.Context) (err error) {
 	Workspace.Resource = ResourceCnt
 	Workspace.ResourceUsage = ResourceUsage
 	Workspace.Events = EventList
-	// cdb := GetWorkspaceDB("workspace")
-	// ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
-	// search_val := c.Param("workspaceName")
 
-	// findOptions := options.Find()
-
-	// cur, err := cdb.Find(context.TODO(), bson.D{{}}, findOptions)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// for cur.Next(context.TODO()) {
-	// 	lookupCluster := bson.D{{"$lookup", bson.D{{"from", "cluster"}, {"localField", "selectCluster"}, {"foreignField", "_id"}, {"as", "selectCluster"}}}}
-	// 	matchCluster := bson.D{
-	// 		{Key: "$match", Value: bson.D{
-	// 			{Key: "workspaceName", Value: search_val},
-	// 		}},
-	// 	}
-
-	// 	showLoadedCursor, err := cdb.Aggregate(ctx, mongo.Pipeline{lookupCluster, matchCluster})
-
-	// 	if err = showLoadedCursor.All(ctx, &showsWorkspace); err != nil {
-	// 		panic(err)
-	// 	}
-	// 	fmt.Println(showsWorkspace)
-	// }
-
-	// if err := cur.Err(); err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// cur.Close(context.TODO())
-
-	// if showsWorkspace == nil {
-	// 	common.ErrorMsg(c, http.StatusNotFound, errors.New("Workspace not found."))
-	// 	return
-	// } else {
-	// 	return
-	// }
 	return c.JSON(http.StatusOK, Workspace)
 }
 
+// Delete Workspace godoc
+// @Summary Delete Workspace
+// @Description delete Workspace
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.Error
+// @Security   Bearer
+// @Router /workspaces/{name} [delete]
+// @Param name path string true "Name of the workspaces"
+// @Tags Workspace
 func DeleteWorkspace(c echo.Context) (err error) {
 	cdb := GetWorkspaceDB("workspace")
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
-	search_val := c.Param("workspaceName")
+	search_val := c.Param("name")
 
 	result, err := cdb.DeleteOne(ctx, bson.M{"workspaceName": search_val})
 	if err != nil {
@@ -367,7 +365,7 @@ func UpdateWorkspace(c echo.Context) (err error) {
 
 	if err = validate.Struct(models); err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 		common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
 		return
@@ -408,7 +406,6 @@ func GetDBWorkspace(params model.PARAMS) model.DBWorkspace {
 	var showsWorkspace model.DBWorkspace
 	var clusters []model.Cluster
 	var user model.Member
-	// var workspace model.Workspace
 	cdb := GetClusterDB("workspace")
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 	search_val := params.Workspace
@@ -445,4 +442,14 @@ func GetDBWorkspace(params model.PARAMS) model.DBWorkspace {
 	// }
 	// showsProject.Workspace = workspace
 	return showsWorkspace
+}
+func FindWorkspaceDB(params model.PARAMS) model.Workspace {
+	var workspace model.Workspace
+	cdb := GetClusterDB("workspace")
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+	search_val := params.Workspace
+
+	if err := cdb.FindOne(ctx, bson.M{"workspaceName": search_val}).Decode(&workspace); err != nil {
+	}
+	return workspace
 }

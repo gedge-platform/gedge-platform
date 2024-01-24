@@ -18,8 +18,9 @@ const LabelContainer = styled.div`
   flex-wrap: wrap;
   width: 100%;
   padding: 12px;
-  border-radius: 4px;
+  border: 1px double #141a30;
   background-color: #2f3855;
+  margin: 10px 0;
 
   p {
     color: rgba(255, 255, 255, 0.6);
@@ -50,10 +51,18 @@ const Label = styled.span`
 
 const ServiceAccountsDetail = observer(() => {
   const {
-    serviceAccountDetail: { annotations, cluster, createAt, label, name, namespace, secretCnt, secrets },
+    serviceAccountDetail: {
+      annotations,
+      cluster,
+      createAt,
+      label,
+      name,
+      namespace,
+      secretCnt,
+      secrets,
+    },
   } = serviceAccountStore;
 
-  console.log(secrets);
   const [open, setOpen] = useState(false);
   const [tabvalue, setTabvalue] = useState(0);
 
@@ -80,11 +89,11 @@ const ServiceAccountsDetail = observer(() => {
             <tbody>
               <tr>
                 <th style={{ width: "15%" }}>Name</th>
-                <td>{name}</td>
+                <td>{name ? name : "-"}</td>
               </tr>
               <tr>
                 <th>Created</th>
-                <td>{dateFormatter(createAt)}</td>
+                <td>{createAt ? dateFormatter(createAt) : "-"}</td>
               </tr>
             </tbody>
           </table>
@@ -95,7 +104,13 @@ const ServiceAccountsDetail = observer(() => {
             <tbody>
               <tr>
                 <th style={{ width: "15%" }}>Secrets Name</th>
-                <td style={{ whiteSpace: "pre-wrap" }}>{secrets !== null ? secrets.map(secret => secret.name + "\n") : <></>}</td>
+                <td style={{ whiteSpace: "pre-wrap" }}>
+                  {secrets !== null ? (
+                    secrets.map((secret) => secret.name + "\n")
+                  ) : (
+                    <>-</>
+                  )}
+                </td>
               </tr>
               <tr>
                 <th>Secrets Count</th>
@@ -118,10 +133,10 @@ const ServiceAccountsDetail = observer(() => {
                 </Label>
               ))
             ) : (
-              <p>No Labels Info.</p>
+              <p>No Labels Info</p>
             )}
           </LabelContainer>
-          <br />
+
           <TableTitle>Annotations</TableTitle>
           {annotations ? (
             <table className="tb_data" style={{ tableLayout: "fixed" }}>
@@ -136,32 +151,9 @@ const ServiceAccountsDetail = observer(() => {
             </table>
           ) : (
             <LabelContainer>
-              <p>No Annotations Info.</p>
+              <p>No Annotations Info</p>
             </LabelContainer>
           )}
-          {/* <LabelContainer>
-            {annotations ? (
-              Object.entries(annotations).map(([key, value]) => (
-                <tr>
-                  <th style={{ width: "20%" }}>{key}</th>
-                  <td>
-                    {isValidJSON(value) ? (
-                      <ReactJson
-                        src={JSON.parse(value)}
-                        theme="summerfruit"
-                        displayDataTypes={false}
-                        displayObjectSize={false}
-                      />
-                    ) : (
-                      value
-                    )}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <p>No Annotations Info.</p>
-            )}
-          </LabelContainer> */}
         </div>
       </CTabPanel>
     </PanelBox>

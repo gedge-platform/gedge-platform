@@ -51,13 +51,8 @@ const Label = styled.span`
 
 const ConfigmapsDetail = observer(() => {
   const { configmapsTabList } = configmapsStore;
-
-  const dataTable = [];
   const metadata = configmapsTabList.data;
-
-  const annotationsTable = [];
   const annotations = configmapsTabList.annotations;
-
   const [open, setOpen] = useState(false);
   const [tabvalue, setTabvalue] = useState(0);
 
@@ -72,15 +67,6 @@ const ConfigmapsDetail = observer(() => {
     setOpen(false);
   };
 
-  // Object.entries(metadata).map(([key, value]) => {
-  //   dataTable.push(
-  //     <tr>
-  //       <th style={{ width: "15%" }}>{key}</th>
-  //       <td>{value}</td>
-  //     </tr>
-  //   );
-  // });
-
   return (
     <PanelBox style={{ overflowY: "hidden" }}>
       <CTabs type="tab2" value={tabvalue} onChange={handleTabChange}>
@@ -91,65 +77,92 @@ const ConfigmapsDetail = observer(() => {
         <div className="tb_container">
           <table className="tb_data">
             <tbody>
-              <tr>
-                <th style={{ width: "15%" }}>Name</th>
-                <td>{configmapsTabList.name}</td>
-              </tr>
-              <tr>
-                <th>Data Count</th>
-                <td>{configmapsTabList.dataCnt}</td>
-              </tr>
-              <tr>
-                <th>Created</th>
-                <td>{dateFormatter(configmapsTabList.createAt)}</td>
-              </tr>
+              {configmapsTabList ? (
+                <>
+                  <tr>
+                    <th style={{ width: "15%" }}>Name</th>
+                    <td>
+                      {configmapsTabList.name ? configmapsTabList.name : "-"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Data Count</th>
+                    <td>
+                      {configmapsTabList.dataCnt
+                        ? configmapsTabList.dataCnt
+                        : "-"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Created</th>
+                    <td>
+                      {configmapsTabList.createAt
+                        ? dateFormatter(configmapsTabList.createAt)
+                        : "-"}
+                    </td>
+                  </tr>
+                </>
+              ) : (
+                <LabelContainer>
+                  <p>No Detail Info</p>
+                </LabelContainer>
+              )}
             </tbody>
           </table>
           <br />
           <TableTitle>Data</TableTitle>
           {metadata ? (
-            <table className="tb_data">
-              <tbody>
+            <table className="tb_data" style={{ tableLayout: "fixed" }}>
+              <tbody
+                className="tb_data_detail"
+                style={{ whiteSpace: "pre-line" }}
+              >
                 {Object.entries(metadata).map(([key, value]) => (
                   <tr>
-                    <th style={{ width: "15%" }}>{key}</th>
-                    <td>{value}</td>
+                    <th>{key}</th>
+                    <td
+                      style={{
+                        width: "94%",
+                        wordBreak: "break-all",
+                        wordWrap: "break-word",
+                      }}
+                    >
+                      {value}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           ) : (
             <LabelContainer>
-              <p>No Data Info.</p>
+              <p>No Data Info</p>
             </LabelContainer>
           )}
-          {/* <table className="tb_data">
-            <tbody>
-              {dataTable ? (
-                dataTable
-              ) : (
-                <LabelContainer>
-                  <p>No Data Info.</p>
-                </LabelContainer>
-              )}
-            </tbody>
-          </table> */}
           <br />
         </div>
       </CTabPanel>
       <CTabPanel value={tabvalue} index={1}>
         <div className="tb_container" style={{ width: "95%" }}>
           <TableTitle>Annotations</TableTitle>
-          {/* {annotationsTable.length > 0 ? ( */}
           {annotations ? (
             <table className="tb_data" style={{ tableLayout: "fixed" }}>
               <tbody>
                 {Object.entries(annotations).map(([key, value]) => (
                   <tr>
-                    <th className="tb_workload_detail_labels_th">{key}</th>
+                    <th
+                      className="tb_workload_detail_labels_th"
+                      style={{ width: "16%" }}
+                    >
+                      {key}
+                    </th>
                     <td>
                       {isValidJSON(value) ? (
-                        <ReactJson src={JSON.parse(value)} theme="summerfruit" displayDataTypes={false} displayObjectSize={false} />
+                        <ReactJson
+                          src={JSON.parse(value)}
+                          theme="summerfruit"
+                          displayDataTypes={false}
+                          displayObjectSize={false}
+                        />
                       ) : (
                         value
                       )}
@@ -160,7 +173,7 @@ const ConfigmapsDetail = observer(() => {
             </table>
           ) : (
             <LabelContainer>
-              <p>No Annotations Info.</p>
+              <p>No Annotations Info</p>
             </LabelContainer>
           )}
         </div>

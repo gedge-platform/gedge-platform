@@ -8,6 +8,7 @@ import DeploymentYaml from "./DeploymentYaml";
 import DeploymentPopup from "./DeploymentPopup";
 import { randomString } from "@/utils/common-utils";
 import { CDialogNew } from "@/components/dialogs";
+import { stringify } from "json-to-pretty-yaml2";
 
 const Button = styled.button`
   background-color: #fff;
@@ -28,11 +29,21 @@ const ButtonNext = styled.button`
   /* box-shadow: 0 8px 16px 0 rgb(35 45 65 / 28%); */
 `;
 
-const CreateScheduler = observer(props => {
+const CreateScheduler = observer((props) => {
   const { open } = props;
   const [stepValue, setStepValue] = useState(1);
 
-  const { podReplicas, content, containerName, containerImage, containerPort, project, workspace, setContent, clearAll } = deploymentStore;
+  const {
+    podReplicas,
+    content,
+    containerName,
+    containerImage,
+    containerPort,
+    project,
+    workspace,
+    setContent,
+    clearAll,
+  } = deploymentStore;
   const { setProjectListinWorkspace } = projectStore;
   const { postWorkload, postScheduler2 } = schedulerStore;
 
@@ -83,50 +94,16 @@ const CreateScheduler = observer(props => {
     clearAll();
   };
 
-  // const createDeployment = () => {
-  //   postDeployment(handleClose);
-  // };
   const createScheduler = () => {
     const requestId = `workload-${randomString()}`;
     postWorkload(requestId, workspace, project);
     // postWorkload(requestId, workspace, project);
     postScheduler2(requestId, content, handleClose);
     props.reloadFunc && props.reloadFunc();
-
-    // let formData = new FormData();
-    // formData.append("callbackUrl", `${REQUEST_UR2}`); // 수정 필요
-    // formData.append("requestId", requestId);
-    // formData.append("yaml", content);
-    // formData.append("clusters", JSON.stringify(clusters));
-
-    // axios
-    //   .post(`http://101.79.4.15:32527/yaml`, formData)
-    //   .then(function (response) {
-    //     console.log(response);
-    //     if (response.status === 200) {
-    //       setResponseData(response.data);
-
-    //       const popup = window.open(
-    //         "",
-    //         "Gedge scheduler",
-    //         `width=${screen.width},height=${screen.height}`,
-    //         "fullscreen=yes"
-    //       );
-    //       popup.document.open().write(response.data);
-    //       popup.document.close();
-
-    //       handleClose();
-    //       // setStepValue(4);
-    //     }
-    //   })
-    //   .catch(function (error) {
-    //     console.log(error);
-    //   });
   };
   useEffect(() => {
     if (stepValue === 1) {
-      const YAML = require("json-to-pretty-yaml");
-      setContent(YAML.stringify(template));
+      setContent(stringify(template));
     }
   }, [stepValue]);
 
@@ -150,7 +127,7 @@ const CreateScheduler = observer(props => {
               }}
             >
               <Button onClick={handleClose}>취소</Button>
-              <ButtonNext onClick={createScheduler}>Schedule Apply</ButtonNext>
+              <ButtonNext onClick={createScheduler}>생성</ButtonNext>
             </div>
           </div>
         </>
@@ -174,7 +151,7 @@ const CreateScheduler = observer(props => {
               }}
             >
               <Button onClick={() => setStepValue(1)}>이전</Button>
-              <ButtonNext onClick={createScheduler}>Schedule Apply</ButtonNext>
+              <ButtonNext onClick={createScheduler}>생성</ButtonNext>
             </div>
           </div>
         </>
@@ -198,8 +175,7 @@ const CreateScheduler = observer(props => {
               }}
             >
               <Button onClick={() => setStepValue(2)}>이전</Button>
-              <ButtonNext onClick={createDeployment}>Schedule Apply</ButtonNext>
-              {/* <ButtonNext onClick={createDeployment}>Default Apply</ButtonNext> */}
+              <ButtonNext onClick={createDeployment}>생성</ButtonNext>
             </div>
           </div>
         </>
@@ -208,7 +184,15 @@ const CreateScheduler = observer(props => {
   };
 
   return (
-    <CDialogNew id="myDialog" open={open} maxWidth="md" title={"Create Workload"} onClose={handleClose} bottomArea={false} modules={["custom"]}>
+    <CDialogNew
+      id="myDialog"
+      open={open}
+      maxWidth="md"
+      title={"Create Workload"}
+      onClose={handleClose}
+      bottomArea={false}
+      modules={["custom"]}
+    >
       {stepOfComponent()}
     </CDialogNew>
   );

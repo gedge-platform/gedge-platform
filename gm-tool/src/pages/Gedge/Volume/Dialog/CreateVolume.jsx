@@ -7,7 +7,13 @@ import VolumeBasicInformation from "./VolumeBasicInformation";
 import VolumeAdvancedSetting from "./VolumeAdvancedSetting";
 import VolumYamlPopup from "./VolumYamlPopup";
 import VolumePopup from "./VolumePopup";
-import { deploymentStore, volumeStore, projectStore, StorageClassStore } from "@/store";
+import {
+  deploymentStore,
+  volumeStore,
+  projectStore,
+  StorageClassStore,
+} from "@/store";
+import { stringify } from "json-to-pretty-yaml2";
 
 const Button = styled.button`
   background-color: #fff;
@@ -26,7 +32,7 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const CreateVolume = observer(props => {
+const CreateVolume = observer((props) => {
   const { open } = props;
   const [stepValue, setStepValue] = useState(1);
   const { setProjectListinWorkspace } = projectStore;
@@ -53,7 +59,7 @@ const CreateVolume = observer(props => {
 
   const template = {
     apiVersion: "v1",
-    kind: "PersistentVolumeClaim",
+    kind: "persistentvolumes",
     metadata: {
       name: volumeName,
       namespace: project,
@@ -72,40 +78,33 @@ const CreateVolume = observer(props => {
     },
   };
 
-  const onClickStepOne = e => {
-    console.log(e);
+  const onClickStepOne = (e) => {
     if (volumeName === "") {
       swalError("Volume 이름을 입력해주세요");
       return;
     }
     if (workspace === "") {
       swalError("Workspace를 선택해주세요");
-      console.log(volumeName);
       return;
     }
     if (project === "") {
       swalError("Project를 선택해주세요");
-      console.log(workspace);
       return;
     }
     if (selectClusters.length === 0) {
       swalError("클러스터를 확인해주세요!");
-      console.log(project);
       return;
     }
     if (accessMode === "") {
       swalError("Access Mode를 선택해주세요");
-      console.log(accessMode);
       return;
     }
     if (storageClass === "") {
       swalError("StorageClass를 선택해주세요");
-      console.log(storageClass);
       return;
     }
     if (volumeCapacity === "") {
       swalError("Volume 용량을 입력해주세요");
-      console.log(volumeCapacity);
       return;
     } else {
       setStepValue(2);
@@ -134,7 +133,7 @@ const CreateVolume = observer(props => {
 
   const CreateVolume = () => {
     // for문으로 복수의 클러스터이름 보내게
-    createVolume(require("json-to-pretty-yaml").stringify(template));
+    createVolume(stringify(template));
     handleClose();
     props.reloadFunc && props.reloadFunc();
     // setSelectClusters();
@@ -142,8 +141,7 @@ const CreateVolume = observer(props => {
 
   useEffect(() => {
     if (stepValue === 3) {
-      const YAML = require("json-to-pretty-yaml");
-      setContent(YAML.stringify(template));
+      setContent(stringify(template));
     }
   }, [stepValue]);
 
@@ -167,7 +165,7 @@ const CreateVolume = observer(props => {
               }}
             >
               <Button onClick={handleClose}>취소</Button>
-              <ButtonNext onClick={e => onClickStepOne(e)}>다음</ButtonNext>
+              <ButtonNext onClick={(e) => onClickStepOne(e)}>다음</ButtonNext>
             </div>
           </div>
         </>
@@ -222,7 +220,9 @@ const CreateVolume = observer(props => {
               }}
             >
               <Button onClick={() => setStepValue(2)}>이전</Button>
-              <ButtonNext onClick={() => CreateVolume()}>Schedule Apply</ButtonNext>
+              <ButtonNext onClick={() => CreateVolume()}>
+                Schedule Apply
+              </ButtonNext>
             </div>
           </div>
         </>
@@ -231,7 +231,15 @@ const CreateVolume = observer(props => {
   };
 
   return (
-    <CDialogNew id="myDialog" open={open} maxWidth="md" title={"Create Volume"} onClose={handleClose} bottomArea={false} modules={["custom"]}>
+    <CDialogNew
+      id="myDialog"
+      open={open}
+      maxWidth="md"
+      title={"Create Volume"}
+      onClose={handleClose}
+      bottomArea={false}
+      modules={["custom"]}
+    >
       {stepOfComponent()}
     </CDialogNew>
   );

@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GetView(c echo.Context) error {
+func GetView(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:      c.QueryParam("kind"),
 		Name:      c.Param("name"),
@@ -17,6 +17,14 @@ func GetView(c echo.Context) error {
 		Project:   c.QueryParam("project"),
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
+	}
+	if params.Kind != "storageclasses" {
+		err = CheckParam(params)
+		if err != nil {
+			common.ErrorMsg(c, http.StatusNotFound, err)
+			return nil
+		}
+
 	}
 	getData, err := common.DataRequest(params)
 	// if err != nil {

@@ -19,7 +19,7 @@ import (
 	"github.com/prometheus/common/model"
 )
 
-//memory -> GI / Disk -> GB / CPU -> Core / Net -> Kbps
+// memory -> GI / Disk -> GB / CPU -> Core / Net -> Kbps
 var clusterMetric = map[string]string{
 	"cpu_util":        "round(100 - (avg(irate(node_cpu_seconds_total{mode='idle', $1}[5m]))by(cluster) * 100),0.01)",
 	"cpu_util_bak":    "round(100-(avg(irate(node_cpu_seconds_total{mode='idle', $1}[5m]))by(cluster)*100),0.1)",
@@ -29,34 +29,46 @@ var clusterMetric = map[string]string{
 	"memory_util":     "round(avg((1 - (node_memory_MemAvailable_bytes{$1} / (node_memory_MemTotal_bytes{$1})))* 100)by(cluster),0.01)",
 	"memory_util_bak": "round(sum(node_memory_MemTotal_bytes{$1}-node_memory_MemFree_bytes-node_memory_Buffers_bytes-node_memory_Cached_bytes-node_memory_SReclaimable_bytes)by(cluster)/sum(node_memory_MemTotal_bytes)by(cluster)*100,0.1)",
 	"memory_usage":    "round(sum(node_memory_MemTotal_bytes{$1}-node_memory_MemFree_bytes-node_memory_Buffers_bytes-node_memory_Cached_bytes-node_memory_SReclaimable_bytes)by(cluster)/1024/1024/1024,0.01)",
-	"memory_total":    "round(sum(node_memory_MemTotal_bytes{$1})by(cluster)/1024/1024/1024,0.01)",
+	"memory_total":    "round(node_memory_MemTotal_bytes{$1}/1024/1024/1024,0.01)",
 	"disk_util":       "round(((sum(node_filesystem_size_bytes{mountpoint='/',fstype!='rootfs', $1})by(cluster)-sum(node_filesystem_avail_bytes{mountpoint='/',fstype!='rootfs', $1})by(cluster))/(sum(node_filesystem_size_bytes{mountpoint='/',fstype!='rootfs', $1})by(cluster)))*100,0.1)",
 	"disk_usage":      "round((sum(node_filesystem_size_bytes{mountpoint='/',fstype!='rootfs', $1})by(cluster)-sum(node_filesystem_avail_bytes{mountpoint='/',fstype!='rootfs', $1})by(cluster))/1000/1000/1000,0.01)",
 	"disk_total":      "round(sum(node_filesystem_size_bytes{mountpoint='/',fstype!='rootfs', $1})by(cluster)/1000/1000/1000,0.01)",
 	"pod_running":     "sum(kube_pod_container_status_running{$1})by(cluster)",
 	"pod_quota":       "sum(max(kube_node_status_capacity{resource='pods', $1})by(node,cluster)unless on(node,cluster)(kube_node_status_condition{condition='Ready',status=~'unknown|false'}>0))by(cluster)",
 	"pod_util":        "round((count(count(container_spec_memory_reservation_limit_bytes{pod!='', $1})by(cluster,pod))by(cluster))/(sum(max(kube_node_status_capacity{resource='pods', $1})by(node,cluster)unless on(node,cluster)(kube_node_status_condition{condition='Ready',status=~'unknown|false'}>0))by(cluster))*100,0.1)",
+	"pod_cpu_util":    "round((count(count(container_spec_memory_reservation_limit_bytes{pod!='', $1})by(cluster,pod))by(cluster))/(sum(max(kube_node_status_capacity{resource='pods', $1})by(node,cluster)unless on(node,cluster)(kube_node_status_condition{condition='Ready',status=~'unknown|false'}>0))by(cluster))*100,0.1)",
+	"pod_memory_util": "round(sum(container_memory_working_set_bytes{pod!=''})by(cluster)/sum(node_memory_MemTotal_bytes)by(cluster) * 100,0.001)",
 	"pod_running_bak": "count(count(container_spec_memory_reservation_limit_bytes{pod!='', $1})by(cluster,pod))by(cluster)",
 	"pod_quota_bak":   "sum(max(kube_node_status_capacity{resource='pods', $1})by(node,cluster)unless on(node,cluster)(kube_node_status_condition{condition='Ready',status=~'unknown|false'}>0))by(cluster)",
 	"pod_util_bak":    "round((count(count(container_spec_memory_reservation_limit_bytes{pod!='', $1})by(cluster,pod))by(cluster))/(sum(max(kube_node_status_capacity{resource='pods', $1})by(node,cluster)unless on(node,cluster)(kube_node_status_condition{condition='Ready',status=~'unknown|false'}>0))by(cluster))*100,0.1)",
 
 	"apiserver_request_rate": "round(sum(irate(apiserver_request_total{$1}[5m]))by(cluster),0.001)",
 	// latency 보완 필요 (응답속도 느림)
-	"apiserver_latency": "histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{verb!~'CONNECT|WATCH',$1}[1m])) by (le,cluster))",
-
-	"scheduler_attempts":       "sum(increase(scheduler_schedule_attempts_total{$1}[1m]))by(result,cluster)",
+	"apiserver_latency":        "histogram_quantile(0.90, sum(rate(apiserver_request_duration_seconds_bucket{verb!~'CONNECT|WATCH',$1}[5m])) by (le))",
+	"scheduler_attempts":       "sum(increase(scheduler_schedule_attempts_total{$1}[1m]))by(result)",
 	"scheduler_attempts_total": "sum(scheduler_pod_scheduling_attempts_count{$1})by(cluster)",
 	"scheduler_fail":           "sum(rate(scheduler_pending_pods{$1}[1m]))by(cluster)",
 	"scheduler_fail_total":     "sum(scheduler_pending_pods{$1})by(cluster)",
 	//에러
 	// "scheduler_latency": "histogram_quantile(0.95,sum(rate(scheduler_e2e_scheduling_duration_seconds_bucket{$1}[5m]))by(le,cluster))",
-	"scheduler_latency": "histogram_quantile(0.95,sum(scheduler_e2e_scheduling_duration_seconds_bucket{$1})by(le,cluster))",
+	"scheduler_latency":          "histogram_quantile(0.95,sum(scheduler_e2e_scheduling_duration_seconds_bucket{$1})by(le))",
+	"total_cluster_cpu_util":     "round(100 - (avg(irate(node_cpu_seconds_total{mode='idle'}[5m])) * 100),0.01)",
+	"total_cluster_cpu_usage":    "round(sum (rate (container_cpu_usage_seconds_total{id='/',kubernetes_io_hostname=~'^.*$'}[2m])),0.01)",
+	"total_cluster_cpu_total":    "sum(machine_cpu_cores)",
+	"total_cluster_memory_util":  "round(avg((1 - (node_memory_MemAvailable_bytes / (node_memory_MemTotal_bytes)))* 100),0.01)",
+	"total_cluster_memory_usage": "round(sum (container_memory_working_set_bytes{id='/',kubernetes_io_hostname=~'^.*$'})/1024/1024/1024,0.01)",
+	"total_cluster_memory_total": "round(sum(machine_memory_bytes)/1024/1024/1024,0.01)",
+	"total_cluster_disk_util":    "round(((sum(node_filesystem_size_bytes{mountpoint='/',fstype!='rootfs'})-sum(node_filesystem_avail_bytes{mountpoint='/',fstype!='rootfs', }))/(sum(node_filesystem_size_bytes{mountpoint='/',fstype!='rootfs'})))*100,0.1)",
+	"total_cluster_disk_usage":   "round(sum (container_fs_usage_bytes{id='/'})/1024/1024/1024,0.01)",
+	"total_cluster_disk_total":   "round(sum (container_fs_limit_bytes{id='/'})/1024/1024/1024,0.01)",
 }
 
 var namespaceMetric = map[string]string{
 	"namespace_cpu":       "round(sum(sum(irate(container_cpu_usage_seconds_total{job='kubelet',pod!='',image!='', $1}[5m]))by(namespace,pod,cluster))by(namespace,cluster),0.001)",
 	"namespace_memory":    "round(sum(sum(container_memory_rss{job='kubelet',pod!='',image!='', $1})by(namespace,pod,cluster))by(namespace,cluster)/1024/1024/1024,0.1)",
 	"namespace_pod_count": "count(count(container_spec_memory_reservation_limit_bytes{pod!='', $1})by(pod,cluster,namespace))by(cluster,namespace)",
+	"namespace_check" : "kube_namespace_status_phase{phase='Active',$1} OR vector(0)",
+	// "namespace_check":     "kube_namespace_labels{$1} OR vector(0)",
 }
 
 var podMetric = map[string]string{
@@ -80,8 +92,8 @@ var nodeMetric = map[string]string{ //쿼리 수정 필요
 	"node_memory_usage":          "((node_memory_MemTotal_bytes{$1} * on(instance) group_left(nodename) node_uname_info ) - (node_memory_MemFree_bytes{$1}* on(instance) group_left(nodename) node_uname_info) - (node_memory_Buffers_bytes{$1}* on(instance) group_left(nodename) node_uname_info) - (node_memory_Cached_bytes{$1}* on(instance) group_left(nodename) node_uname_info) - (node_memory_SReclaimable_bytes{$1}* on(instance) group_left(nodename) node_uname_info))/1024/1024/1024",
 	"node_memory_total":          "sum(node_memory_MemTotal_bytes{$1} * on(instance) group_left(nodename) node_uname_info)by(cluster,nodename)/1024/1024/1024",
 	"node_disk_util":             "100- (node_filesystem_avail_bytes{mountpoint='/',fstype!='rootfs',$1}* on(instance) group_left(nodename) node_uname_info) /  (node_filesystem_size_bytes{mountpoint='/',fstype!='rootfs',$1}* on(instance) group_left(nodename) node_uname_info) *100",
-	"node_disk_usage":            "((node_filesystem_size_bytes{mountpoint='/',fstype!='rootfs',$1}* on(instance) group_left(nodename) node_uname_info) - (node_filesystem_avail_bytes{mountpoint='/',fstype!='rootfs',$1}* on(instance) group_left(nodename) node_uname_info))/1000/1000/1000",
-	"node_disk_total":            "((node_filesystem_size_bytes{mountpoint='/',fstype!='rootfs',$1})* on(instance) group_left(nodename) node_uname_info ) /1000/1000/1000",
+	"node_disk_usage":            "((node_filesystem_size_bytes{mountpoint='/',fstype!='rootfs',$1}* on(instance) group_left(nodename) node_uname_info) - (node_filesystem_avail_bytes{mountpoint='/',fstype!='rootfs',$1}* on(instance) group_left(nodename) node_uname_info))/1024/1024/1024",
+	"node_disk_total":            "((node_filesystem_size_bytes{mountpoint='/',fstype!='rootfs',$1})* on(instance) group_left(nodename) node_uname_info ) /1024/1024/1024",
 	"node_pod_running":           "sum(kubelet_running_pods{node!='',$1}) by(cluster,node)",
 	"node_pod_quota":             "max(kube_node_status_capacity{resource='pods',$1}) by (node,cluster) unless on (node,cluster) (kube_node_status_condition{condition='Ready',status=~'unknown|false',$1} > 0)",
 	"node_disk_inode_util":       "100 - ((node_filesystem_files_free{mountpoint=`/`,$1}* on(instance) group_left(nodename) node_uname_info) / (node_filesystem_files{mountpoint='/',$1}* on(instance) group_left(nodename) node_uname_info) * 100)",
@@ -107,15 +119,15 @@ var appMetric = map[string]string{
 	"namespace_count":  "count(kube_namespace_created{$1})by(cluster)",
 }
 var resourceCntMetric = map[string]string{
-	"pod_count":         "sum(kube_pod_labels{$1})",
-	"cronjob_count":     "sum(kube_cronjob_labels{$1})",
-	"job_count":         "sum(kube_job_labels{$1})",
-	"service_count":     "sum(kube_service_labels{$1})",
-	"daemonset_count":   "sum(kube_daemonset_labels{$1})",
-	"statefulset_count": "sum(kube_statefulset_labels{$1})",
-	"deployment_count":  "sum(kube_deployment_labels{$1})",
-	"pv_count":          "sum(kube_persistentvolumeclaim_info{$1})",
-	"namespace_count":   "sum(kube_namespace_labels{$1})",
+	"pod_count":         "sum(kube_pod_labels{$1})OR on() vector(0)",
+	"cronjob_count":     "sum(kube_cronjob_labels{$1})OR on() vector(0)",
+	"job_count":         "sum(kube_job_labels{$1})OR on() vector(0)",
+	"service_count":     "sum(kube_service_info{$1})OR on() vector(0)",
+	"daemonset_count":   "sum(kube_daemonset_labels{$1})OR on() vector(0)",
+	"statefulset_count": "sum(kube_statefulset_labels{$1})OR on() vector(0)",
+	"deployment_count":  "sum(kube_deployment_labels{$1})OR on() vector(0)",
+	"pv_count":          "sum(kube_persistentvolumeclaim_info{$1})OR on() vector(0)",
+	"namespace_count":   "sum(kube_namespace_labels{$1})OR on() vector(0)",
 }
 
 var gpuMetric = map[string]string{
@@ -130,6 +142,10 @@ var gpuMetric = map[string]string{
 	"gpu_fan_speed":    "nvidia_smi_fan_speed_ratio{$1}",
 	"gpu_info":         "nvidia_smi_gpu_info{$1}",
 }
+
+// var schedulerCheckMetric = = map[string]string{
+// 	"pod_check" : "kube_pod_labels{$1,$2,$3} on() vector(0)"
+// }
 
 func Monit(c echo.Context) (err error) {
 
@@ -235,13 +251,18 @@ func mericResult(c echo.Context, kind string, a []string) error {
 			}
 
 			data, err = QueryRange(addr, metricExpr(resourceCntMetric[a[k]], temp_filter), c)
+		case "ceph":
+			// namespace := c.QueryParam("project")
+			temp_filter := map[string]string{
+				"cluster": "all",
+			}
 
+			data, err = QueryRange(addr, metricExpr(cephMetric[a[k]], temp_filter), c)
 		case "gpu":
 			temp_filter := map[string]string{
 				"cluster": cluster,
 			}
 			data, err = QueryRange(addr, metricExpr(gpuMetric[a[k]], temp_filter), c)
-
 		default:
 			return c.JSON(http.StatusNotFound, echo.Map{
 				"errors": echo.Map{
@@ -382,7 +403,6 @@ func validateParam(c echo.Context) bool {
 }
 
 func QueryRange(endpointAddr string, query string, c echo.Context) (model.Value, error) {
-	fmt.Println("1")
 	// log.Println("queryrange in")
 	// log.Println(query)
 	// log.Println(endpointAddr)
@@ -398,20 +418,17 @@ func QueryRange(endpointAddr string, query string, c echo.Context) (model.Value,
 
 	tm3, _ := time.ParseDuration(c.QueryParam("step"))
 	step = tm3
-	fmt.Println("2")
 	client, err := api.NewClient(api.Config{
 		Address: endpointAddr,
 	})
-	fmt.Println("3")
 	if err != nil {
 		log.Printf("Error creating client: %v\n", err)
 		var tempResult model.Value
 		return tempResult, err
 
 	}
-	fmt.Println("4")
 	v1api := v1.NewAPI(client)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 
 	defer cancel()
 
@@ -432,17 +449,19 @@ func QueryRange(endpointAddr string, query string, c echo.Context) (model.Value,
 	if len(warnings) > 0 {
 		log.Printf("Warnings: %v\n", warnings)
 	}
-	fmt.Println("result : ", result)
 	return result, nil
 }
 
 func metricExpr(val string, filter map[string]string) string {
 	var returnVal string
-
 	for k, v := range filter {
-
+		if v == "allCluster" {
+			val = strings.Replace(val, "by(cluster)", "", -1)
+		}
 		switch v {
 		case "all":
+			returnVal += fmt.Sprintf(`%s!="",`, k)
+		case "allCluster":
 			returnVal += fmt.Sprintf(`%s!="",`, k)
 		default:
 			returnVal += fmt.Sprintf(`%s="%s",`, k, v)
@@ -454,15 +473,18 @@ func metricExpr(val string, filter map[string]string) string {
 }
 
 var dashboardMetric = map[string]string{
-	"dashboard_cpu_used_podList":     "topk(5,sum(rate(container_cpu_usage_seconds_total{$1}[30m])) by (cluster,pod,namespace))",
+	"dashboard_cpu_used_podList":     "topk(5,sum(rate(container_cpu_usage_seconds_total{pod!='',namespace!='',container!='',$1}[30m])) by (cluster,pod,namespace))",
 	"dashboard_mem_used_podList":     "topk(5,sum(container_memory_working_set_bytes{container!='POD',container!='',pod!='',$1}) by (cluster,pod,namespace))",
 	"dashboard_cpu_used_clusterList": "round(sum(rate(container_cpu_usage_seconds_total[1m]))by(cluster),0.01)",
 	"dashboard_mem_used_clusterList": "nvidia_smi_power_limit_watts{$1}",
-	"node_status":                    "kube_node_status_condition{condition='Ready',status='true',$1}==1",
-	"cpu_used_podList":               "topk(5,sum(rate(container_cpu_usage_seconds_total{$1}[5m]))by(pod,namespace,cluster))",
-	"memory_used_podList":            "topk(5,sum(rate(container_memory_usage_bytes{$1}))by(pod,namespace,cluster))",
-	"namespace_cpu":                  "round(sum(sum(irate(container_cpu_usage_seconds_total{job='kubelet',pod!='',image!='', $1}[5m]))by(namespace,pod,cluster))by(namespace),0.001)",
-	"namespace_memory":               "sum(container_memory_working_set_bytes{$1})by(namespace)",
+	// "node_status":                    "up{job='node-exporter',$1}",
+	"node_running": "count(up{job='node-exporter',$1}) OR vector(0)",
+	"node_status":  "kube_node_status_condition{condition='Ready',status='true',$1}",
+	// "node_running":                   "sum(kube_node_status_condition{condition='Ready',status='true',$1}==1)by(cluster)",
+	"cpu_used_podList":    "topk(5,sum(rate(container_cpu_usage_seconds_total{pod!='',namespace!='',container!='',$1}[5m]))by(pod,namespace,cluster))",
+	"memory_used_podList": "topk(5,sum(rate(container_memory_working_set_bytes{pod!='',namespace!='',$1}[5m]))by(pod,namespace,cluster))",
+	"namespace_cpu":       "round(sum(sum(irate(container_cpu_usage_seconds_total{job='kubelet',pod!='',image!='', $1}[5m]))by(namespace,pod,cluster))by(namespace),0.001)",
+	"namespace_memory":    "sum(container_memory_working_set_bytes{$1})by(namespace)",
 }
 
 func node_status(c string) interface{} {
@@ -473,23 +495,47 @@ func node_status(c string) interface{} {
 		"cluster": c,
 	}
 	data, err := nowQueryRange(addr, nowMetricExpr(dashboardMetric["node_status"], temp_filter))
-	fmt.Println("err : ", err)
+	// log.Println("err : ", err)
 	if err != nil {
-		fmt.Println("err : ", err)
+		log.Println("err2 : ", err)
 	} else {
 		if check := len(data.(model.Matrix)) != 0; check {
 			// data.(model.Matrix)[0].Values
 			for _, val := range data.(model.Matrix) {
 				node := make(map[string]interface{})
-				fmt.Println(val.Metric["name"])
 				node["name"] = val.Metric["node"]
-				node["status"] = val.Metric["condition"]
+				if val.Values[0].Value == 1 {
+					node["status"] = "Ready"
+				} else {
+					node["status"] = "NotReady"
+				}
+
 				nodeList = append(nodeList, node)
 			}
 		}
 
 	}
 	return nodeList
+}
+
+func node_running(c string) int {
+	var value int
+	config.Init()
+	addr := os.Getenv("PROMETHEUS")
+	temp_filter := map[string]string{
+		"cluster": c,
+	}
+	data, err := nowQueryRange(addr, nowMetricExpr(dashboardMetric["node_running"], temp_filter))
+	// log.Println("err : ", err)
+	if err != nil {
+		log.Println("err : ", err)
+	} else {
+		if check := len(data.(model.Matrix)) != 0; check {
+			value = common.InterfaceToInt(data.(model.Matrix)[0].Values[0].Value)
+		}
+
+	}
+	return value
 }
 
 func dashboard_pod_monit(c, kind, query string) []map[string]interface{} {
@@ -505,16 +551,14 @@ func dashboard_pod_monit(c, kind, query string) []map[string]interface{} {
 	}
 
 	data, err := nowQueryRange(addr, nowMetricExpr(query, temp_filter))
-	fmt.Println("err : ", err)
 	if err != nil {
-		fmt.Println("err : ", err)
+		log.Println("err : ", err)
 	} else {
 		if check := len(data.(model.Matrix)) != 0; check {
 			// data.(model.Matrix)[0].Values
 			for _, val := range data.(model.Matrix) {
 				value := val.Values[0].Value
 				pod := make(map[string]interface{})
-				fmt.Println(val.Metric["name"])
 				pod["name"] = val.Metric["pod"]
 				pod["namespace"] = val.Metric["namespace"]
 				pod["cluster"] = val.Metric["cluster"]
@@ -533,24 +577,22 @@ func dashboard_cluster_monit(c, query string) interface{} {
 	var podList []map[string]interface{}
 	var result interface{}
 	config.Init()
+	// fmt.Println("testtest : ", err)
 	addr := os.Getenv("PROMETHEUS")
 
 	temp_filter := map[string]string{
 		"cluster": c,
 	}
-
 	data, err := nowQueryRange(addr, nowMetricExpr(query, temp_filter))
-	fmt.Println("nowMetricExpr(query, temp_filter) : ", nowMetricExpr(query, temp_filter))
-	fmt.Println("data : ", data)
+	// log.Println("nowMetricExpr(query, temp_filter) : ", nowMetricExpr(query, temp_filter))
 	if err != nil {
-		fmt.Println("err : ", err)
+		log.Println("err : ", err)
 	} else {
 		if check := len(data.(model.Matrix)) != 0; check {
 			// data.(model.Matrix)[0].Values
 			for _, val := range data.(model.Matrix) {
 				value := val.Values[0].Value
 				pod := make(map[string]interface{})
-				fmt.Println(val.Metric["name"])
 				if c == "all" {
 					pod["cluster"] = val.Metric["cluster"]
 				}
@@ -558,6 +600,11 @@ func dashboard_cluster_monit(c, query string) interface{} {
 				result = pod
 				podList = append(podList, pod)
 			}
+		} else {
+			pod := make(map[string]interface{})
+			pod["value"] = 0
+			result = pod
+			// podList = append(podList, pod)
 		}
 	}
 	sort.SliceStable(podList, func(i, j int) bool {
@@ -566,7 +613,6 @@ func dashboard_cluster_monit(c, query string) interface{} {
 	if c == "all" {
 		result = podList
 	}
-	fmt.Println("data : ", result)
 	return result
 }
 
@@ -585,17 +631,12 @@ func resourceCntList(c, n, kind string) map[string]interface{} {
 	for key, _ := range resourceCntMetric {
 		data, err := nowQueryRange(addr, nowMetricExpr(resourceCntMetric[key], temp_filter))
 		if err != nil {
-			fmt.Println("err : ", err)
 		} else {
 			if check := len(data.(model.Matrix)) != 0; check {
 				data := data.(model.Matrix)
 				// resource := make(map[string]interface{})
 				// fmt.Println("data", data)
 				value := data[0].Values[0].Value
-				fmt.Println("value", value)
-				// if value ==  {
-				// 	value = 0
-				// }
 
 				resource[key] = common.InterfaceToInt(value)
 				// resourceList = append(resourceList, resource)
@@ -621,7 +662,7 @@ func resourceCnt(c, kind, key string) int {
 	var result int
 	data, err := nowQueryRange(addr, nowMetricExpr(resourceCntMetric[key], temp_filter))
 	if err != nil {
-		fmt.Println("err : ", err)
+		log.Println("err : ", err)
 	} else {
 		if check := len(data.(model.Matrix)) != 0; check {
 			data := data.(model.Matrix)
@@ -629,7 +670,7 @@ func resourceCnt(c, kind, key string) int {
 			value := data[0].Values[0].Value
 			resource := common.InterfaceToInt(value)
 			result = resource
-			fmt.Println("###########result", result)
+			// fmt.Println("###########result", result)
 		}
 	}
 	return result
@@ -645,7 +686,7 @@ func namespaceUsage(c, query string) float64 {
 	var result float64
 	data, err := nowQueryRange(addr, nowMetricExpr(query, temp_filter))
 	if err != nil {
-		fmt.Println("err : ", err)
+		log.Println("err : ", err)
 	} else {
 		if check := len(data.(model.Matrix)) != 0; check {
 			data := data.(model.Matrix)
@@ -656,4 +697,123 @@ func namespaceUsage(c, query string) float64 {
 		}
 	}
 	return result
+}
+
+var cephMetric = map[string]string{
+	"clusterCount":                   "count(sum without (instance) (ceph_health_status))",
+	"clusterHealth":                  "count(sum without (instance) (ceph_health_status) == 0)",
+	"ceph_objects_healthy":           "sum(ceph_pool_objects)-sum(ceph_num_objects_degraded)-sum(ceph_num_objects_misplaced)-sum(ceph_num_objects_unfound)",
+	"ceph_objects_degraded":          "sum(ceph_num_objects_degraded)",
+	"ceph_objects_misplaced":         "sum(ceph_num_objects_misplaced)",
+	"ceph_objects_unfound":           "sum(ceph_num_objects_unfound)",
+	"ceph_mds_count":                 "count(ceph_mds_metadata)",
+	"ceph_osd_in":                    "sum(ceph_osd_in)",
+	"ceph_osd_up":                    "sum(ceph_osd_up)",
+	"ceph_osd_out":                   "count  (ceph_osd_up) - count  (ceph_osd_in)",
+	"ceph_osd_down":                  "count(ceph_osd_up == 0.0) OR vector(0)",
+	"ceph_pg_active":                 "sum (ceph_pg_active{job='ceph-exporter'})",
+	"ceph_pg_total":                  "sum (ceph_pg_total{job='ceph-exporter'})",
+	"ceph_pg_clean":                  "sum (ceph_pg_clean{job='ceph-exporter'})",
+	"ceph_pg_incomplete":             "sum (ceph_pg_incomplete{job='ceph-exporter'})",
+	"ceph_unclean_pgs":               "sum (ceph_unclean_pgs{job='ceph-exporter'})",
+	"ceph_mon_quorum_status":         "count(ceph_mon_quorum_status)",
+	"ceph_pool_num":                  "count(ceph_pool_metadata)",
+	"ceph_pg_per_osd":                "avg(ceph_osd_numpg)",
+	"cluster_avail_capacity":         "round(sum(ceph_cluster_total_bytes-ceph_cluster_total_used_bytes)/sum(ceph_cluster_total_bytes),0.001)*100",
+	"cluster_used_capacity":          "round(sum(ceph_cluster_total_used_bytes)/sum(ceph_cluster_total_bytes),0.001)*100",
+	"ceph_cluster_total_bytes":       "round((sum(ceph_cluster_total_bytes)/1024/1024/1024), 0.001)",
+	"ceph_cluster_total_used_bytes":  "round((sum (ceph_cluster_total_used_bytes)/1024/1024/1024),0.001)",
+	"ceph_cluster_total_avail_bytes": "round(((sum(ceph_cluster_total_bytes)-sum(ceph_cluster_total_used_bytes))/1024/1024/1024),0.001)",
+	"write_iops":                     "round(sum(rate(ceph_osd_op_w{job='ceph-exporter'}[1m])),0.01)",
+	"read_iops":                      "round(sum(rate(ceph_osd_op_r{job='ceph-exporter'}[1m])),0.01)",
+	"overwrite_iops":                 "round(sum(rate(ceph_osd_op_rw{job='ceph-exporter'}[1m])),0.01)",
+	"write_throughput":               "round(sum(irate(ceph_osd_op_w_in_bytes[5m]))/1000,0.01)",
+	"read_throughput":                "round(sum(irate(ceph_osd_op_r_out_bytes[5m]))/1000,0.01)",
+	"osd_read_latency":               "round(1000*sum(increase(ceph_osd_op_r_latency_sum{job='ceph-exporter'}[1m]))/clamp_min(sum(increase(ceph_osd_op_r_latency_count{job='ceph-exporter'}[1m])),1),0.01)",
+	"osd_write_latency":              "round(1000*sum(increase(ceph_osd_op_w_latency_sum{job='ceph-exporter'}[1m]))/clamp_min(sum(increase(ceph_osd_op_w_latency_count{job='ceph-exporter'}[1m])),1),0.01)",
+}
+
+func monitDashboard(query string) interface{} {
+	config.Init()
+	temp_filter := make(map[string]string)
+	addr := os.Getenv("PROMETHEUS")
+	var result interface{}
+	data, err := nowQueryRange(addr, nowMetricExpr(query, temp_filter))
+	if err != nil {
+		log.Println("err : ", err)
+	} else {
+		if check := len(data.(model.Matrix)) != 0; check {
+			data := data.(model.Matrix)
+			if len(data) > 1 {
+				result = data
+			} else {
+				value := data[0].Values[0].Value
+				resource := common.InterfaceToFloat(value)
+				result = resource
+			}
+			// resource := make(map[string]interface{})
+
+		} else {
+			result = 0
+		}
+	}
+	return result
+}
+
+func Query_monit(c echo.Context) (err error) {
+	config.Init()
+	addr := os.Getenv("PROMETHEUS")
+	query := c.QueryParam("query")
+
+	data, err := QueryRange(addr, query, c)
+	if err != nil {
+		log.Println("err : ", err)
+		return c.JSON(http.StatusNotFound, echo.Map{
+			"errors": err,
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"items": data,
+	})
+}
+
+func scheduler_check(query string) (result int, err error) {
+	config.Init()
+	addr := os.Getenv("PROMETHEUS")
+
+	data, err :=  nowQueryRange(addr, query)
+		if err != nil {
+			log.Println("err : ", err)
+		} else {
+			if check := len(data.(model.Matrix)) != 0; check {
+				data := data.(model.Matrix)
+				// resource := make(map[string]interface{})
+				value := data[0].Values[0].Value
+				resource := common.InterfaceToInt(value)
+				result = resource
+			}
+		}
+		return result, nil
+	}
+	
+func Check_namespace(query string, n string) (result int, err error) {
+	config.Init()
+	temp_filter := make(map[string]string)
+	addr := os.Getenv("PROMETHEUS")
+
+	temp_filter["namespace"] = n
+
+	data, err := nowQueryRange(addr, nowMetricExpr(query, temp_filter))
+	if err != nil {
+		log.Println("err : ", err)
+	} else {
+		if check := len(data.(model.Matrix)) != 0; check {
+			data := data.(model.Matrix)
+			// resource := make(map[string]interface{})
+			value := data[0].Values[0].Value
+			resource := common.InterfaceToInt(value)
+			result = resource
+		}
+	}
+	return result, nil
 }

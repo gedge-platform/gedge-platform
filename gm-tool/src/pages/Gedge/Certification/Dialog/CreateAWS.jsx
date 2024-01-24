@@ -1,29 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { CTextField } from "@/components/textfields";
-import styled from "styled-components";
-import { swalError } from "@/utils/swal-utils";
 import { certificationStore } from "@/store";
 
-const Button = styled.button`
-  background-color: #fff;
-  border: 1px solid black;
-  color: black;
-  padding: 10px 35px;
-  margin-right: 10px;
-  border-radius: 4px;
-`;
-
-const ButtonNext = styled.button`
-  background-color: #0f5ce9;
-  color: white;
-  border: none;
-  padding: 10px 35px;
-  border-radius: 4px;
-`;
-
-const CreateAWS = observer(props => {
-  // const { open } = props;
+const CreateAWS = observer((props) => {
   const [inputs, setInputs] = useState({
     CredentialName: "",
     ProviderName: "OPENSTACK",
@@ -33,9 +13,16 @@ const CreateAWS = observer(props => {
     Zone: "",
   });
 
-  const { CredentialName, ProviderName, ClientId, ClientSecret, Region, Zone } = inputs;
+  const { CredentialName, ProviderName, ClientId, ClientSecret, Region, Zone } =
+    inputs;
 
-  const { postCredential, setCredentialName, setClientId, setClientSecret, setRegion, setZone } = certificationStore;
+  const {
+    setCredentialName,
+    setClientId,
+    setClientSecret,
+    setRegion,
+    setZone,
+  } = certificationStore;
 
   const handleClose = () => {
     props.onClose && props.onClose();
@@ -49,7 +36,7 @@ const CreateAWS = observer(props => {
     });
   };
 
-  const onChange = e => {
+  const onChange = (e) => {
     const { value, name } = e.target;
     if (name === "CredentialName") {
       setCredentialName(value);
@@ -67,12 +54,6 @@ const CreateAWS = observer(props => {
       setZone(value);
       return;
     }
-  };
-
-  const createCredential = async () => {
-    const result = await postCredential(inputs);
-    handleClose();
-    props.reloadFunc && props.reloadFunc();
   };
 
   useEffect(() => {});
@@ -103,7 +84,14 @@ const CreateAWS = observer(props => {
               <span className="required">*</span>
             </th>
             <td>
-              <CTextField type="text" placeholder="Client ID" className="form_fullWidth" name="ClientId" onChange={onChange} value={ClientId} />
+              <CTextField
+                type="text"
+                placeholder="Client ID"
+                className="form_fullWidth"
+                name="ClientId"
+                onChange={onChange}
+                value={ClientId}
+              />
             </td>
           </tr>
           <tr>
@@ -128,7 +116,14 @@ const CreateAWS = observer(props => {
               <span className="required">*</span>
             </th>
             <td>
-              <CTextField type="text" placeholder="Region" className="form_fullWidth" name="Region" onChange={onChange} value={Region} />
+              <CTextField
+                type="text"
+                placeholder="Region. ex) us-east-2"
+                className="form_fullWidth"
+                name="Region"
+                onChange={onChange}
+                value={Region}
+              />
             </td>
           </tr>
           <tr>
@@ -137,7 +132,14 @@ const CreateAWS = observer(props => {
               <span className="required">*</span>
             </th>
             <td>
-              <CTextField type="text" placeholder="Zone" className="form_fullWidth" name="Zone" onChange={onChange} value={Zone} />
+              <CTextField
+                type="text"
+                placeholder="Zone. ex) us-east-2a"
+                className="form_fullWidth"
+                name="Zone"
+                onChange={onChange}
+                value={Zone}
+              />
             </td>
           </tr>
         </tbody>

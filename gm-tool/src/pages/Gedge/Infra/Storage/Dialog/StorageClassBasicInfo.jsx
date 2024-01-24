@@ -3,7 +3,12 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { CTextField } from "@/components/textfields";
 import { FormControl } from "@material-ui/core";
-import { StorageClassStore, clusterStore, projectStore } from "@/store";
+import {
+  StorageClassStore,
+  clusterStore,
+  projectStore,
+  workspaceStore,
+} from "@/store";
 
 const Button = styled.button`
   background-color: #fff;
@@ -41,22 +46,22 @@ const StorageClassBasicInfo = observer(() => {
     loadStorageClassName,
   } = StorageClassStore;
 
-  const { loadClusterList, viewList } = clusterStore;
+  const { loadClusterList, clusterListInWorkspace } = clusterStore;
   const { selectClusterInfo, loadProjectDetail } = projectStore;
   const [chk, setChk] = useState(false);
 
-  const onChange = e => {
+  const onChange = (e) => {
     const { value, name } = e.target;
     if (name === "storageClassName") {
       setStorageClassName(value);
       return;
     }
-    if (name === "selectClusters") {
-      setSelectClusters(value);
-      return;
-    }
     if (name === "storageSystem") {
       setStorageSystem(value);
+      return;
+    }
+    if (name === "selectClusters") {
+      setSelectClusters(value);
       return;
     }
     if (name === "volumeExpansion") {
@@ -155,22 +160,24 @@ const StorageClassBasicInfo = observer(() => {
                     <th>타입</th>
                     <th>IP</th>
                   </tr>
-                  {viewList.map(({ clusterName, clusterType, clusterEndpoint }) => (
-                    <tr>
-                      <td style={{ textAlign: "center" }}>
-                        <input
-                          type="radio"
-                          // type="checkbox"
-                          name="selectClusters"
-                          onChange={e => checkCluster(e, clusterName)}
-                          value={selectClusters}
-                        />
-                      </td>
-                      <td>{clusterName}</td>
-                      <td>{clusterType}</td>
-                      <td>{clusterEndpoint}</td>
-                    </tr>
-                  ))}
+                  {clusterListInWorkspace.map(
+                    ({ clusterName, clusterType, clusterEndpoint }) => (
+                      <tr>
+                        <td style={{ textAlign: "center" }}>
+                          <input
+                            type="radio"
+                            // type="checkbox"
+                            name="selectClusters"
+                            onChange={(e) => checkCluster(e, clusterName)}
+                            value={selectClusters}
+                          />
+                        </td>
+                        <td>{clusterName}</td>
+                        <td>{clusterType}</td>
+                        <td>{clusterEndpoint}</td>
+                      </tr>
+                    )
+                  )}
                 </tbody>
               </table>
             </td>

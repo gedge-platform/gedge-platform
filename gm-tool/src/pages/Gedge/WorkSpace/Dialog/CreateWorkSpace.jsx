@@ -24,7 +24,7 @@ const ButtonNext = styled.button`
   border-radius: 4px;
 `;
 
-const CreateWorkSpace = observer(props => {
+const CreateWorkSpace = observer((props) => {
   const { open } = props;
   const { loadClusterList, clusterListInWorkspace } = clusterStore;
   const { createWorkspace } = workspaceStore;
@@ -49,7 +49,9 @@ const CreateWorkSpace = observer(props => {
     if (checked) {
       setSelectCluster([...selectCluster, clusterName]);
     } else {
-      setSelectCluster(selectCluster.filter(cluster => cluster !== clusterName));
+      setSelectCluster(
+        selectCluster.filter((cluster) => cluster !== clusterName)
+      );
     }
   };
 
@@ -62,10 +64,21 @@ const CreateWorkSpace = observer(props => {
       swalError("클러스터를 확인해주세요!");
       return;
     }
-    createWorkspace(workspaceName, workspaceDescription, selectCluster, handleClose);
+    createWorkspace(
+      workspaceName,
+      workspaceDescription,
+      selectCluster,
+      handleClose
+    );
     props.reloadFunc && props.reloadFunc();
   };
   const checkWorkspaceName = async () => {
+    const regType1 = /^[a-z0-9]([-a-z0-9]*[a-z0-9])*$/;
+    if (!regType1.test(workspaceName)) {
+      swalError("사용할 수 없는 문자열이 포함되어 있습니다.");
+      setCheck(false);
+      return;
+    }
     const result = await duplicateCheck(workspaceName, "workspace");
 
     if (result) {
@@ -83,7 +96,15 @@ const CreateWorkSpace = observer(props => {
   }, []);
 
   return (
-    <CDialogNew id="myDialog" open={open} maxWidth="md" title={`Create Workspace`} onClose={handleClose} bottomArea={false} modules={["custom"]}>
+    <CDialogNew
+      id="myDialog"
+      open={open}
+      maxWidth="md"
+      title={`Create Workspace`}
+      onClose={handleClose}
+      bottomArea={false}
+      modules={["custom"]}
+    >
       <table className="tb_data_new tb_write">
         <tbody>
           <tr>
@@ -100,7 +121,10 @@ const CreateWorkSpace = observer(props => {
                 onChange={onChange}
                 value={workspaceName}
               />
-              <ButtonNext onClick={checkWorkspaceName} style={{ height: "32px" }}>
+              <ButtonNext
+                onClick={checkWorkspaceName}
+                style={{ height: "32px" }}
+              >
                 중복확인
               </ButtonNext>
             </td>
@@ -133,17 +157,28 @@ const CreateWorkSpace = observer(props => {
                     <th>IP</th>
                   </tr>
                   {/* paginetion 때문에 clusterList -> viewList */}
-                  {clusterListInWorkspace.map(({ clusterName, clusterType, clusterEndpoint, nodeCnt }) => (
-                    <tr>
-                      <td style={{ textAlign: "center" }}>
-                        <input type="checkbox" name="clusterCheck" onChange={e => checkCluster(e, clusterName)} />
-                      </td>
-                      <td>{clusterName}</td>
-                      <td>{clusterType}</td>
-                      <td>{nodeCnt}</td>
-                      <td>{clusterEndpoint}</td>
-                    </tr>
-                  ))}
+                  {clusterListInWorkspace.map(
+                    ({
+                      clusterName,
+                      clusterType,
+                      clusterEndpoint,
+                      nodeCnt,
+                    }) => (
+                      <tr>
+                        <td style={{ textAlign: "center" }}>
+                          <input
+                            type="checkbox"
+                            name="clusterCheck"
+                            onChange={(e) => checkCluster(e, clusterName)}
+                          />
+                        </td>
+                        <td>{clusterName}</td>
+                        <td>{clusterType}</td>
+                        <td>{nodeCnt}</td>
+                        <td>{clusterEndpoint}</td>
+                      </tr>
+                    )
+                  )}
                 </tbody>
               </table>
             </td>

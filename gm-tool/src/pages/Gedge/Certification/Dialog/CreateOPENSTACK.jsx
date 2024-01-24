@@ -32,67 +32,12 @@ const CreateOPENSTACK = observer(props => {
     DomainName: "",
     ProjectID: "",
     Region: "",
-    Zone: "",
   });
-  // const [input, setInput] = useState({
-  //   CredentialName: "",
-  //   ProviderName: "",
-  //   CliendId: "",
-  //   ClientSecret: "",
-  //   Region: "",
-  //   Zone: "",
-  // });
-  const { CredentialName, ProviderName, IdentityEndPoint, Username, Password, DomainName, ProjectID, Region, Zone } = inputs;
+  
+  const { CredentialName, ProviderName, IdentityEndPoint, Username, Password, DomainName, ProjectID, Region } = inputs;
 
-  // const{
-  //   CredentialName,
-  //   ProviderName,
-  //   CliendId,
-  //   ClientSecret,
-  //   Region,
-  //   Zone,
-  // } = input;
-
-  const { postCredential, setCredentialName, setIdentityEndPoint, setUsername, setPassword, setProjectID, setDomainName, setRegion, setZone } =
+  const { setCredentialName, setIdentityEndPoint, setUsername, setPassword, setProjectID, setDomainName, setRegion } =
     certificationStore;
-
-  // const onChange = ({ target: { name, value } }) => {
-  //   console.log(name, value);
-  //   setInputs({
-  //     ...inputs,
-  //     [name]: value,
-  //   });
-  // };
-
-  // const onChange = (e) => {
-  //   const { value, name } = e.target;
-  //   switch (name) {
-  //     case "CredentialName":
-  //       setCredentialName(value);
-  //       break;
-  //     case "IdentityEndPoint":
-  //       setIdentityEndPoint(value);
-  //       break;
-  //     case "Username":
-  //       setUsername(value);
-  //       break;
-  //     case "Password":
-  //       setPassword(value);
-  //       break;
-  //     case "DomainName":
-  //       setDomainName(value);
-  //       break;
-  //     case "ProjectID":
-  //       setProjectID(value);
-  //       break;
-  //     case "Region":
-  //       setRegion(value);
-  //       break;
-  //     case "Zone":
-  //       setZone(value);
-  //       break;
-  //   }
-  // };
 
   const onChange = e => {
     const { value, name } = e.target;
@@ -116,9 +61,6 @@ const CreateOPENSTACK = observer(props => {
       return;
     } else if (name === "Region") {
       setRegion(value);
-      return;
-    } else if (name === "Zone") {
-      setZone(value);
       return;
     }
   };
@@ -147,15 +89,6 @@ const CreateOPENSTACK = observer(props => {
           </tr>
           <tr>
             <th>
-              Domain Name
-              <span className="required">*</span>
-            </th>
-            <td>
-              <CTextField type="text" placeholder="Domain Name" className="form_fullWidth" name="DomainName" onChange={onChange} value={DomainName} />
-            </td>
-          </tr>
-          <tr>
-            <th>
               IdentityEndPoint
               <span className="required">*</span>
             </th>
@@ -172,11 +105,29 @@ const CreateOPENSTACK = observer(props => {
           </tr>
           <tr>
             <th>
+              Username
+              <span className="required">*</span>
+            </th>
+            <td>
+              <CTextField type="text" placeholder="Username" className="form_fullWidth" name="Username" onChange={onChange} value={Username} />
+            </td>
+          </tr>
+          <tr>
+            <th>
               Password
               <span className="required">*</span>
             </th>
             <td>
               <CTextField type="password" placeholder="Password" className="form_fullWidth" name="Password" onChange={onChange} value={Password} />
+            </td>
+          </tr>
+          <tr>
+            <th>
+              Domain Name
+              <span className="required">*</span>
+            </th>
+            <td>
+              <CTextField type="text" placeholder="Domain Name" className="form_fullWidth" name="DomainName" onChange={onChange} value={DomainName} />
             </td>
           </tr>
           <tr>
@@ -190,29 +141,11 @@ const CreateOPENSTACK = observer(props => {
           </tr>
           <tr>
             <th>
-              Username
-              <span className="required">*</span>
-            </th>
-            <td>
-              <CTextField type="text" placeholder="Username" className="form_fullWidth" name="Username" onChange={onChange} value={Username} />
-            </td>
-          </tr>
-          <tr>
-            <th>
               Region
               <span className="required">*</span>
             </th>
             <td>
               <CTextField type="text" placeholder="Region" className="form_fullWidth" name="Region" onChange={onChange} value={Region} />
-            </td>
-          </tr>
-          <tr>
-            <th>
-              Zone
-              <span className="required">*</span>
-            </th>
-            <td>
-              <CTextField type="text" placeholder="Zone" className="form_fullWidth" name="Zone" onChange={onChange} value={Zone} />
             </td>
           </tr>
         </tbody>

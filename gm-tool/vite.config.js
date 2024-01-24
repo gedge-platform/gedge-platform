@@ -3,32 +3,12 @@ import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import postcss from "./postcss.config.js";
 import copy from "rollup-plugin-copy";
+import { viteCommonjs } from "@originjs/vite-plugin-commonjs";
 
 // https://vitejs.dev/config/
 export default ({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
   return defineConfig({
-    server: {
-      port: 8080,
-      open: false,
-      root: "src",
-      publicDir: "../public",
-      // proxy: {
-      //   '/api': {
-      //     target: 'http://192.168.0.188:56701',
-      //     changeOrigin: true,
-      //     ws: true,
-      //     rewrite: path => replace(/^\/api/, '')
-      // }
-      // }
-    },
-    build: {
-      emptyOutDir: true,
-      outDir: resolve(__dirname, "public", "dist"),
-      // publicPath: "",
-      sourcemap: false,
-      minify: true,
-    },
     plugins: [
       react({
         // Use React plugin in all *.jsx and *.tsx files
@@ -46,16 +26,6 @@ export default ({ mode }) => {
           ],
         },
       }),
-      copy({
-        targets: [
-          {
-            src: resolve(__dirname, "src", "images"),
-            dest: resolve(__dirname, "public"),
-          },
-        ],
-        copyOnce: true, // 실행하고 한번만 copy 하게 만들어줌
-        hook: "config", // hook으로 config의 실행 시점으로 일치 시켜줌
-      }),
     ],
     resolve: {
       alias: {
@@ -65,6 +35,21 @@ export default ({ mode }) => {
     css: {
       postcss,
       devSourcemap: true,
+    },
+    optimizeDeps: {
+      auto: true,
+    },
+    build: {
+      chunkSizeWarningLimit: 100,
+      minify: true,
+      rollupOptions: {
+        onwarn(warning, warn) {
+          if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
+            return;
+          }
+          warn(warning);
+        },
+      },
     },
   });
 };

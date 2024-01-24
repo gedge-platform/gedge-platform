@@ -3,14 +3,13 @@ import Layout from "@/layout";
 import { Title } from "@/pages";
 import { PanelBox } from "@/components/styles/PanelBox";
 import styled from "styled-components";
-
 import MapContent from "./DashboardCont/MapContent";
-
 import ClusterSummary from "./DashboardCont/ClusterSummary";
 import ClusterKind from "./DashboardCont/ClusterKind";
 import ClusterStatus from "./DashboardCont/ClusterStatus";
 import ClusterRecent from "./DashboardCont/ClusterRecent";
 import NodeList from "./DashboardCont/NodeList";
+import TotalClusterResources from "./DashboardCont/TotalClusterResources";
 
 const DashboardWrap = styled.div`
   /* display: flex;
@@ -18,6 +17,15 @@ const DashboardWrap = styled.div`
   justify-content: space-between;
   margin-bottom: 12px; */
   .panel_summary {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    &::before {
+      display: none;
+    }
+  }
+
+  .panel_slide {
     width: 100%;
     background: transparent;
     border: 0;
@@ -143,8 +151,18 @@ const TotalDashboard = () => {
       <DashboardWrap>
         <PanelBox className="panel_summary">
           <ClusterSummary />
-          <div className="ClusterSlideWrap">
-            <ClusterKind />
+        </PanelBox>
+
+        <PanelBox className="panel_slide">
+          <div className="cluster_slideWrap">
+            <div className="cluster_slide">
+              <div className="cluster_kind">
+                <ClusterKind />
+              </div>
+              <div className="cluster_totalResources">
+                <TotalClusterResources />
+              </div>
+            </div>
           </div>
         </PanelBox>
 
@@ -159,9 +177,6 @@ const TotalDashboard = () => {
             <div className="cluster_recent">
               <ClusterRecent />
             </div>
-          </div>
-          <div className="cluster_nodes">
-            {/* <NodeList /> */}
           </div>
         </PanelBox>
       </DashboardWrap>

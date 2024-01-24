@@ -1,6 +1,12 @@
 import { observer } from "mobx-react";
 import React, { useEffect, useState } from "react";
-import { workspaceStore, projectStore, deploymentStore, clusterStore, serviceStore } from "@/store";
+import {
+  workspaceStore,
+  projectStore,
+  deploymentStore,
+  clusterStore,
+  serviceStore,
+} from "@/store";
 import FormControl from "@material-ui/core/FormControl";
 import { CTextField } from "@/components/textfields";
 
@@ -31,11 +37,11 @@ const DeploymentBasicInformation = observer(() => {
     if (checked) {
       setClusterList([...cluster, name]);
     } else {
-      setClusterList(cluster.filter(item => item !== name));
+      setClusterList(cluster.filter((item) => item !== name));
     }
   };
 
-  const onChange = e => {
+  const onChange = (e) => {
     const { value, name } = e.target;
     if (name === "workspace") {
       loadProjectListInWorkspace(value);
@@ -79,56 +85,44 @@ const DeploymentBasicInformation = observer(() => {
             <th>
               Workspace <span className="requried">*</span>
             </th>
-            <td style={{ width: "50%" }}>
+            <td colSpan="3">
               <FormControl className="form_fullWidth">
                 <select name="workspace" onChange={onChange}>
                   <option value={""}>Select Workspace</option>
-                  {workspace.map(item => (
+                  {workspace.map((item) => (
                     <option value={item}>{item}</option>
                   ))}
                 </select>
               </FormControl>
             </td>
-            <th></th>
           </tr>
           <tr>
             <th>
               Project <span className="requried">*</span>
             </th>
-            <td>
+            <td colSpan="3">
               <FormControl className="form_fullWidth">
-                <select disabled={projectEnable} name="project" onChange={onChange}>
-                  {projectListinWorkspace.map(project => (
-                    <option value={project.projectName}>{project.projectName}</option>
+                <select
+                  disabled={projectEnable}
+                  name="project"
+                  onChange={onChange}
+                >
+                  {projectListinWorkspace.map((project) => (
+                    <option value={project.projectName}>
+                      {project.projectName}
+                    </option>
                   ))}
                   <option value={""}>Select Project</option>
                 </select>
               </FormControl>
             </td>
-            <th></th>
           </tr>
-          {/* <tr>
-          <th>
-            Cluster <span className="requried">*</span>
-          </th>
-          <td>
-            <FormGroup className="form_fullWidth" onChange={checkChange}>
-              {clusterList.map((cluster) => (
-                <FormControlLabel
-                  control={<Checkbox name={cluster.clusterName} />}
-                  label={cluster.clusterName}
-                />
-              ))}
-            </FormGroup>
-          </td>
-          <th></th>
-        </tr> */}
           <tr>
             <th>
               Service Name
               <span className="requried">*</span>
             </th>
-            <td>
+            <td colSpan="3">
               <CTextField
                 type="text"
                 placeholder="Service Name"
@@ -138,23 +132,28 @@ const DeploymentBasicInformation = observer(() => {
                 value={serviceName}
               />
             </td>
-            <th></th>
           </tr>
           <tr>
             <th>
               App Name
               <span className="requried">*</span>
             </th>
-            <td>
-              <CTextField type="text" placeholder="App Name" className="form_fullWidth" name="App Name" onChange={onChange} value={appName} />
+            <td colSpan="3">
+              <CTextField
+                type="text"
+                placeholder="App Name"
+                className="form_fullWidth"
+                name="App Name"
+                onChange={onChange}
+                value={appName}
+              />
             </td>
-            <th></th>
           </tr>
           <tr>
             <th>
               Protocol <span className="requried">*</span>
             </th>
-            <td style={{ width: "50%" }}>
+            <td colSpan="3">
               <FormControl className="form_fullWidth">
                 <select name="protocol" onChange={onChange}>
                   <option value={"TCP"}>TCP</option>
@@ -162,24 +161,29 @@ const DeploymentBasicInformation = observer(() => {
                 </select>
               </FormControl>
             </td>
-            <th></th>
           </tr>
           <tr>
             <th>
               Port
               <span className="requried">*</span>
             </th>
-            <td>
-              <CTextField type="text" placeholder="Port" className="form_fullWidth" name="Port" onChange={onChange} value={port} />
+            <td colSpan="3">
+              <CTextField
+                type="text"
+                placeholder="Port"
+                className="form_fullWidth"
+                name="Port"
+                onChange={onChange}
+                value={port}
+              />
             </td>
-            <th></th>
           </tr>
           <tr>
             <th>
               Target Port
               <span className="requried">*</span>
             </th>
-            <td>
+            <td colSpan="3">
               <CTextField
                 type="text"
                 placeholder="Target Port"
@@ -189,7 +193,6 @@ const DeploymentBasicInformation = observer(() => {
                 value={targetPort}
               />
             </td>
-            <th></th>
           </tr>
         </tbody>
       </table>

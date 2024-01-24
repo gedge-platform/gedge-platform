@@ -1,16 +1,28 @@
 package controller
 
 import (
-	"fmt"
 	"gmc_api_gateway/app/common"
 	"gmc_api_gateway/app/model"
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-func GetRole(c echo.Context) error {
+// Get Role godoc
+// @Summary Show detail Role
+// @Description get Role Details
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param name path string true "name of the Role"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.ROLE
+// @Router /roles/{name} [get]
+// @Tags Kubernetes
+func GetRole(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:      "roles",
 		Name:      c.Param("name"),
@@ -19,6 +31,11 @@ func GetRole(c echo.Context) error {
 		Project:   c.QueryParam("project"),
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
+	}
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
 	}
 	getData, err := common.DataRequest(params)
 	// if err != nil {
@@ -31,7 +48,6 @@ func GetRole(c echo.Context) error {
 			"error": msg,
 		})
 	}
-	fmt.Printf("####roles data confirm : %s", getData)
 	role := model.ROLE{
 		Name:        common.InterfaceToString(common.FindData(getData, "metadata", "name")),
 		Project:     common.InterfaceToString(common.FindData(getData, "metadata", "namespace")),
@@ -41,14 +57,26 @@ func GetRole(c echo.Context) error {
 		CreateAt:    common.InterfaceToTime(common.FindData(getData, "metadata", "creationTimestamp")),
 	}
 
-	involvesData, _ := common.GetModelRelatedList(params)
-	log.Printf("#####involvesData", involvesData)
+	// involvesData, _ := common.GetModelRelatedList(params)
 	return c.JSON(http.StatusOK, echo.Map{
 		"data": role,
 		// "involvesData": "involvesData",
 	})
 }
 
+// Get Role godoc
+// @Summary Show List Role
+// @Description get Role List
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param workspace query string false "name of the Workspace"
+// @Param cluster query string false "name of the Cluster"
+// @Param project query string false "name of the Project"
+// @Success 200 {object} model.ROLE
+// @Router /roles [get]
+// @Tags Kubernetes
 func GetRoles(c echo.Context) (err error) {
 	var roles []model.ROLE
 	params := model.PARAMS{
@@ -61,8 +89,11 @@ func GetRoles(c echo.Context) (err error) {
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
 	}
-	data := GetModelList(params)
-	fmt.Printf("#################roles : %s", data)
+	data, err := GetModelList(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
 	for i, _ := range data {
 		role := model.ROLE{
 			Name:        common.InterfaceToString(common.FindData(data[i], "metadata", "name")),
@@ -86,5 +117,78 @@ func GetRoles(c echo.Context) (err error) {
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"data": roles,
+	})
+}
+
+// Create Role godoc
+// @Summary Create Role
+// @Description Create Role
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param json body string true "Role Info Body"
+// @Param cluster query string true "name of the Cluster"
+// @Param workspace query string true "name of the Workspace"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.Error
+// @Router /roles [post]
+// @Tags Kubernetes
+func CreateRole(c echo.Context) (err error) {
+	params := model.PARAMS{
+		Kind:    "roles",
+		Cluster: c.QueryParam("cluster"),
+		Project: c.QueryParam("project"),
+		Method:  c.Request().Method,
+		Body:    responseBody(c.Request().Body),
+	}
+	postData, err := common.DataRequest(params)
+	if err != nil {
+		// fmt.Println("err : ", err)
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+
+	return c.JSON(http.StatusCreated, echo.Map{
+		"status": "Created",
+		"code":   http.StatusCreated,
+		"data":   postData,
+	})
+}
+
+// Delete Role godoc
+// @Summary Delete Role
+// @Description Delete Role
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param name path string true "name of the Role"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.Error
+// @Router /roles/{name} [delete]
+// @Tags Kubernetes
+func DeleteRole(c echo.Context) (err error) {
+	params := model.PARAMS{
+		Kind:    "roles",
+		Name:    c.Param("name"),
+		Cluster: c.QueryParam("cluster"),
+		Project: c.QueryParam("project"),
+		Method:  c.Request().Method,
+		Body:    responseBody(c.Request().Body),
+	}
+
+	postData, err := common.DataRequest(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"status": "Deleted",
+		"code":   http.StatusOK,
+		"data":   postData,
 	})
 }

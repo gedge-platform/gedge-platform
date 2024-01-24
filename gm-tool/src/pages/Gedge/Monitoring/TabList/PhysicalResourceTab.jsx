@@ -2,12 +2,17 @@ import React, { useState, useEffect, PureComponent } from "react";
 import { PanelBox } from "@/components/styles/PanelBox";
 import { PanelBoxM } from "@/components/styles/PanelBoxM";
 import { PrAreaChart } from "./MonitChart/PhysicalResourceChart";
-import { CCreateButton, CSelectButton, CSelectButtonM } from "@/components/buttons";
+import { CSelectButtonM } from "@/components/buttons";
 import { CIconButton } from "@/components/buttons";
 import { observer } from "mobx-react";
 import dayjs from "dayjs";
 import { monitoringStore } from "@/store";
-import { stepConverter, unixCurrentTime, unixStartTime, combinationMetrics, LastTimeList, IntervalList } from "../Utils/MetricsVariableFormatter";
+import {
+  unixCurrentTime,
+  combinationMetrics,
+  LastTimeList,
+  IntervalList,
+} from "../Utils/MetricsVariableFormatter";
 
 import { ClusterMetricTypes, TargetTypes } from "../Utils/MetricsVariables";
 
@@ -28,12 +33,13 @@ const PsysicalResource = observer(() => {
     interval,
     setMetricsLastTime,
     setMetricsInterval,
+    loadClusterNames,
     setClusterName,
     loadAllMetrics,
     loadRealAllMetrics,
   } = monitoringStore;
 
-  const clusterNameActionList = clusterNames.map(item => {
+  const clusterNameActionList = clusterNames.map((item) => {
     return {
       name: item,
       onClick: () => {
@@ -44,7 +50,7 @@ const PsysicalResource = observer(() => {
     };
   });
 
-  const lastTimeActionList = LastTimeList.map(item => {
+  const lastTimeActionList = LastTimeList.map((item) => {
     return {
       name: item.name,
       onClick: () => {
@@ -55,7 +61,7 @@ const PsysicalResource = observer(() => {
     };
   });
 
-  const intervalTimeActionList = IntervalList.map(item => {
+  const intervalTimeActionList = IntervalList.map((item) => {
     return {
       name: item.name,
       onClick: () => {
@@ -67,22 +73,28 @@ const PsysicalResource = observer(() => {
   });
 
   const calledMetrics = () => {
-    loadAllMetrics(TargetTypes.CLUSTER, unixCurrentTime(), combinationMetrics(ClusterMetricTypes.PHYSICAL_ALL));
+    loadAllMetrics(
+      TargetTypes.CLUSTER,
+      unixCurrentTime(),
+      combinationMetrics(ClusterMetricTypes.PHYSICAL_ALL)
+    );
   };
 
   const playCalledMetrics = () => {
     setPlay(true);
-    console.log(play);
     setPlayMetrics(
       setInterval(() => {
-        loadRealAllMetrics(TargetTypes.CLUSTER, unixCurrentTime(), combinationMetrics(ClusterMetricTypes.PHYSICAL_ALL));
-      }, 5000),
+        loadRealAllMetrics(
+          TargetTypes.CLUSTER,
+          unixCurrentTime(),
+          combinationMetrics(ClusterMetricTypes.PHYSICAL_ALL)
+        );
+      }, 5000)
     );
   };
 
   const stopCalledMetrics = () => {
     setPlay(false);
-    console.log(play);
     clearInterval(playMetrics);
     setPlayMetrics(null);
   };
@@ -90,15 +102,23 @@ const PsysicalResource = observer(() => {
   const ckeckedInterval = () => (play ? stopCalledMetrics() : null);
 
   useEffect(() => {
-    calledMetrics();
+    loadClusterNames(calledMetrics);
+    if (clusterNameActionList.length > 0) {
+      setClusterName(clusterNameActionList[0]["name"]);
+    }
   }, []);
 
   return (
     <PanelBoxM>
       <div className="panelTitBar panelTitBar_clear">
         <div className="tit">
-          <span style={{ marginRight: "10px", color: "white " }}>Select Cluster</span>
-          <CSelectButtonM className="none_transform" items={clusterNameActionList}>
+          <span style={{ marginRight: "10px", color: "white " }}>
+            Select Cluster
+          </span>
+          <CSelectButtonM
+            className="none_transform"
+            items={clusterNameActionList}
+          >
             {clusterName}
           </CSelectButtonM>
         </div>
@@ -115,11 +135,20 @@ const PsysicalResource = observer(() => {
           ></CIconButton>
         </div>
       </div>
-      <PanelBox className="panel_graph" style={{ height: "100%", margin: "5px 0 5px 0" }}>
+      <PanelBox
+        className="panel_graph"
+        style={{ height: "100%", margin: "5px 0 5px 0" }}
+      >
         <div className="panelTitBar panelTitBar_clear">
-          <div className="tit" style={{ color: "white ", display: "flex", alignItems: "center" }}>
+          <div
+            className="tit"
+            style={{ color: "white ", display: "flex", alignItems: "center" }}
+          >
             <span style={{ marginRight: "10px", color: "white " }}>Last :</span>
-            <CSelectButtonM className="none_transform" items={lastTimeActionList}>
+            <CSelectButtonM
+              className="none_transform"
+              items={lastTimeActionList}
+            >
               {lastTime.name}
             </CSelectButtonM>
             <span
@@ -131,7 +160,10 @@ const PsysicalResource = observer(() => {
             >
               Interval :
             </span>
-            <CSelectButtonM className="none_transform" items={intervalTimeActionList}>
+            <CSelectButtonM
+              className="none_transform"
+              items={intervalTimeActionList}
+            >
               {interval.name}
             </CSelectButtonM>
             <div
@@ -141,8 +173,19 @@ const PsysicalResource = observer(() => {
                 justifyContent: "right",
               }}
             >
-              <CIconButton onClick={playCalledMetrics} icon="play" type="btn1" tooltip="Play" isPlay={play}></CIconButton>
-              <CIconButton onClick={stopCalledMetrics} icon="pause" type="btn1" tooltip="Pause"></CIconButton>
+              <CIconButton
+                onClick={playCalledMetrics}
+                icon="play"
+                type="btn1"
+                tooltip="Play"
+                isPlay={play}
+              ></CIconButton>
+              <CIconButton
+                onClick={stopCalledMetrics}
+                icon="pause"
+                type="btn1"
+                tooltip="Pause"
+              ></CIconButton>
             </div>
           </div>
         </div>
@@ -178,22 +221,6 @@ const PsysicalResource = observer(() => {
             </div>
           </PanelBox>
         </div>
-        {/* <div className="tabN-chart-div-area">
-          <PanelBox className="panel_graph tabN-chart-area">
-            <div className="tab2-chart-area">
-              <div className="tab2-chart">
-                <PrAreaChart value={ClusterMetricTypes.CPU_TOTAL} />
-              </div>
-            </div>
-          </PanelBox>
-          <PanelBox className="panel_graph tabN-chart-area">
-            <div className="tab2-chart-area">
-              <div className="tab2-chart">
-                <PrAreaChart value={ClusterMetricTypes.MEMORY_TOTAL} />
-              </div>
-            </div>
-          </PanelBox>
-        </div> */}
         <div className="tabN-chart-div-area">
           <PanelBox className="panel_graph tabN-chart-area">
             <div className="tab2-chart-area">
@@ -226,22 +253,6 @@ const PsysicalResource = observer(() => {
             </div>
           </PanelBox>
         </div>
-        {/* <div className="tabN-chart-div-area">
-          <PanelBox className="panel_graph tabN-chart-area">
-            <div className="tab2-chart-area">
-              <div className="tab2-chart">
-                <PrAreaChart value={ClusterMetricTypes.DISK_TOTAL} />
-              </div>
-            </div>
-          </PanelBox>
-          <PanelBox className="panel_graph tabN-chart-area">
-            <div className="tab2-chart-area">
-              <div className="tab2-chart">
-                <PrAreaChart value={ClusterMetricTypes.POD_QUOTA} />
-              </div>
-            </div>
-          </PanelBox>
-        </div> */}
       </PanelBox>
     </PanelBoxM>
   );

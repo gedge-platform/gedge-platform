@@ -22,39 +22,47 @@ const UserDetail = observer((props) => {
           <div className="panelCont">
             <table className="tb_data">
               <tbody className="tb_data_detail">
-                <tr>
-                  <th>ID</th>
-                  <td>{user.memberId}</td>
-                  <th>Name</th>
-                  <td>{user.memberName}</td>
-                </tr>
-  
-                <tr>
-                  <th>Contact</th>
-                  <td>{user.contact}</td>
-                  <th>E-mail</th>
-                  <td>{user.email}</td>
-             
-                </tr>
-                {/* <tr>
+                {user ? (
+                  <>
+                    <tr>
+                      <th>ID</th>
+                      <td>{user.memberId ? user.memberId : "-"}</td>
+                      <th>Name</th>
+                      <td>{user.memberName ? user.memberName : "-"}</td>
+                    </tr>
+
+                    <tr>
+                      <th>Contact</th>
+                      <td>{user.contact ? user.contact : "-"}</td>
+                      <th>E-mail</th>
+                      <td>{user.email ? user.email : "-"}</td>
+                    </tr>
+                    {/* <tr>
                   <th>승인여부</th>
                   <td>
-                    {userDetail.enabled ? (
-                      <span class="state_ico state_02">승인</span>
+                  {userDetail.enabled ? (
+                    <span class="state_ico state_02">승인</span>
                     ) : (
                       <span class="state_ico state_04">승인 대기</span>
-                    )}
-                  </td>
-                </tr> */}
-                <tr>
-                <th>Created</th>
-                  <td>
-                    {user.created_at ? dateFormatter(user.created_at) : "-"}
-                  </td>
-                 <th>Last Longin</th>
-                  <td>{dateFormatter(user.logined_at)}</td> 
-                
-                </tr>
+                      )}
+                      </td>
+                    </tr> */}
+                    <tr>
+                      <th>Created</th>
+                      <td>
+                        {user.created_at ? dateFormatter(user.created_at) : "-"}
+                      </td>
+                      <th>Last Login</th>
+                      <td>
+                        {user.logined_at ? dateFormatter(user.logined_at) : "-"}
+                      </td>
+                    </tr>
+                  </>
+                ) : (
+                  <LabelContainer>
+                    <p>No Detail Info</p>
+                  </LabelContainer>
+                )}
               </tbody>
             </table>
           </div>

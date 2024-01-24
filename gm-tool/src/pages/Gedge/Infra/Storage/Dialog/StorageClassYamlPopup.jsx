@@ -6,8 +6,7 @@ import "ace-builds/src-noconflict/theme-monokai";
 import { StorageClassStore } from "@/store";
 
 const StorageClassYamlPopup = observer(() => {
-  const { content, claimName } = StorageClassStore;
-  console.log(content);
+  const { content } = StorageClassStore;
 
   return (
     <>

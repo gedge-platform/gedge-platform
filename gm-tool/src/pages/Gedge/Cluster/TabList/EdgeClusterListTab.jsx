@@ -14,7 +14,9 @@ import CreateCluster from "../Dialog/CreateCluster";
 import { Title } from "@/pages";
 import { drawStatus } from "@/components/datagrids/AggridFormatter";
 import { swalUpdate, swalError } from "@/utils/swal-utils";
+import EdgeZoneAddNode from "../Dialog/EdgeZoneAddNode";
 
+// 플랫폼 > 엣지존
 const EdgeClusterListTab = observer(() => {
   const currentPageTitle = Title.EdgeZone;
   const [Create, setCreateOpen] = useState(false);
@@ -22,34 +24,25 @@ const EdgeClusterListTab = observer(() => {
   const [tabvalue, setTabvalue] = useState(0);
   const [reRun, setReRun] = useState(false);
   const [clusterName, setClusterName] = useState("");
+  const [AddNode, setAddNodeOpen] = useState(false);
 
   const {
-    setInitViewList,
+    initViewList,
     deleteCluster,
     clusterDetail,
-    clusterList,
     totalElements,
     loadClusterList,
     loadCluster,
-
     currentPage,
     totalPages,
     viewList,
     goPrevPage,
     goNextPage,
+    loadClusterDetail,
+    loadGpuAPI,
   } = clusterStore;
 
   const [columDefs] = useState([
-    // {
-    //     headerName: "",
-    //     field: "check",
-    //     minWidth: 53,
-    //     maxWidth: 53,
-    //     filter: false,
-    //     headerCheckboxSelection: true,
-    //     headerCheckboxSelectionFilteredOnly: true,
-    //     checkboxSelection: true,
-    // },
     {
       headerName: "이름",
       field: "clusterName",
@@ -93,9 +86,11 @@ const EdgeClusterListTab = observer(() => {
 
   const history = useHistory();
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     loadCluster(e.data.clusterName);
+    loadClusterDetail(e.data.clusterName);
     setClusterName(e.data.clusterName);
+    loadGpuAPI(e.data.clusterName);
   };
 
   const handleCreateOpen = () => {
@@ -106,11 +101,21 @@ const EdgeClusterListTab = observer(() => {
     setCreateOpen(false);
   };
 
+  const handleAddNodeOpen = () => {
+    setAddNodeOpen(true);
+  };
+
+  const handleAddNodeClose = () => {
+    setAddNodeOpen(false);
+  };
+
   const handleDelete = () => {
     if (clusterName === "") {
       swalError("클러스터를 선택해주세요!");
     } else {
-      swalUpdate(clusterName + "를 삭제하시겠습니까?", () => deleteCluster(clusterName, reloadData));
+      swalUpdate(clusterName + "를 삭제하시겠습니까?", () =>
+        deleteCluster(clusterName, reloadData)
+      );
     }
     setVMName("");
   };
@@ -120,7 +125,7 @@ const EdgeClusterListTab = observer(() => {
   };
 
   useLayoutEffect(() => {
-    setInitViewList();
+    initViewList();
     loadClusterList("edge");
     return () => {
       setReRun(false);
@@ -133,11 +138,9 @@ const EdgeClusterListTab = observer(() => {
         <PanelBox>
           <CommActionBar>
             <CCreateButton onClick={handleCreateOpen}>생성</CCreateButton>
-            <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
           <div className="tabPanelContainer">
-            {/* <CTabPanel value={tabvalue} index={0}> */}
             <div className="grid-height2">
               <AgGrid
                 rowData={viewList}
@@ -153,7 +156,12 @@ const EdgeClusterListTab = observer(() => {
             </div>
             {/* </CTabPanel> */}
           </div>
-          <CreateCluster type="edge" open={Create} onClose={handleCreateClose} reloadFunc={reloadData} />
+          <CreateCluster
+            type="edge"
+            open={Create}
+            onClose={handleCreateClose}
+            reloadFunc={reloadData}
+          />
         </PanelBox>
         <Detail cluster={clusterDetail} />
       </CReflexBox>

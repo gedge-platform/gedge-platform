@@ -25,6 +25,7 @@ const DaemonSetListTab = observer(() => {
     currentPage,
     totalPages,
     viewList,
+    initViewList,
     goPrevPage,
     goNextPage,
   } = daemonSetStore;
@@ -60,11 +61,11 @@ const DaemonSetListTab = observer(() => {
       cellRenderer: function (data) {
         return `<span>${dateFormatter(data.value)}</span>`;
       },
+      sort: "desc",
     },
   ]);
 
-  const handleClick = e => {
-    console.log("e is ", e.data.name);
+  const handleClick = (e) => {
     setDaemonSetName(e.data.name);
     loadDaemonSetDetail(e.data.name, e.data.cluster, e.data.project);
   };
@@ -81,7 +82,9 @@ const DaemonSetListTab = observer(() => {
     if (daemonSetName === "") {
       swalError("DaemonSet을 선택해주세요!");
     } else {
-      swalUpdate(daemonSetName + "을 삭제하시겠습니까?", () => deleteDaemonSet(daemonSetName, reloadData));
+      swalUpdate(daemonSetName + "을 삭제하시겠습니까?", () =>
+        deleteDaemonSet(daemonSetName, reloadData)
+      );
     }
     setDaemonSetName("");
   };
@@ -94,6 +97,7 @@ const DaemonSetListTab = observer(() => {
     loadDaemonSetList();
     return () => {
       setReRun(false);
+      initViewList();
     };
   }, [reRun]);
 
@@ -107,7 +111,7 @@ const DaemonSetListTab = observer(() => {
             // isSelect={true}
             // keywordList={["이름"]}
           >
-            <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            &nbsp;&nbsp;
             <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
@@ -115,7 +119,7 @@ const DaemonSetListTab = observer(() => {
             <div className="grid-height2">
               <AgGrid
                 onCellClicked={handleClick}
-                rowData={viewList}
+                rowData={daemonSetList}
                 columnDefs={columDefs}
                 isBottom={false}
                 totalElements={totalElements}

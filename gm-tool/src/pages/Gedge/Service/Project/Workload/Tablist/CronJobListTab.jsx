@@ -17,8 +17,19 @@ const CronJobListTab = observer(() => {
     setTabvalue(newValue);
   };
 
-  const { viewList, cronJobList, cronJobDetail, totalElements, loadCronJobList, loadCronJobDetail, currentPage, totalPages, goPrevPage, goNextPage } =
-    cronJobStore;
+  const {
+    viewList,
+    initViewList,
+    cronJobList,
+    cronJobDetail,
+    totalElements,
+    loadCronJobList,
+    loadCronJobDetail,
+    currentPage,
+    totalPages,
+    goPrevPage,
+    goNextPage,
+  } = cronJobStore;
 
   const [columDefs] = useState([
     {
@@ -41,6 +52,9 @@ const CronJobListTab = observer(() => {
       headerName: "워크스페이스",
       field: "workspace",
       filter: true,
+      cellRenderer: function ({ data: { workspace } }) {
+        return `<span>${workspace ? workspace : "-"}</span>`;
+      },
     },
     {
       headerName: "스케줄",
@@ -71,7 +85,7 @@ const CronJobListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     const fieldName = e.colDef.field;
     loadCronJobDetail(e.data.name, e.data.cluster, e.data.project);
   };
@@ -80,22 +94,23 @@ const CronJobListTab = observer(() => {
 
   useEffect(() => {
     loadCronJobList();
+    return () => {
+      initViewList();
+    };
   }, []);
 
   return (
     <div style={{ height: 900 }}>
       <CReflexBox>
         <PanelBox>
-          <CommActionBar reloadFunc={loadCronJobList} isSearch={true} isSelect={true} keywordList={["이름"]}>
-            <CCreateButton>생성</CCreateButton>
-          </CommActionBar>
+          <CommActionBar reloadFunc={loadCronJobList}></CommActionBar>
 
           <div className="tabPanelContainer">
             <CTabPanel value={tabvalue} index={0}>
               <div className="grid-height2">
                 <AgGrid
                   onCellClicked={handleClick}
-                  rowData={viewList}
+                  rowData={cronJobList}
                   columnDefs={columDefs}
                   isBottom={false}
                   totalElements={totalElements}

@@ -4,17 +4,13 @@ import { dashboardStore } from "@/store";
 
 const ClusterSummary = observer(() => {
   const {
-    dashboardDetail,
     clusterCnt,
-    // coreClusterCnt,
     credentialCnt,
     edgeClusterCnt,
     workspaceCnt,
     projectCnt,
-    loadClusterCnt,
     loadDashboardCnt,
-    setClusterCnt,
-    setDashBoardDetail,
+    coreClusterCnt,
   } = dashboardStore;
 
   useEffect(() => {
@@ -30,8 +26,13 @@ const ClusterSummary = observer(() => {
 
       <div className="ClusterSummary Core">
         <div className="ClusterCountTitle">클라우드 개수</div>
-        <div className="ClusterCount">{credentialCnt}</div>
+        <div className="ClusterCount">{coreClusterCnt}</div>
       </div>
+
+      {/* <div className="ClusterSummary Test">
+        <div className="ClusterCountTitle">이동 엣지 개수</div>
+        <div className="ClusterCount">{credentialCnt}</div>
+      </div> */}
 
       <div className="ClusterSummary Edge">
         <div className="ClusterCountTitle">엣지 개수</div>

@@ -12,6 +12,12 @@ type TOTAL_DASHBOARD struct {
 	PodMemTop5     interface{} `json:"podMemTop5"`
 	CredentialCnt  int         `json:"credentialCnt"`
 	EdgeCloud      interface{} `json:"edgeInfo"`
+	TotalCpu       interface{} `json:"totalCpu"`
+	TotalMem       interface{} `json:"totalMem"`
+	TotalDisk      interface{} `json:"totalDisk"`
+	UsageTotalCpu  interface{} `json:"usageTotalCpu"`
+	UsageTotalMem  interface{} `json:"usageTotalMem"`
+	UsageTotalDisk interface{} `json:"usageTotalDisk"`
 }
 
 type CoreCloud struct {

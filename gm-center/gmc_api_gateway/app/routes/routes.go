@@ -36,7 +36,7 @@ func GEdgeRoute(e *echo.Echo) {
 	e.Validator = NewValidator()
 
 	e.POST("/gmcapi/v2/auth", c.LoginUser)
-
+	e.PUT("/callback-scheduler", c.CallbackScheduler)
 	r0 := e.Group("/gmcapi/v2/restricted")
 
 	// decoded, err := base64.URLEncoding.DecodeString(os.Getenv("SIGNINGKEY"))
@@ -66,6 +66,8 @@ func GEdgeRoute(e *echo.Echo) {
 	r.GET("/clusters/:name", c.FindCluster)
 	r.DELETE("/clusters/:name", c.DeleteCluster)
 	r.PUT("/clusters/:name", c.UpdateCluster)
+
+	r.GET("/certifications/:name", c.FindCredentialDB)
 
 	r.POST("/workspaces", c.CreateWorkspace)
 	r.GET("/workspaces", c.ListWorkspace)
@@ -132,10 +134,10 @@ func GEdgeRoute(e *echo.Echo) {
 	r.DELETE("/pvcs/:name", c.DeletePVC)
 
 	r.GET("/secrets", c.GetAllSecrets)
-	// r.POST("/pvs", c.CreateService)
+	r.POST("/secrets", c.CreateSecret)
 	r.GET("/secrets/:name", c.GetSecret)
 	// // r.PUT("/services/:name", c.UpdateService)
-	// r.DELETE("/pvs/:name", c.DeleteService)
+	r.DELETE("/secrets/:name", c.DeleteSecret)
 
 	r.GET("/storageclasses/:name", c.GetStorageclass)
 	r.GET("/storageclasses", c.GetStorageclasses)
@@ -150,15 +152,16 @@ func GEdgeRoute(e *echo.Echo) {
 
 	r.GET("/configmaps", c.GetAllConfigmaps)
 	r.GET("/configmaps/:name", c.GetConfigmap)
+
 	r.GET("/daemonsets", c.GetAllDaemonsets)
-	// r.POST("/pvs", c.CreateService)
 	r.GET("/daemonsets/:name", c.GetDaemonset)
+	r.POST("/daemonsets", c.CreateDaemonset)
+	r.DELETE("/daemonsets/:name", c.DeleteDaemonset)
 
 	r.GET("/statefulsets", c.GetAllStatefulset)
-	// r.POST("/pvs", c.CreateService)
 	r.GET("/statefulsets/:name", c.GetStatefulset)
-	// // r.PUT("/services/:name", c.UpdateService)
-	// r.DELETE("/pvs/:name", c.DeleteService)
+	r.POST("/statefulsets", c.CreateStatefulset)
+	r.DELETE("/statefulsets/:name", c.DeleteStatefulset)
 
 	r.GET("/serviceaccounts", c.GetAllServiceaccounts)
 	r.GET("/serviceaccounts/:name", c.GetServiceaccount)
@@ -181,16 +184,24 @@ func GEdgeRoute(e *echo.Echo) {
 
 	e.GET("/clusterInfo", c.GetClusterInfo)
 	e.POST("/auth", c.LoginUser)
-	r.GET("/ceph/health", c.GetCephHealth)
+	// r.GET("/ceph/health", c.GetCephHealth)
+	r.GET("/ceph/monitoring", c.CephMonit)
+	r.GET("/ceph/monit", c.CephDashboard)
+	r.GET("/cluster/addWorkNode", c.AddWorkerNode)
+
+	r.POST("/gs-scheduler", c.PostScheduler)
+	r.GET("/loki", c.GetLogs)
 	r2 := e.Group("/kube/v1", middleware.BasicAuth(func(id, password string, echo echo.Context) (bool, error) {
 		userChk, _ := c.AuthenticateUser(id, password)
 		return userChk, nil
 	}))
+
+	r.GET("/gpu", c.GetGpu)
 	// r2.Any("/:cluster_name", api.Kubernetes)
 	// r2.Any("/:cluster_name/:namespace_name", api.Kubernetes)
 	// r2.Any("/:cluster_name/:namespace_name/:kind_name", api.Kubernetes)
 	// r2.Any("/:cluster_name/:namespace_name/:kind_name/*", api.Kubernetes)
-
+	r2.GET("/monitoring/query", c.Query_monit)
 	r2.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 	r2.GET("/monitoring", echo.WrapHandler(promhttp.Handler()))
 	r2.Any("/monitoring/:kind", c.Monit)
@@ -203,10 +214,12 @@ func GEdgeRoute(e *echo.Echo) {
 	r3.GET("/cloudos", c.GetCloudOS)
 
 	r3.GET("/credentials", c.GetALLCredential)
-	r3.GET("/credentials/:credentialName", c.GetCredential)
+	r3.GET("/credentials/:name", c.GetCredential)
 	r3.POST("/credentials", c.CreateCredential)
-	r3.DELETE("/credentials/:credentialName", c.DeleteCredential)
+	r3.DELETE("/credentials/:name", c.DeleteCredential)
 	r3.GET("/credentialsCount", c.GetALLCredentialCount)
+
+	r3.GET("/specList", c.GetSpecList)
 
 	r3.GET("/connectionconfig", c.GetALLConnectionconfig)
 	r3.GET("/connectionconfig/:configName", c.GetConnectionconfig)
@@ -224,6 +237,11 @@ func GEdgeRoute(e *echo.Echo) {
 	r3.DELETE("/cloudregion/:cloudregionName", c.UnregisterCloudregion)
 
 	r3.GET("/vm", c.GetALLVm)
+	r3.GET("/vmList", c.GetVmList)
+	r3.GET("/credentialList", c.ListCredentialDB)
+	r3.GET("/credentialList/:type", c.TypeCredentialDB)
+	r3.GET("/specList", c.GetSpecList)
+	r3.POST("/vmStatus", c.GetALLVMStatusList)
 	r3.GET("/vm/:vmName", c.GetVm)
 	r3.POST("/vm", c.CreateVm)
 	r3.DELETE("/vm/:vmName", c.DeleteVm)
@@ -266,5 +284,4 @@ func GEdgeRoute(e *echo.Echo) {
 
 	r3.GET("/controlvm/:vmName", c.VmControl)
 	r3.DELETE("/controlvm/:vmName", c.VmTerminate)
-
 }

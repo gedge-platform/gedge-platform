@@ -50,6 +50,7 @@ type NewProject struct {
 	Owner         primitive.ObjectID   `json:"projectOwner,omitempty" bson:"projectOwner" validate:"required"`
 	Creator       primitive.ObjectID   `json:"projectCreator,omitempty" bson:"projectCreator" validate:"required"`
 	Workspace     primitive.ObjectID   `json:"workspace,omitempty" bson:"workspace" validate:"required"`
+	Tag string             `json:"projectTag,omitempty" bson:"projectTag" validate:"required"`
 	Selectcluster []primitive.ObjectID `json:"selectCluster,omitempty" bson:"selectCluster" validate:"required"`
 	IstioCheck    string               `json:"istioCheck,omitempty" bson:"istioCheck"`
 	Created_at    time.Time            `json:"created_at,omitempty"`
@@ -62,6 +63,7 @@ type DBProject struct {
 	Type        string             `json:"projectType" bson:"projectType" validate:"required"`
 	// Owner         primitive.ObjectID `json:"projectOwner,omitempty" bson:"projectOwner"`
 	// Creator       primitive.ObjectID `json:"projectCreator,omitempty" bson:"projectCreator"`
+	Tag string             `json:"projectTag,omitempty" bson:"projectTag" validate:"required"`
 	MemberName    string      `json:"memberName,omitempty" bson:"memberName" validate:"required"`
 	Workspace     DBWorkspace `json:"workspace,omitempty" bson:"workspace"`
 	Selectcluster []Cluster   `json:"selectCluster,omitempty" bson:"selectCluster"`
@@ -98,4 +100,14 @@ type PROJECT_DETAIL struct {
 	Annotation    interface{}            `json:"annotations,omitempty"`
 	Resource      map[string]interface{} `json:"resource,omitempty"`
 	ResourceUsage interface{}            `json:"resourceUsage,omitempty"`
+}
+
+type POST_PROJECT struct {
+	MemberName         string   `json:"memberName,omitempty"`
+	ProjectName        string   `json:"projectName,omitempty"`
+	ProjectDescription string   `json:"projectDescription,omitempty"`
+	ProjectType        string   `json:"projectType,omitempty"`
+	WorkspaceName      string   `json:"workspaceName,omitempty"`
+	ClusterName        []string `json:"clusterName,omitempty"`
+	IstioCheck         bool     `json:"istioCheck,omitempty"`
 }

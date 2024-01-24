@@ -48,6 +48,9 @@ const ClusterOverview = observer(() => {
   const [open8, setOpen8] = useState(false);
   const [chartValueTop, setChartValueTop] = useState("CPU");
   const [chartValueBottom, setChartValueBottom] = useState("APISERVER_LATENCY");
+  const [selected, setSelected] = useState(true);
+  const [selectType, setSelectType] = useState("allCluster");
+  // const [cluster, setCluster] = useState("all")
   const [tabvalue, setTabvalue] = useState(0);
   const [open, setOpen] = useState(false);
   const handleTabChange = (event, newValue) => {
@@ -67,6 +70,7 @@ const ClusterOverview = observer(() => {
     loadCoSchedulerAttempts,
     loadCoSchedulerRate,
     setClusterName,
+    loadClusterNameList,
   } = monitoringStore;
 
   const calledMetrics = () => {
@@ -287,36 +291,114 @@ const ClusterOverview = observer(() => {
         break;
     }
   };
-
   const clusterNameActionList = clusterNames.map((item) => {
     return {
       name: item,
       onClick: () => {
+        // setCluster(item)
         setClusterName(item);
         calledMetrics();
       },
     };
   });
 
-  useEffect(() => {
-    if (clusterName === "") {
-      loadClusterNames(calledMetrics);
+  // const clusterNameActionList =()=>{
+  //   let temp ={}
+  //   clusterNames.map((item) => {
+  //     temp= {
+  //     name: item,
+  //     onClick: () => {
+  //       setClusterName(item);
+  //       calledMetrics();
+  //     },
+  //   };
+  //   setClusterItem(...clusterItem, temp)
+  // })
+  //   return clusterItem
+  // };
+  const checkSelect = ({ target: { checked } }, type) => {
+    if (checked) {
+      setSelectType(type);
+      monitoringSet(type);
     }
+  };
+
+  const monitoringSet = (type) => {
+    if (type == "allCluster") {
+      setClusterName("allCluster");
+      calledMetrics();
+    } else {
+      if (clusterNameActionList.length > 0) {
+        setClusterName(clusterNameActionList[0]["name"]);
+        calledMetrics();
+      }
+    }
+  };
+
+  useEffect(() => {
+    setClusterName(selectType);
+    monitoringSet(selectType);
+    loadClusterNameList();
+    // loadClusterNames(calledMetrics);
+    // if (clusterName === "") {
+
+    // }
+    // if (clusterNameActionList.length > 0){
+    //   console.log("clusterNameActionList : ", clusterNameActionList )
+    //   clusterNameActionList.map((item)=>{
+    //     setClusterItem([...clusterItem, item])
+    //   })
+    // }
   }, []);
+
+  // useEffect(() => {
+
+  //   // if (clusterNameActionList.length > 0){
+  //     console.log("clusterNameActionList : ", clusterNameActionList )
+  //     clusterNameActionList.map((item)=>{
+  //       setClusterItem([...clusterItem, item])
+  //     })
+
+  //   console.log("clusterItem : ", clusterItem )
+  //   // }
+  // }, []);
 
   return (
     <PanelBoxM>
       <div className="panelTitBar panelTitBar_clear">
         <div className="tit">
           <span style={{ marginRight: "10px", color: "white " }}>
+            <input
+              type="radio"
+              checked={selectType == "allCluster"}
+              name="selectType"
+              value="allCluster"
+              onChange={(e) => checkSelect(e, e.target.value)}
+            />
+            All Cluster
+          </span>
+          <span style={{ marginRight: "10px", color: "white " }}>
+            <input
+              type="radio"
+              checked={selectType == "selectCluster"}
+              // type="checkbox"
+              name="selectType"
+              value="selectCluster"
+              onChange={(e) => checkSelect(e, e.target.value)}
+            />
             Select Cluster
           </span>
-          <CSelectButtonM
-            className="none_transform"
-            items={clusterNameActionList}
-          >
-            {clusterName}
-          </CSelectButtonM>
+          {selectType == "selectCluster" ? (
+            <CSelectButtonM
+              className="none_transform"
+              items={clusterNameActionList}
+              // items={clusterList}
+            >
+              {clusterName}
+            </CSelectButtonM>
+          ) : (
+            <span></span>
+          )}
         </div>
         <div className="date">
           {dayjs(new Date()).format("YYYY-MM-DD")}

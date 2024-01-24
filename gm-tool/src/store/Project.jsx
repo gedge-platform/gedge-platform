@@ -6,8 +6,10 @@ import { swalError } from "../utils/swal-utils";
 
 class Project {
   projectList = [];
+  projectLists = [];
   projectDetail = {};
   resourceUsage = {};
+  adminList = [];
   labels = {};
   annotations = {};
   events = [
@@ -44,7 +46,7 @@ class Project {
   currentPage = 1;
   totalPages = 1;
   resultList = {};
-  viewList = [];
+  viewList = null;
 
   currentEvent = 1;
   totalEvents = 1;
@@ -55,6 +57,13 @@ class Project {
   constructor() {
     makeAutoObservable(this);
   }
+
+  initViewList = () => {
+    runInAction(() => {
+      this.viewList = null;
+      this.currentPage = 1;
+    });
+  };
 
   goPrevPage = () => {
     runInAction(() => {
@@ -96,18 +105,20 @@ class Project {
       let cntCheck = true;
       this.resultList = {};
 
-      Object.entries(apiList).map(([_, value]) => {
-        cntCheck = true;
-        tempList.push(toJS(value));
-        cnt = cnt + 1;
-        if (cnt > 10) {
-          cntCheck = false;
-          cnt = 1;
-          this.resultList[totalCnt] = tempList;
-          totalCnt = totalCnt + 1;
-          tempList = [];
-        }
-      });
+      apiList === null
+        ? (cntCheck = false)
+        : Object.entries(apiList).map(([_, value]) => {
+            cntCheck = true;
+            tempList.push(toJS(value));
+            cnt = cnt + 1;
+            if (cnt > 10) {
+              cntCheck = false;
+              cnt = 1;
+              this.resultList[totalCnt] = tempList;
+              totalCnt = totalCnt + 1;
+              tempList = [];
+            }
+          });
 
       if (cntCheck) {
         this.resultList[totalCnt] = tempList;
@@ -115,6 +126,7 @@ class Project {
       }
 
       this.setTotalPages(totalCnt);
+      this.setCurrentPage(1);
       setFunc(this.resultList);
       this.setViewList(0);
     });
@@ -132,6 +144,17 @@ class Project {
     });
   };
 
+  paginationList = () => {
+    runInAction(() => {
+      if (this.projectList !== null) {
+        this.viewList = this.projectList.slice(
+          (this.currentPage - 1) * 10,
+          this.currentPage * 10
+        );
+      }
+    });
+  };
+
   loadProjectList = async () => {
     let { id, role } = getItem("user");
     role === "SA" ? (id = id) : (id = "");
@@ -139,15 +162,12 @@ class Project {
       .get(`${SERVER_URL}/userProjects?user=${id}`)
       .then((res) => {
         runInAction(() => {
-          // const list = res.data.data.filter(
-          //   (item) => item.projectType === type
-          // );
           this.projectList = res.data.data;
+          this.projectLists = res.data.data;
           this.totalElements = res.data.data.length;
         });
       })
       .then(() => {
-        console.log(this.projectList);
         this.convertList(this.projectList, this.setProjectList);
       })
       .then(() => {
@@ -155,45 +175,90 @@ class Project {
       });
   };
 
-  loadProjectDetail = async (projectName) => {
+  loadAdminProjectList = async () => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
     await axios
-      .get(`${SERVER_URL}/userProjects/${projectName}`)
-      .then(({ data: { data } }) => {
+      .get(`${SERVER_URL}/userProjects?user=${id}`)
+      .then((res) => {
         runInAction(() => {
-          this.projectDetail = data;
-          this.detailInfo = data.DetailInfo;
-          this.workspace = data.workspace;
-          this.labels = data.DetailInfo[0].labels;
-          this.annotations = data.DetailInfo[0].annotations;
-          if (data.events !== null) {
-            this.events = data.events;
+          this.adminList = res.data.data;
+          this.projectList = this.adminList.filter((project) =>
+            project.selectCluster.some(
+              (cluster) => cluster.clusterName === "gm-cluster"
+            )
+          );
+          if (this.projectList.length !== 0) {
+            this.totalPages = Math.ceil(this.projectList.length / 10);
+            this.totalElements = this.projectList.length;
           } else {
-            this.events = null;
+            this.projectList = [];
           }
-          this.selectClusterInfo = data.selectCluster;
-
-          const tempSelectCluster = data.selectCluster;
-          this.clusterList = tempSelectCluster.map(
-            (cluster) => cluster.clusterName
-          );
-          this.selectCluster = this.clusterList[0];
-          this.resourceUsage = this.detailInfo.map(
-            (data) => data.resourceUsage
-          );
-          // const temp = new Set(res.data.map((cluster) => cluster.clusterName));
-          // this.clusterList = [...temp];
         });
       })
       .then(() => {
-        // this.eventLength = this.events.length;
-        // console.log(this.events);
-        // this.convertEventList(this.events, this.setEventList);
+        this.paginationList();
+      })
+      .then(() => {
+        this.loadProjectDetail(
+          this.projectList[0] ? this.adminList[0].projectName : null
+        );
+      })
+      .catch(() => {
+        this.projectList = [];
+        this.paginationList();
       });
   };
 
+  loadProjectDetail = async (projectName) => {
+    try {
+      await axios
+        .get(`${SERVER_URL}/userProjects/${projectName}`)
+        .then(({ data: { data } }) => {
+          runInAction(() => {
+            this.projectDetail = data;
+            this.detailInfo = data.DetailInfo;
+            this.workspace = data.workspace;
+            this.labels = data.DetailInfo[0].labels;
+            this.annotations = data.DetailInfo[0].annotations;
+            if (data.events !== null) {
+              this.events = data.events;
+            } else {
+              this.events = null;
+            }
+            this.selectClusterInfo = data.selectCluster;
+
+            const tempSelectCluster = data.selectCluster;
+            this.clusterList = tempSelectCluster.map(
+              (cluster) => cluster.clusterName
+            );
+            this.selectCluster = this.clusterList[0];
+            this.resourceUsage = this.detailInfo.map(
+              (data) => data.resourceUsage
+            );
+            // const temp = new Set(res.data.map((cluster) => cluster.clusterName));
+            // this.clusterList = [...temp];
+          });
+        });
+    } catch (e) {
+      this.projectDetail = null;
+      this.detailInfo = [{}];
+      this.workspace = {};
+      this.labels = null;
+      this.annotations = null;
+      this.events = null;
+      this.selectClusterInfo = null;
+      this.clusterList = null;
+      this.selectCluster = null;
+      this.resourceUsage = { namespace_cpu: null, namespace_memory: null };
+    }
+  };
+
   loadProjectListInWorkspace = async (workspaceName) => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
     await axios
-      .get(`${SERVER_URL}/userProjects?workspace=${workspaceName}`)
+      .get(`${SERVER_URL}/userProjects?user=${id}&workspace=${workspaceName}`)
       .then((res) => {
         runInAction(() => {
           this.projectListinWorkspace = res.data.data;
@@ -206,7 +271,6 @@ class Project {
     role === "SA" ? (id = id) : (id = "");
     await axios.get(`${SERVER_URL}/systemProjects?user=${id}`).then((res) => {
       runInAction(() => {
-        console.log(res);
         this.systemProjectList = res.data.data;
         this.totalElements = res.data.length;
       });
@@ -241,6 +305,7 @@ class Project {
     callback
   ) => {
     const { id } = getItem("user");
+
     const body = {
       projectName: projectName,
       projectDescription,
@@ -250,24 +315,10 @@ class Project {
       memberName: id,
       istioCheck: istioCheck ? "enabled" : "disabled",
     };
-    console.log(body);
 
-    // // const body2 = {
-    // //   projectName,
-    // //   projectDescription,
-    // //   memberName: getItem("user"),
-    // //   clusterName: selectCluster,
-    // //   projectType,
-    // //   workspaceName,
-    // // };
-    // axios
-    //   .post(`${SERVER_URL}/projects`, body2)
-    //   .then((res) => console.log(res))
-    //   .catch((err) => console.error(err));
     axios
       .post(`${SERVER_URL}/projects`, body)
       .then((res) => {
-        console.log(res);
         if (res.status === 201) {
           swalError("Project가 생성되었습니다!", callback);
         }
@@ -311,57 +362,6 @@ class Project {
       }
     });
   };
-
-  // setTotalEvents = (n) => {
-  //   runInAction(() => {
-  //     this.totalEvents = n;
-  //   });
-  // };
-
-  // setEventViewList = (n) => {
-  //   runInAction(() => {
-  //     this.eventList = this.events[n];
-  //     console.log(this.eventList);
-  //   });
-  // };
-
-  // setEventList = (list) => {
-  //   runInAction(() => {
-  //     this.events = list;
-  //   });
-  // };
-
-  // convertEventList = (apiList, setFunc) => {
-  //   runInAction(() => {
-  //     let cnt = 1;
-  //     let totalCnt = 0;
-  //     let tempList = [];
-  //     let cntCheck = true;
-  //     this.resultEvent = {};
-
-  //     Object.entries(apiList).map(([_, value]) => {
-  //       cntCheck = true;
-  //       tempList.push(toJS(value));
-  //       cnt = cnt + 1;
-  //       if (cnt > 5) {
-  //         cntCheck = false;
-  //         cnt = 1;
-  //         this.resultEvent[totalCnt] = tempList;
-  //         totalCnt = totalCnt + 1;
-  //         tempList = [];
-  //       }
-  //     });
-
-  //     if (cntCheck) {
-  //       this.resultEvent[totalCnt] = tempList;
-  //       totalCnt = totalCnt === 0 ? 1 : totalCnt + 1;
-  //     }
-
-  //     this.setTotalEvents(totalCnt);
-  //     setFunc(this.resultEvent);
-  //     this.setEventViewList(0);
-  //   });
-  // };
 }
 
 const projectStore = new Project();

@@ -79,7 +79,6 @@ const EnterInfo = ({ setStep }) => {
         })
         .catch((e) => console.log(e));
     }
-    // console.log(inputs);
   };
 
   const checkID = async () => {

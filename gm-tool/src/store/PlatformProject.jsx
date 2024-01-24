@@ -9,7 +9,10 @@ class PlatformProject {
       clusterName: "",
     },
   ];
+  platformProjectLists = [];
   totalElements = 0;
+  adminList = [];
+  adminList = [];
   clusterList = [];
   platformProjectDetail = {};
   labels = {};
@@ -46,18 +49,28 @@ class PlatformProject {
   currentPage = 1;
   totalPages = 1;
   resultList = {};
-  viewList = [];
+  viewList = null;
 
   constructor() {
     makeAutoObservable(this);
   }
 
+  initViewList = () => {
+    runInAction(() => {
+      this.viewList = null;
+      this.currentPage = 1;
+    });
+  };
+
   goPrevPage = () => {
     runInAction(() => {
       if (this.currentPage > 1) {
         this.currentPage = this.currentPage - 1;
-        this.setViewList(this.currentPage - 1);
-        this.loadPlatformDetail(this.viewList[0].projectName);
+        this.paginationList();
+        this.loadPlatformProjectDetail(
+          this.viewList[0].projectName,
+          this.viewList[0].clusterName
+        );
       }
     });
   };
@@ -66,8 +79,11 @@ class PlatformProject {
     runInAction(() => {
       if (this.totalPages > this.currentPage) {
         this.currentPage = this.currentPage + 1;
-        this.setViewList(this.currentPage - 1);
-        this.loadPlatformDetail(this.viewList[0].projectName);
+        this.paginationList();
+        this.loadPlatformProjectDetail(
+          this.viewList[0].projectName,
+          this.viewList[0].clusterName
+        );
       }
     });
   };
@@ -91,19 +107,20 @@ class PlatformProject {
       let tempList = [];
       let cntCheck = true;
       this.resultList = {};
-
-      Object.entries(apiList).map(([_, value]) => {
-        cntCheck = true;
-        tempList.push(toJS(value));
-        cnt = cnt + 1;
-        if (cnt > 10) {
-          cntCheck = false;
-          cnt = 1;
-          this.resultList[totalCnt] = tempList;
-          totalCnt = totalCnt + 1;
-          tempList = [];
-        }
-      });
+      apiList === null
+        ? (cntCheck = false)
+        : Object.entries(apiList).map(([_, value]) => {
+            cntCheck = true;
+            tempList.push(toJS(value));
+            cnt = cnt + 1;
+            if (cnt > 10) {
+              cntCheck = false;
+              cnt = 1;
+              this.resultList[totalCnt] = tempList;
+              totalCnt = totalCnt + 1;
+              tempList = [];
+            }
+          });
 
       if (cntCheck) {
         this.resultList[totalCnt] = tempList;
@@ -111,6 +128,7 @@ class PlatformProject {
       }
 
       this.setTotalPages(totalCnt);
+      this.setCurrentPage(1);
       setFunc(this.resultList);
       this.setViewList(0);
     });
@@ -128,6 +146,17 @@ class PlatformProject {
     });
   };
 
+  paginationList = () => {
+    runInAction(() => {
+      if (this.platformProjectList !== null) {
+        this.viewList = this.platformProjectList.slice(
+          (this.currentPage - 1) * 10,
+          this.currentPage * 10
+        );
+      }
+    });
+  };
+
   loadPlatformProjectList = async () => {
     let { id, role } = getItem("user");
     role === "SA" ? (id = id) : (id = "");
@@ -135,18 +164,19 @@ class PlatformProject {
       .get(`${SERVER_URL}/systemProjects?user=${id}`)
       .then((res) => {
         runInAction(() => {
-          console.log(res);
-          this.platformProjectList = res.data.data;
-          this.platformDetail = res.data.data[0];
-          // const temp = new Set(
-          //   res.data.data.map((cluster) => cluster.clusterName)
-          // );
-          // this.clusterList = [...temp];
-          this.totalElements = res.data.data.length;
+          if (res.data.data !== null) {
+            this.platformProjectList = res.data.data;
+            this.platformProjectLists = res.data.data;
+            this.platformDetail = res.data.data[0];
+            this.totalPages = Math.ceil(res.data.data.length / 10);
+            this.totalElements = res.data.data.length;
+          } else {
+            this.platformProjectList = [];
+          }
         });
       })
       .then(() => {
-        this.convertList(this.platformProjectList, this.setPlatformProjectList);
+        this.paginationList();
       })
       .then(() => {
         this.loadPlatformProjectDetail(
@@ -159,6 +189,51 @@ class PlatformProject {
         // this.platformProjectList[0].projectName,
         // this.platformProjectList[0].clusterName
         // );
+      });
+  };
+
+  loadAdminPlatformProjectList = async () => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
+    await axios
+      .get(`${SERVER_URL}/systemProjects?user=${id}`)
+      .then((res) => {
+        runInAction(() => {
+          this.adminList = res.data.data;
+          this.platformProjectLists = res.data.data.filter(
+            (data) => data.clusterName === "gm-cluster"
+          );
+          this.platformProjectList = this.adminList.filter(
+            (data) => data.clusterName === "gm-cluster"
+          );
+          // this.totalElements = this.platformProjectLists.length;
+          // if (this.platformProjectList.length !== 0) {
+          //   this.platformDetail = this.platformProjectList[0];
+          //   this.totalElements = this.platformProjectList.length;
+          //   this.totalPages = Math.ceil(this.platformProjectList.length / 10);
+          // } else {
+          //   this.platformProjectList = [];
+          // }
+        });
+      })
+      // .then(() => {
+      //   this.paginationList();
+      // })
+      .then(() => {
+        this.loadPlatformProjectDetail(
+          this.platformProjectList[0].projectName,
+          this.platformProjectList[0].clusterName
+        );
+        // this.loadCluster(
+        //   this.viewList[0].projectName,
+        //   this.viewList[0].clusterName
+        // this.platformProjectList[0].projectName,
+        // this.platformProjectList[0].clusterName
+        // );
+      })
+      .catch((err) => {
+        this.platformProjectList = [];
+        // this.paginationList();
       });
   };
 

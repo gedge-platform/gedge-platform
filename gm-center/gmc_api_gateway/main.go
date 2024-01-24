@@ -1,15 +1,15 @@
 package main
 
 import (
-	"net/http"
-	"os"
-	"strconv"
-
+	c "gmc_api_gateway/app/controller"
 	db "gmc_api_gateway/app/database"
 	"gmc_api_gateway/app/routes"
 	"gmc_api_gateway/config"
-
 	_ "gmc_api_gateway/docs"
+	"net/http"
+	"os"
+	"runtime"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -26,7 +26,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 192.168.160.230:8013
+// @host 101.79.1.138:8012
 // @BasePath /gmcapi/v2
 // @schemes http
 // @query.collection.format multi
@@ -35,8 +35,10 @@ import (
 // @in                          header
 // @name                        Authorization
 // @description "Type \"Bearer \" and then your API Token"
+
 func main() {
-	// docs.SwaggerInfo.BasePath = "/gmcapi/v2"
+	go c.Cluster_Status_Cron()
+
 	config.Init()
 	config := config.GetConfig()
 
@@ -46,6 +48,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	// e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 	// 	Skipper: func(c echo.Context) bool {
 	// 		if strings.Contains(c.Path(), "swagger") { // Change "swagger" for your own path
@@ -61,6 +64,24 @@ func main() {
 	// 			<h3>GEdge Platform :: GM-Center API Server :)</h3>
 	// 	`)
 	// })
+	// redisAddr := os.Getenv("REDIS")
+	// ringOpt := &redis.RingOptions{
+	// 	Addrs: map[string]string{
+	// 		"server": redisAddr,
+	// 	},
+	// }
+	// cacheClient, err := cache.NewClient(
+	// 	cache.ClientWithAdapter(redis.NewAdapter(ringOpt)),
+	// 	cache.ClientWithTTL(10*time.Minute),
+	// 	cache.ClientWithRefreshKey("opn"),
+	// )
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// e.Use(cacheClient.Middleware())
+	// router.GET("/", example(c))
+	// e.Start(":8080")
+
 	e.GET("/", func(c echo.Context) error {
 		return c.HTML(http.StatusOK, `
 				<h1>Welcome to GEdge API-Gateway!</h1>
@@ -75,6 +96,7 @@ func main() {
 	if err := e.Start(GetListenPort(config)); err != nil {
 		panic(err)
 	}
+
 }
 
 // Environment Value ("LISTEN_PORT")

@@ -1,11 +1,12 @@
-import React, { useEffect, useState, forwardRef } from "react";
+import React, { useEffect, useState } from "react";
 import { ModuleRegistry } from "@ag-grid-community/core";
-import { ClientSideRowModelModule } from "@ag-grid-community/all-modules";
+import { ClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
 import { AgGridReact } from "@ag-grid-community/react";
 
 import "@ag-grid-community/core/dist/styles/ag-grid.css";
 import "@ag-grid-community/core/dist/styles/ag-theme-balham-dark.css";
 import "@/styles/ag-custom.scss";
+import { swalError } from "@/utils/swal-utils";
 
 ModuleRegistry.register(ClientSideRowModelModule);
 // detail 없는 부분
@@ -31,18 +32,30 @@ const AgGrid2 = (props) => {
   const [gridApi, setGridApi] = useState(null);
   const [setGridColumnApi] = useState(null);
 
+  const [overlayNoRowsTemplate, setOverlayNoRowsTemplate] = useState(
+    '<span style="padding: 10px; border: 2px solid #444; background: lightgoldenrodyellow;">Data Loading...</span>'
+  );
+
+  const [overlayLoadingTemplate, setOverlayLoadingTemplate] = useState(
+    '<span class="ag-overlay-loading-center">No Data</span>'
+  );
+
   useEffect(() => {
     if (gridApi) {
       gridApi.sizeColumnsToFit();
+      gridApi.showLoadingOverlay();
+      gridApi.hideOverlay();
     }
   }, [rowData]);
+
   const onGridReady = (params) => {
     setGridApi(params.api);
-    // setGridColumnApi(params.columnApi);
   };
+
   const onFirstDataRendered = (params) => {
     params.api.sizeColumnsToFit();
   };
+
   const onGridSizeChanged = (params) => {
     const gridWidth = document.getElementById("my-grid").offsetWidth;
     const columnsToShow = [];
@@ -62,6 +75,7 @@ const AgGrid2 = (props) => {
     params.columnApi.setColumnsVisible(columnsToHide, false);
     params.api.sizeColumnsToFit();
   };
+
   const defaultColDef = {
     sortable: true,
     resizable: true,
@@ -72,6 +86,7 @@ const AgGrid2 = (props) => {
     const tempArr = api.getSelectedRows();
     setDetail(tempArr[0].id);
   };
+
   return (
     <div
       id="my-grid"
@@ -83,8 +98,8 @@ const AgGrid2 = (props) => {
         onGridReady={onGridReady}
         onFirstDataRendered={onFirstDataRendered}
         onGridSizeChanged={onGridSizeChanged}
-        overlayLoadingTemplate={'<span class="ag-overlay-loading-center">No Data</span>'}
-        overlayNoRowsTemplate={'<span style="padding: 10px; border: 2px solid #444; background: lightgoldenrodyellow">Data Loading....</span>'}
+        overlayNoRowsTemplate={overlayNoRowsTemplate}
+        overlayLoadingTemplate={overlayLoadingTemplate}
         rowData={rowData}
         columnDefs={columnDefs}
         autoWidth={autoWidth}
@@ -117,14 +132,33 @@ const AgGrid2 = (props) => {
             ""
           ) : (
             <div className="btn-wrap">
-              <button type="button" className="btn_comm" onClick={goPrevPage}>
+              <button
+                type="button"
+                className="btn_comm"
+                onClick={() => {
+                  if (currentPage === 1) {
+                    swalError("첫 페이지입니다");
+                  } else {
+                    goPrevPage();
+                  }
+                }}
+              >
                 <span className="btnLabel_icon hover prev">Prev</span>
               </button>
               <span className="page-num">
                 {currentPage} of {totalPages}
               </span>
               <button type="button" className="btn_comm">
-                <span className="btnLabel_icon hover next" onClick={goNextPage}>
+                <span
+                  className="btnLabel_icon hover next"
+                  onClick={() => {
+                    if (currentPage === totalPages) {
+                      swalError("마지막 페이지입니다");
+                    } else {
+                      goNextPage();
+                    }
+                  }}
+                >
                   Next
                 </span>
               </button>

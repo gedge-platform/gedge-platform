@@ -1,5 +1,5 @@
 import React from "react";
-import { includes } from "lodash";
+import { includes } from "lodash-es";
 import DialogActions from "@material-ui/core/DialogActions";
 import { CButton } from "@/components/buttons/CButton";
 

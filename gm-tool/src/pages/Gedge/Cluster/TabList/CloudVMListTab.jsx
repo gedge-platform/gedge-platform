@@ -8,13 +8,27 @@ import { observer } from "mobx-react";
 import { clusterStore } from "@/store";
 import CreateVM from "../Dialog/CreateVM";
 import { drawStatus } from "@/components/datagrids/AggridFormatter";
+import { swalError, swalUpdate, swalLoading } from "@/utils/swal-utils";
 
 const CloudVMListTab = observer(() => {
   const [open, setOpen] = useState(false);
   const [reRun, setReRun] = useState(false);
   const [vmName, setVMName] = useState("");
+  const [config, setConfig] = useState("");
 
-  const { setInitViewList, deleteVM, loadVMList, currentPage, totalPages, viewList, goPrevPage, goNextPage, totalElements } = clusterStore;
+  const {
+    clusterList,
+    deleteVM,
+    loadVMList,
+    currentPage,
+    totalPages,
+    viewList,
+    initViewList,
+    initClusterList,
+    goPrevPage,
+    goNextPage,
+    totalElements,
+  } = clusterStore;
 
   const [columDefs] = useState([
     {
@@ -38,6 +52,11 @@ const CloudVMListTab = observer(() => {
     {
       headerName: "스펙",
       field: "VMSpecName",
+      filter: true,
+    },
+    {
+      headerName: "디스크",
+      field: "RootDiskSize",
       filter: true,
     },
     {
@@ -77,8 +96,12 @@ const CloudVMListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
-    setVMName(e.data.name);
+  const handleClick = (e) => {
+    setVMName(e.data.IId.NameId);
+
+    var configStr = e.data.KeyPairIId.NameId;
+    configStr = configStr.replace("-key", "");
+    setConfig(configStr);
   };
 
   const handleOpen = () => {
@@ -93,7 +116,14 @@ const CloudVMListTab = observer(() => {
     if (vmName === "") {
       swalError("VM을 선택해주세요!");
     } else {
-      swalUpdate(vmName + "를 삭제하시겠습니까?", () => deleteVM(vmName, reloadData));
+      swalUpdate(vmName + "를 삭제하시겠습니까?", () => {
+        swalLoading(
+          "VM 삭제중..",
+          3000000,
+          "이 창은 VM 삭제가 완료되면 사라집니다."
+        );
+        deleteVM(vmName, config, reloadData);
+      });
     }
     setVMName("");
   };
@@ -103,7 +133,8 @@ const CloudVMListTab = observer(() => {
   };
 
   useLayoutEffect(() => {
-    setInitViewList();
+    initViewList();
+    initClusterList();
     loadVMList();
     return () => {
       setReRun(false);
@@ -114,8 +145,9 @@ const CloudVMListTab = observer(() => {
     <>
       <CReflexBox>
         <PanelBox>
-          <CommActionBar>
+          <CommActionBar reloadFunc={reloadData}>
             <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            &nbsp;&nbsp;
             <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
 
@@ -123,7 +155,7 @@ const CloudVMListTab = observer(() => {
             {/* <CTabPanel value={tabvalue} index={0}> */}
             <div className="grid-height2">
               <AgGrid
-                rowData={viewList}
+                rowData={clusterList}
                 columnDefs={columDefs}
                 isBottom={false}
                 onCellClicked={handleClick}

@@ -46,6 +46,7 @@ const EventWrap = styled.div`
 
   .MuiPaper-elevation8 {
     height: 40px;
+    background-color: #2f3855;
   }
 `;
 
@@ -117,7 +118,6 @@ const Detail = observer(() => {
     goPrevEvent,
     goNextEvent,
   } = projectStore;
-  console.log(resourceUsage);
 
   // const { projectDetail :{selectCluster, resources:{deployment_count}} } = projectStore;
   const [open, setOpen] = useState(false);
@@ -140,8 +140,12 @@ const Detail = observer(() => {
     return (
       <EventWrap className="event-wrap">
         <FormControl>
-          <Select value={events.cluster} inputProps={{ "aria-label": "Without label" }} onChange={clusterChange}>
-            {events.map(cluster => (
+          <Select
+            value={events.cluster}
+            inputProps={{ "aria-label": "Without label" }}
+            onChange={clusterChange}
+          >
+            {events.map((cluster) => (
               <MenuItem
                 style={{
                   color: "black",
@@ -160,15 +164,15 @@ const Detail = observer(() => {
   };
 
   const eventAccor = () => {
-    return eventList.map(item => <EventAccordion events={item} />);
+    return eventList.map((item) => <EventAccordion events={item} />);
   };
 
-  const clusterChange = e => {
+  const clusterChange = (e) => {
     changeCluster(e.target.value);
   };
 
   const clusterResourceTable = () => {
-    return detailInfo.map(cluster => (
+    return detailInfo.map((cluster) => (
       <>
         <ClusterTitle>{cluster.clusterName}</ClusterTitle>
         <table className="tb_data">
@@ -177,9 +181,17 @@ const Detail = observer(() => {
               {cluster.resourceUsage ? (
                 <>
                   <th>CPU</th>
-                  <td>{cluster.resourceUsage?.namespace_cpu ? cluster.resourceUsage?.namespace_cpu : "0"}</td>
+                  <td>
+                    {cluster.resourceUsage?.namespace_cpu
+                      ? cluster.resourceUsage?.namespace_cpu
+                      : "0"}
+                  </td>
                   <th>MEMORY</th>
-                  <td>{cluster.resourceUsage?.namespace_memory ? cluster.resourceUsage?.namespace_memory : "0"}</td>
+                  <td>
+                    {cluster.resourceUsage?.namespace_memory
+                      ? cluster.resourceUsage?.namespace_memory
+                      : "0"}
+                  </td>
                 </>
               ) : (
                 <></>
@@ -193,7 +205,7 @@ const Detail = observer(() => {
   };
 
   const resourcesTable = () => {
-    return detailInfo.map(resources => (
+    return detailInfo.map((resources) => (
       <>
         <ClusterTitle>{resources.clusterName}</ClusterTitle>
         <table className="tb_data" style={{ tableLayout: "fixed" }}>
@@ -202,27 +214,59 @@ const Detail = observer(() => {
               <>
                 <tr>
                   <th>Deployment</th>
-                  <td>{resources?.resource?.deployment_count ? resources?.resource?.deployment_count : "0"}</td>
+                  <td>
+                    {resources?.resource?.deployment_count
+                      ? resources?.resource?.deployment_count
+                      : "0"}
+                  </td>
                   <th>Pod</th>
-                  <td>{resources?.resource?.pod_count ? resources?.resource?.pod_count : "0"}</td>
+                  <td>
+                    {resources?.resource?.pod_count
+                      ? resources?.resource?.pod_count
+                      : "0"}
+                  </td>
                 </tr>
                 <tr>
                   <th>Service</th>
-                  <td>{resources?.resource?.service_count ? resources?.resource?.service_count : "0"}</td>
+                  <td>
+                    {resources?.resource?.service_count
+                      ? resources?.resource?.service_count
+                      : "0"}
+                  </td>
                   <th>CronJob</th>
-                  <td>{resources?.resource?.cronjob_count ? resources?.resource?.cronjob_count : "0"}</td>
+                  <td>
+                    {resources?.resource?.cronjob_count
+                      ? resources?.resource?.cronjob_count
+                      : "0"}
+                  </td>
                 </tr>
                 <tr>
                   <th>Job</th>
-                  <td>{resources?.resource?.job_count ? resources?.resource?.job_count : "0"}</td>
+                  <td>
+                    {resources?.resource?.job_count
+                      ? resources?.resource?.job_count
+                      : "0"}
+                  </td>
                   <th>Volume</th>
-                  <td>{resources?.resource?.volume_count ? resources?.resource?.volume_count : "0"}</td>
+                  <td>
+                    {resources?.resource?.volume_count
+                      ? resources?.resource?.volume_count
+                      : "0"}
+                  </td>
                 </tr>
                 <tr>
                   <th>Statefulset</th>
-                  <td>{resources?.resource?.Statefulset_count ? resources?.resource?.Statefulset_count : "0"}</td>
+                  <td>
+                    {resources?.resource?.Statefulset_count
+                      ? resources?.resource?.Statefulset_count
+                      : "0"}
+                  </td>
                   <th>Daemonset</th>
-                  <td>{resources?.resource?.daemonset_count ? resources?.resource?.daemonset_count : "0"}</td>
+                  <td>
+                    {resources?.resource?.daemonset_count
+                      ? resources?.resource?.daemonset_count
+                      : "0"}
+                  </td>
                 </tr>
               </>
             ) : (
@@ -272,7 +316,11 @@ const Detail = observer(() => {
               </tr>
               <tr>
                 <th>Cluster Name</th>
-                <td style={{ whiteSpace: "pre-wrap" }}>{selectClusterInfo?.map(cluster => cluster.clusterName + "\n")}</td>
+                <td style={{ whiteSpace: "pre-wrap" }}>
+                  {selectClusterInfo?.map(
+                    (cluster) => cluster.clusterName + "\n"
+                  )}
+                </td>
                 <th>Creator</th>
                 <td>{projectDetail.memberName}</td>
               </tr>
@@ -297,7 +345,7 @@ const Detail = observer(() => {
                 </Label>
               ))
             ) : (
-              <p>No Labels Info.</p>
+              <p>No Labels Info</p>
             )}
           </LabelContainer>
           <br />
@@ -316,7 +364,7 @@ const Detail = observer(() => {
             </table>
           ) : (
             <LabelContainer>
-              <p>No Annotations Info.</p>
+              <p>No Annotations Info</p>
             </LabelContainer>
           )}
           <br />

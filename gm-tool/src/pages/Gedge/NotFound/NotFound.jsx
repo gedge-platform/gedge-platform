@@ -27,25 +27,25 @@ const NotFound = () => {
   const userRole = getItem("userRole");
 
   return (
-    <>
-      <Container>
-        <p>404 Not Found</p>
-        <NavLink to="/">메인페이지로</NavLink>
-      </Container>
-    </>
     // <>
-    //   {userRole === "PA" ? (
-    //     <Container>
-    //       <p>404 Not Found</p>
-    //       <NavLink to="/">PA 메인페이지로</NavLink>
-    //     </Container>
-    //   ) : (
-    //     <Container>
-    //       <p>404 Not Found</p>
-    //       <NavLink to="/service">SA 메인페이지로</NavLink>
-    //     </Container>
-    //   )}
+    //   <Container>
+    //     <p>404 Not Found</p>
+    //     <NavLink to="/total">메인페이지로</NavLink>
+    //   </Container>
     // </>
+    <>
+      {userRole === "PA" ? (
+        <Container>
+          <p>404 Not Found</p>
+          <NavLink to="/total">PA 메인페이지로</NavLink>
+        </Container>
+      ) : (
+        <Container>
+          <p>404 Not Found</p>
+          <NavLink to="/service">SA 메인페이지로</NavLink>
+        </Container>
+      )}
+    </>
   );
 };
 

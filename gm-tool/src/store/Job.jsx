@@ -8,32 +8,34 @@ class Job {
   currentPage = 1;
   totalPages = 1;
   resultList = {};
-  viewList = [];
+  viewList = null;
+  adminList = [];
   pJobList = [];
   jobList = [];
   containers = [];
-  jobDetailData = {
-    containers: [
-      {
-        name: "",
-        image: "",
-      },
-    ],
-    ownerReferences: [
-      {
-        name: "",
-        apiVersion: "",
-        kind: "",
-      },
-    ],
-    conditions: [
-      {
-        status: "",
-        type: "",
-        lastProbeTime: "",
-      },
-    ],
-  };
+  jobDetailData = [];
+  // jobDetailData = {
+  //   containers: [
+  //     {
+  //       name: "",
+  //       image: "",
+  //     },
+  //   ],
+  //   ownerReferences: [
+  //     {
+  //       name: "",
+  //       apiVersion: "",
+  //       kind: "",
+  //     },
+  //   ],
+  //   conditions: [
+  //     {
+  //       status: "",
+  //       type: "",
+  //       lastProbeTime: "",
+  //     },
+  //   ],
+  // };
   depServicesPort = [
     {
       name: "",
@@ -41,26 +43,12 @@ class Job {
       protocol: "",
     },
   ];
-  involvesPodList = [
-    {
-      metadata: {
-        name: "",
-      },
-      status: {
-        phase: "",
-        hostIP: "",
-        podIP: "",
-      },
-      spec: {
-        nodeName: "",
-      },
-    },
-  ];
-  ownerReferences = {};
+  involvesPodList = [];
+  ownerReferences = [];
 
   totalElements = 0;
-  labels = {};
-  annotations = {};
+  labels = [];
+  annotations = [];
   events = [
     {
       kind: "",
@@ -78,11 +66,18 @@ class Job {
     makeAutoObservable(this);
   }
 
+  initViewList = () => {
+    runInAction(() => {
+      this.viewList = null;
+      this.currentPage = 1;
+    });
+  };
+
   goPrevPage = () => {
     runInAction(() => {
       if (this.currentPage > 1) {
         this.currentPage = this.currentPage - 1;
-        this.setViewList(this.currentPage - 1);
+        this.paginationList();
         this.loadJobDetail(
           this.viewList[0].name,
           this.viewList[0].cluster,
@@ -96,7 +91,7 @@ class Job {
     runInAction(() => {
       if (this.totalPages > this.currentPage) {
         this.currentPage = this.currentPage + 1;
-        this.setViewList(this.currentPage - 1);
+        this.paginationList();
         this.loadJobDetail(
           this.viewList[0].name,
           this.viewList[0].cluster,
@@ -106,62 +101,13 @@ class Job {
     });
   };
 
-  setCurrentPage = (n) => {
-    runInAction(() => {
-      this.currentPage = n;
-    });
-  };
-
-  setTotalPages = (n) => {
-    runInAction(() => {
-      this.totalPages = n;
-    });
-  };
-
-  convertList = (apiList, setFunc) => {
-    runInAction(() => {
-      let cnt = 1;
-      let totalCnt = 0;
-      let tempList = [];
-      let cntCheck = true;
-      this.resultList = {};
-
-      apiList === null
-        ? "-"
-        : Object.entries(apiList).map(([_, value]) => {
-            cntCheck = true;
-            tempList.push(toJS(value));
-            cnt = cnt + 1;
-            if (cnt > 10) {
-              cntCheck = false;
-              cnt = 1;
-              this.resultList[totalCnt] = tempList;
-              totalCnt = totalCnt + 1;
-              tempList = [];
-            }
-          });
-
-      if (cntCheck) {
-        this.resultList[totalCnt] = tempList;
-        totalCnt = totalCnt === 0 ? 1 : totalCnt + 1;
-      }
-
-      this.setTotalPages(totalCnt);
-      setFunc(this.resultList);
-      this.setViewList(0);
-    });
-  };
-
-  setJobList = (list) => {
-    runInAction(() => {
-      this.jobList = list;
-    });
-  };
-
-  setViewList = (n) => {
-    runInAction(() => {
-      this.viewList = this.jobList[n];
-    });
+  paginationList = () => {
+    if (this.jobList !== null) {
+      this.viewList = this.jobList.slice(
+        (this.currentPage - 1) * 10,
+        this.currentPage * 10
+      );
+    }
   };
 
   loadJobList = async () => {
@@ -171,39 +117,62 @@ class Job {
       .get(`${SERVER_URL}/jobs?user=${id}`)
       .then((res) => {
         runInAction(() => {
-          // const list = res.data.data.filter((item) => item.projectType === type);
-          this.jobList = res.data.data;
-          // this.jobDetail = list[0];
-          res.data.data === null
-            ? (this.totalElements = 0)
-            : (this.totalElements = res.data.data.length);
+          if (res.data.data !== null) {
+            this.jobList = res.data.data;
+            this.jobDetail = res.data.data[0];
+            this.totalPages = Math.ceil(res.data.data.length / 10);
+            this.totalElements = res.data.data.length;
+          } else {
+            this.jobList = [];
+          }
         });
       })
       .then(() => {
-        this.convertList(this.jobList, this.setJobList);
+        this.paginationList();
+        this.jobList.length === 0
+          ? this.jobDetailData === null
+          : this.loadJobDetail(
+              this.jobList[0].name,
+              this.jobList[0].cluster,
+              this.jobList[0].project
+            );
       });
-    console.log(this.jobList);
-    this.totalElements === 0
-      ? ((this.containers = null),
-        (this.jobDetailData = null),
-        (this.labels = null),
-        (this.involvesPodList = null),
-        (this.annotations = null),
-        (this.involvesPodList = null),
-        (this.ownerReferences = null))
-      : this.loadJobDetail(
-          this.jobList[0][0].name,
-          this.jobList[0][0].cluster,
-          this.jobList[0][0].project
-        );
+  };
+
+  loadAdminJobList = async () => {
+    let { id, role } = getItem("user");
+    role === "SA" ? (id = id) : (id = "");
+    await axios
+      .get(`${SERVER_URL}/jobs?user=${id}`)
+      .then((res) => {
+        runInAction(() => {
+          this.adminList = res.data.data;
+          this.jobList = this.adminList.filter(
+            (data) => data.cluster === "gm-cluster"
+          );
+          if (this.jobList.length !== 0) {
+            this.jobDetailData = this.jobList[0];
+            this.totalPages = Math.ceil(this.jobList.length / 10);
+            this.totalElements = this.jobList.length;
+          } else {
+            this.jobList = [];
+          }
+        });
+      })
+      .then(() => {
+        this.paginationList();
+      });
+    this.loadJobDetail(
+      this.jobList[0].name,
+      this.jobList[0].cluster,
+      this.jobList[0].project
+    );
   };
 
   loadJobDetail = async (name, cluster, project) => {
     await axios
       .get(`${SERVER_URL}/jobs/${name}?cluster=${cluster}&project=${project}`)
       .then(({ data: { data, involves } }) => {
-        // console.log(data);
-        // console.log(involves);
         runInAction(() => {
           this.jobDetailData = data;
           this.containers = data.containers;
@@ -213,13 +182,7 @@ class Job {
           this.involvesPodList = involves.podList;
           this.ownerReferences = involves.ownerReferences;
           this.containers = data.containers;
-          console.log(this.containers);
-
-          if (data.events !== null) {
-            this.events = data.events;
-          } else {
-            this.events = null;
-          }
+          this.events = data.events;
         });
       });
   };

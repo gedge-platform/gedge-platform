@@ -51,7 +51,7 @@ const InquiryDialog = (props) => {
                     <td>
                         <textarea
                             placeholder="내용을 입력하세요."
-                            rows="10"
+                            minRows="10"
                         />
                     </td>
                 </tr>

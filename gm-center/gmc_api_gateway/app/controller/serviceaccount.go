@@ -1,16 +1,27 @@
 package controller
 
 import (
-	"fmt"
 	"gmc_api_gateway/app/common"
 	"gmc_api_gateway/app/model"
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-func GetServiceaccount(c echo.Context) error {
+// Get ServiceAccount godoc
+// @Summary Show List ServiceAccount
+// @Description get ServiceAccount List
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param workspace query string false "name of the Workspace"
+// @Param cluster query string false "name of the Cluster"
+// @Param project query string false "name of the Project"
+// @Success 200 {object} model.SERVICEACCOUNT
+// @Router /serviceaccounts [get]
+// @Tags Kubernetes
+func GetServiceaccount(c echo.Context) (err error) {
 	params := model.PARAMS{
 		Kind:      "serviceaccounts",
 		Name:      c.Param("name"),
@@ -20,6 +31,12 @@ func GetServiceaccount(c echo.Context) error {
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
 	}
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+
 	getData, err := common.DataRequest(params)
 	// if err != nil {
 	// 	common.ErrorMsg(c, http.StatusNotFound, err)
@@ -31,7 +48,6 @@ func GetServiceaccount(c echo.Context) error {
 			"error": msg,
 		})
 	}
-	fmt.Println("[##########serviceaccount", getData)
 	serviceaccount := model.SERVICEACCOUNT{
 		Name:        common.InterfaceToString(common.FindData(getData, "metadata", "name")),
 		NameSpace:   common.InterfaceToString(common.FindData(getData, "metadata", "namespace")),
@@ -43,16 +59,28 @@ func GetServiceaccount(c echo.Context) error {
 		Cluster:     params.Cluster,
 	}
 
-	involvesData, _ := common.GetModelRelatedList(params)
-	log.Printf("#####involvesData", involvesData)
 	return c.JSON(http.StatusOK, echo.Map{
 		"data": serviceaccount,
 	})
 }
 
+// Get ServiceAccount godoc
+// @Summary Show detail ServiceAccount
+// @Description get ServiceAccount Details
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param name path string true "name of the ServiceAccount"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.SERVICEACCOUNT
+// @Router /serviceaccounts/{name} [get]
+// @Tags Kubernetes
 func GetAllServiceaccounts(c echo.Context) error {
 	var serviceaccounts []model.SERVICEACCOUNT
-	fmt.Printf("## Serviceaccounts", serviceaccounts)
+
 	params := model.PARAMS{
 		Kind:      "serviceaccounts",
 		Name:      c.Param("name"),
@@ -69,9 +97,11 @@ func GetAllServiceaccounts(c echo.Context) error {
 	// 	return nil
 	// }
 
-	data := GetModelList(params)
-	fmt.Printf("####Pod data confirm : %s", data)
-
+	data, err := GetModelList(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
 	for i, _ := range data {
 		serviceaccount := model.SERVICEACCOUNT{
 			Name:      common.InterfaceToString(common.FindData(data[i], "metadata", "name")),
@@ -102,4 +132,76 @@ func GetAllServiceaccounts(c echo.Context) error {
 		"data": serviceaccounts,
 	})
 
+}
+
+// Create ServiceAccount godoc
+// @Summary Create ServiceAccount
+// @Description Create ServiceAccount
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param json body string true "ServiceAccount Info Body"
+// @Param cluster query string true "name of the Cluster"
+// @Param workspace query string true "name of the Workspace"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.Error
+// @Router /serviceaccounts [post]
+// @Tags Kubernetes
+func CreateServiceAccount(c echo.Context) (err error) {
+	params := model.PARAMS{
+		Kind:    "serviceaccounts",
+		Cluster: c.QueryParam("cluster"),
+		Project: c.QueryParam("project"),
+		Method:  c.Request().Method,
+		Body:    responseBody(c.Request().Body),
+	}
+	postData, err := common.DataRequest(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	} else {
+		return c.JSON(http.StatusCreated, echo.Map{
+			"status": "Created",
+			"code":   http.StatusCreated,
+			"data":   postData,
+		})
+	}
+
+}
+
+// Delete ServiceAccount godoc
+// @Summary Delete ServiceAccount
+// @Description Delete ServiceAccount
+// @ApiImplicitParam
+// @Accept  json
+// @Produce  json
+// @Security   Bearer
+// @Param name path string true "name of the ServiceAccount"
+// @Param workspace query string true "name of the Workspace"
+// @Param cluster query string true "name of the Cluster"
+// @Param project query string true "name of the Project"
+// @Success 200 {object} model.Error
+// @Router /serviceaccounts/{name} [delete]
+// @Tags Kubernetes
+func DeleteServiceAccount(c echo.Context) (err error) {
+	params := model.PARAMS{
+		Kind:    "serviceaccounts",
+		Name:    c.Param("name"),
+		Cluster: c.QueryParam("cluster"),
+		Project: c.QueryParam("project"),
+		Method:  c.Request().Method,
+		Body:    responseBody(c.Request().Body),
+	}
+	postData, err := common.DataRequest(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"status": "Deleted",
+		"code":   http.StatusOK,
+		"data":   postData,
+	})
 }

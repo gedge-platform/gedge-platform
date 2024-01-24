@@ -16,8 +16,7 @@ const FindPW = () => {
   });
   const { username, id, phone, password, passwordConfirm } = inputs;
 
-  const onChange = e => {
-    // console.log(e.target.value);
+  const onChange = (e) => {
     const { value, name } = e.target;
     setInputs({
       ...inputs,
@@ -25,8 +24,7 @@ const FindPW = () => {
     });
   };
 
-  const handleChange = e => {
-    // console.log(e.target.value);
+  const handleChange = (e) => {
     const { value, name } = e.target;
     setInputs({
       ...inputs,
@@ -48,51 +46,6 @@ const FindPW = () => {
       return;
     }
   };
-
-  // const findPwCheck = async (e) => {
-  //     e.preventDefault();
-  //     nextSteps();
-  //     await axios
-  //         .post(`${SERVER_URL}/user/search/pw`, {
-  //             username,
-  //             id,
-  //             phone,
-  //         })
-  //         .then((res) => {
-  //             console.log(res.data);
-  //             if (res.data) {
-  //                 setConfirm(true);
-  //             } else {
-  //                 swal("일치하는 정보가 없습니다.");
-  //             }
-  //         })
-  //         .catch((e) => console.log(e));
-  // };
-
-  // const finalSteps = async (e) => {
-  //     e.preventDefault();
-
-  //     if (password === "" || passwordConfirm === "" || password !== passwordConfirm) {
-  //         swalError("비밀번호를 확인해 주세요!");
-  //         return;
-  //     }
-  //     await axios
-  //         .put(`${SERVER_URL}/user/search/pw`, {
-  //             id,
-  //             password,
-  //         })
-  //         .then((res) => {
-  //             //console.log(res.data);
-  //             if (res.data) {
-  //                 setConfirm(true);
-  //                 swal("패스워드가 변경되었습니다!");
-  //             } else {
-  //                 swal("패스워드를 확인해 주세요!");
-  //                 return;
-  //             }
-  //         })
-  //         .catch((e) => console.log(e));
-  // };
 
   return (
     <div id="login" className="wrap">
@@ -137,7 +90,11 @@ const FindPW = () => {
                   </li>
                 </ul>
                 <div className="memberBtns">
-                  <button type="button" className="btn_contained submit" onClick={finalSteps}>
+                  <button
+                    type="button"
+                    className="btn_contained submit"
+                    onClick={finalSteps}
+                  >
                     <Link className="btn_contained submit" to="/Login">
                       확인
                     </Link>
@@ -165,7 +122,14 @@ const FindPW = () => {
                   <li>
                     <label className="tit">아이디</label>
                     <div className="data">
-                      <input type="text" placeholder="아이디를 입력해 주세요." name="id" value={id} onChange={onChange} className="input_login" />
+                      <input
+                        type="text"
+                        placeholder="아이디를 입력해 주세요."
+                        name="id"
+                        value={id}
+                        onChange={onChange}
+                        className="input_login"
+                      />
                     </div>
                   </li>
                   <li>
@@ -189,16 +153,24 @@ const FindPW = () => {
                   <li>
                     <label className="tit"></label>
                     <div className="data">
-                      <input type="text" placeholder="인증번호를 입력해 주세요." name="" className="input_confirm" />
+                      <input
+                        type="text"
+                        placeholder="인증번호를 입력해 주세요."
+                        name=""
+                        className="input_confirm"
+                      />
                     </div>
                   </li>
                 </ul>
                 <div className="memberBtns">
-                  <button type="button" className="btn_contained" onClick={() => history.back()}>
+                  <button
+                    type="button"
+                    className="btn_contained"
+                    onClick={() => history.back()}
+                  >
                     취소
                   </button>
                   <button type="submit" className="btn_contained submit">
-                    {/* <button type="submit" className="btn_contained submit" onClick={findPwCheck}> */}
                     확인
                   </button>
                 </div>

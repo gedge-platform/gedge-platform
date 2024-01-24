@@ -18,18 +18,20 @@ export { default as PlatformUser } from "./Gedge/PlatformUser/PlatformUser";
 export { default as EdgeZoneDashboard } from "./Gedge/Platform/EdgeZone/EdgeZoneDashboard";
 export { default as CloudZone } from "./Gedge/Cluster/CloudZone";
 export { default as CloudZoneDashboard } from "./Gedge/Platform/CloudZone/CloudZoneDashboard";
+export { default as AdminZoneDashboard } from "./Gedge/Platform/AdminZone/AdminZoneDashboard";
 export { default as Loadbalancer } from "./Gedge/Infra/Network/Loadbalancer/Loadbalancer";
 export { default as Topology } from "./Gedge/Infra/Network/Topology/Topology";
 export { default as Storage } from "./Gedge/Infra/Storage/Storage";
 export { default as CreateUser } from "./Gedge/Service/Project/CreateUser/CreateUser";
 export { default as PlatformControl } from "./Gedge/Service/Project/PlatformControl/PlatformControl";
-export { default as Template } from "./Gedge/Service/Template/Template";
 export { default as Workload } from "./Gedge/Service/Project/Workload/Workload";
-
+export { default as FaaS } from "./Gedge/Service/FaaS/FaaS";
+export { default as GsLink } from "./Gedge/Service/GsLink/GsLink";
 export { default as ServiceAdminDashboard } from "./Gedge/ServiceAdminDashboard/ServiceAdminDashboard";
 export { default as StorageDashboard } from "./Gedge/Storage/StorageDashboard";
 
 // Gedgd SA
+export { default as ServiceAdminMapDashboard } from "./Gedge/ServiceAdminDashboard/ServiceAdminMapDashboard";
 export { default as ServiceProject } from "./ServiceAdmin/Project/Project";
 export { default as ServiceWorkSpace } from "./ServiceAdmin/WorkSpace/WorkSpace";
 export { default as ServiceWorkload } from "./ServiceAdmin/Workload/Workload";
@@ -60,17 +62,20 @@ const Title = {
   Workload: "워크로드",
   EdgeZone: "엣지존",
   CloudZone: "클라우드존",
+  AdminZone: "관리존",
   Loadbalancer: "로드밸런서",
   Topology: "토폴로지",
   NetWork: "네트워크",
   Storage: "스토리지클래스",
   StorageDashboard: "Ceph 대시보드",
   Project: "프로젝트",
-  CreateUser: "사용자 생성",
+  CreateUser: "사용자별 생성",
   PlatformControl: "플랫폼 관리",
-  Template: "템플릿",
+  FaaS: "FaaS",
+  GsLink: "GLink",
 
   ServiceAdminDashboard: "통합 대시보드",
+  ServiceAdminMapDashboard: "지도 대시보드",
 };
 
 export { Title };

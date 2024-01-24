@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"gmc_api_gateway/app/common"
 	"gmc_api_gateway/app/model"
 	"log"
@@ -18,12 +17,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func CreateObjectId() primitive.ObjectID {
+	objectId := primitive.NewObjectID()
+	return objectId
+}
+
 func GetDBList(params model.PARAMS, collectionName string, obj primitive.ObjectID, search_type string) []bson.M {
 	cdb := GetClusterDB(collectionName)
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 	search_val := obj
 
-	cursor, err := cdb.Find(context.TODO(), bson.D{{search_type, search_val}})
+	cursor, err := cdb.Find(context.TODO(), bson.D{{Key: search_type, Value: search_val}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,6 +44,16 @@ func GetDB(collectionName string, obj interface{}, search_type string) bson.M {
 	cdb := GetClusterDB(collectionName)
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 	search_val := obj
+	var result bson.M
+	if err := cdb.FindOne(ctx, bson.M{search_type: search_val}).Decode(&result); err != nil {
+		return nil
+	}
+	return result
+
+}
+func GetDB_NAME(collectionName string, search_val string, search_type string) bson.M {
+	cdb := GetClusterDB(collectionName)
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 	var result bson.M
 	if err := cdb.FindOne(ctx, bson.M{search_type: search_val}).Decode(&result); err != nil {
 		return nil
@@ -163,7 +177,7 @@ func GetUserProjectResource(params model.PARAMS, clusters []model.Cluster) (mode
 		result := &model.Resource_usage{}
 		tempresult := NowMonit("namespace", params.Cluster, params.Name, tempMetric)
 		if err := mapstructure.Decode(tempresult, &result); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		cpu_usage += result.Namespace_cpu
 		memory_usage += result.Namespace_memory
@@ -196,7 +210,7 @@ func GetUserProjectResource(params model.PARAMS, clusters []model.Cluster) (mode
 }
 
 func ResourceCnt(params model.PARAMS, kind string) int {
-	fmt.Printf("[###Params] : %+v", params)
+	// fmt.Printf("[###Params] : %+v", params)
 	params.Kind = kind
 	params.Project = params.Name
 	params.Name = ""
@@ -218,4 +232,59 @@ func ResourceCnt(params model.PARAMS, kind string) int {
 	}
 	deployment_cnt = common.FindingLen2(deployment)
 	return deployment_cnt
+}
+
+func UpdateClusterDB(c, status string) (err error) {
+	cdb := GetMemberDB("cluster")
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+	search_val := c
+
+	var body primitive.M
+	body = bson.M{"status": status, "updated_at": time.Now()}
+	// json.Unmarshal([]byte(params.Body), &body)
+	// common.Transcode(params.Body, &body)
+	filter := bson.D{{"clusterName", c}}
+	update := bson.D{{"$set", body}}
+
+	result, err := cdb.UpdateOne(ctx, filter, update)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if result.MatchedCount == 1 {
+		if err := cdb.FindOne(ctx, bson.M{"memberId": search_val}).Decode(&cdb); err != nil {
+			// common.ErrorMsg(c, http.StatusNotFound, errors.New("failed to match Member."))
+			return err
+		}
+	}
+	return nil
+}
+
+func CheckParam(params model.PARAMS) (err error) {
+	log.Println(params)
+	if params.Cluster != "" {
+		cluster := FindClusterDB(params.Cluster)
+		if cluster == nil {
+			return common.ErrClusterNotFound
+		}
+	}
+	if params.Workspace != "" {
+		workspace := GetDBWorkspace(params)
+		if workspace.Name == "" {
+			return common.ErrWorkspaceNotFound
+		}
+	}
+	if params.Project != "" {
+		project, _ := Check_namespace(namespaceMetric["namespace_check"], params.Project)
+		if project == 0 {
+			return common.ErrProjectNotFound
+		}
+	}
+
+	if params.User != "" {
+		user := FindMemberDB(params)
+		if user.Name == "" {
+			return common.ErrMemberNotFound
+		}
+	}
+	return nil
 }

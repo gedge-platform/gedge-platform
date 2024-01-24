@@ -50,7 +50,8 @@ func GetProjectDB(name string) *mongo.Collection {
 // @ApiImplicitParam
 // @Accept  json
 // @Produce  json
-// @Success 200 {object} model.USERPROJECT
+// @Security   Bearer
+// @Success 200 {object} model.Error
 // @Header 200 {string} Token "qwerty"
 // @Router /projects [post]
 // @Tags Project
@@ -60,68 +61,62 @@ func CreateProject(c echo.Context) (err error) {
 	cdb3 := GetProjectDB("workspace")
 	cdb4 := GetProjectDB("cluster")
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
-	fmt.Println("1")
 	models := new(model.Project)
+	models_ws :=model.DBWorkspace{}
 	validate := validator.New()
-	fmt.Println("1.5")
 	if err = c.Bind(models); err != nil {
 		common.ErrorMsg(c, http.StatusBadRequest, err)
-		fmt.Println("1.6")
 		return nil
 	}
-	fmt.Println("2")
-	memberObjectId, err := cdb2.Find(ctx, bson.M{"memberName": models.MemberName})
+	models2 := model.Project{}
+	cdb.FindOne(ctx, bson.M{"projectName": models.Name}).Decode(&models2)
+	if models2.Name != "" {
+		common.ErrorMsg(c, http.StatusUnprocessableEntity, common.ErrDuplicated)
+		return nil
+	}
+	memberObjectId, err := cdb2.Find(ctx, bson.M{"memberId": models.MemberName})
 	workspaceObjectId, err := cdb3.Find(ctx, bson.M{"workspaceName": models.WorkspaceName})
+  cdb3.FindOne(ctx, bson.M{"workspaceName": models.WorkspaceName}).Decode(&models_ws)
 
 	var clusterObjectId2 []bson.D
 	var clusterObjectId3 *mongo.Cursor
 	var memberObjectId2 []bson.D
 	var workspaceObjectId2 []bson.D
 	var slice []primitive.ObjectID
-	fmt.Println("3")
 	for i := 0; i < len(models.ClusterName); i++ {
 		clusterObjectId3, _ = cdb4.Find(ctx, bson.M{"clusterName": models.ClusterName[i]})
 		clusterObjectId3.All(ctx, &clusterObjectId2)
 		slice = append(slice, clusterObjectId2[0][0].Value.(primitive.ObjectID))
 	}
-	fmt.Println("4")
 	if err = memberObjectId.All(ctx, &memberObjectId2); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("&memberObjectId2 : ", &memberObjectId2)
 	if err = workspaceObjectId.All(ctx, &workspaceObjectId2); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("&&workspaceObjectId : ", workspaceObjectId)
-
-	fmt.Println("&&workspaceObjectId2 : ", &workspaceObjectId2)
-	fmt.Println("5")
 	if err = validate.Struct(models); err != nil {
-		fmt.Println("6")
 		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println("7")
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 		common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
 		return
 	}
-	fmt.Println("8")
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	// clusterObjectId3, _ = cdb4.Find(ctx, bson.M{"clusterName": models.ClusterName[i]})
 	newProject := model.NewProject{
-		Name:          models.Name,
+		Name:          models.Name + "-" + models_ws.UUID,
 		Description:   models.Description,
 		Type:          models.Type,
 		Owner:         memberObjectId2[0][0].Value.(primitive.ObjectID),
 		Creator:       memberObjectId2[0][0].Value.(primitive.ObjectID),
 		Created_at:    time.Now(),
 		Workspace:     workspaceObjectId2[0][0].Value.(primitive.ObjectID),
+		Tag : models.Name,
 		Selectcluster: slice,
 		IstioCheck:    models.IstioCheck,
 	}
-	fmt.Println("9")
 	// models.Created_at = time.Now()
 	result, err := cdb.InsertOne(ctx, newProject)
 	if err != nil {
@@ -133,22 +128,18 @@ func CreateProject(c echo.Context) (err error) {
 		namespace := Namespace{}
 		namespace.APIVersion = "v1"
 		namespace.Kind = "Namespace"
-		namespace.Metadata.Name = models.Name
-		namespace.Metadata.Labels.IstioCheck = models.IstioCheck
+		namespace.Metadata.Name = newProject.Name
+		// namespace.Metadata.Labels.IstioCheck = newProject.IstioCheck
 		url := "https://" + clusterInfo.Endpoint + ":6443/api/v1/namespaces/"
 		Token := clusterInfo.Token
-		// fmt.Println("clusterInfo.Endpoint: ", clusterInfo.Endpoint)
-		// fmt.Println("clusterInfo.Token: ", clusterInfo.Token)
 		data, err := json.Marshal(namespace)
-		fmt.Printf("// %s", data)
 		if err != nil {
 			common.ErrorMsg(c, http.StatusBadRequest, err)
-			return err
+			// return err
 		}
 		var jsonStr = []byte(fmt.Sprint(string(data)))
 		code := RequsetKube(url, "POST", jsonStr, Token)
-		fmt.Println("code", code)
-		switch code {
+	switch code {
 		case 200:
 		case 201:
 		case 202:
@@ -159,11 +150,19 @@ func CreateProject(c echo.Context) (err error) {
 		// return err
 		default:
 			cdb.DeleteOne(ctx, bson.M{"_id": result.InsertedID})
-			common.ErrorMsg(c, http.StatusBadRequest, err)
-			return err
+			return c.JSON(http.StatusBadRequest, echo.Map{
+				"status": "Failed",
+				"code":   code,
+				"data":   err,
+			})
 		}
 	}
-	return c.JSON(http.StatusCreated, result)
+	return c.JSON(http.StatusCreated, echo.Map{
+		"status": "Created",
+		"code":   http.StatusCreated,
+		"result" :result,
+		"data":   newProject.Name,
+	})
 }
 
 // GetAlluserProject godoc
@@ -187,17 +186,55 @@ func ListUserProject(c echo.Context) (err error) {
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
 	}
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
 	var showsProject []bson.M
 	// var userProject model.NewProject
 	var userProjects []model.USERPROJECT
 
-	if params.User == "" {
+	if params.User !="" && params.Workspace =="" {
+		userObj := FindMemberDB(params)
+		if userObj.Name == "" {
+			common.ErrorMsg(c, http.StatusNotFound, errors.New("Not Found User"))
+			return
+		}
+		showsProject = GetDBList(params, "project", userObj.ObjectId, "projectOwner")
+	} else if params.Workspace !="" && params.User =="" {
+		workspaceObj := FindWorkspaceDB(params)
+		if workspaceObj.Name == "" {
+			common.ErrorMsg(c, http.StatusNotFound, errors.New("Not Found workspace"))
+			return
+		}
+		showsProject = GetDBList(params, "project", workspaceObj.ObjectId, "workspace")
+	} else if params.Workspace !="" && params.User !="" {
+		workspaceObj := FindWorkspaceDB(params)
+		userObj := FindMemberDB(params)
+		//
 		cdb := GetProjectDB("project")
-
 		ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 
+		filter := bson.M{
+			"workspace": workspaceObj.ObjectId,
+			"projectOwner":  userObj.ObjectId,
+	}
+		cur, err := cdb.Find(context.TODO(), filter)
+		if err != nil {
+				log.Fatal(err)
+		}
+		if err = cur.All(ctx, &showsProject); err != nil {
+			panic(err)
+		}
+		if err := cur.Err(); err != nil {
+			log.Fatal(err)
+		}
+		cur.Close(context.TODO())
+	}	else {
+		cdb := GetProjectDB("project")
+		ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 		findOptions := options.Find()
-
 		cur, err := cdb.Find(context.TODO(), bson.D{{}}, findOptions)
 		if err != nil {
 			log.Fatal(err)
@@ -208,17 +245,9 @@ func ListUserProject(c echo.Context) (err error) {
 		if err := cur.Err(); err != nil {
 			log.Fatal(err)
 		}
-
 		cur.Close(context.TODO())
-
-	} else {
-		userObj := FindMemberDB(params)
-		if userObj.Name == "" {
-			common.ErrorMsg(c, http.StatusNotFound, errors.New("Not Found User"))
-			return
-		}
-		showsProject = GetDBList(params, "project", userObj.ObjectId, "projectOwner")
 	}
+	
 	for _, project := range showsProject {
 		params.Project = common.InterfaceToString(project["projectName"])
 		temp_project := GetDBProject(params)
@@ -226,30 +255,7 @@ func ListUserProject(c echo.Context) (err error) {
 		UserProject.DBProject = temp_project
 		userProjects = append(userProjects, UserProject)
 	}
-	// var userProjects []model.USERPROJECT
 
-	// findOptions := options.Find()
-
-	// cur, err := cdb.Find(context.TODO(), bson.D{{}}, findOptions)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// for cur.Next(context.TODO()) {
-	// 	lookupCluster := bson.D{{"$lookup", bson.D{{"from", "cluster"}, {"localField", "selectCluster"}, {"foreignField", "_id"}, {"as", "selectCluster"}}}}
-	// 	lookupWorkspace := bson.D{{"$lookup", bson.D{{"from", "workspace"}, {"localField", "workspace"}, {"foreignField", "_id"}, {"as", "workspace"}}}}
-
-	// 	showProjectCursor, err := cdb.Aggregate(ctx, mongo.Pipeline{lookupCluster, lookupWorkspace})
-
-	// 	if err = showProjectCursor.All(ctx, &showsProject); err != nil {
-	// 		panic(err)
-	// 	}
-	// }
-	// if err := cur.Err(); err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// cur.Close(context.TODO())
 	return c.JSON(http.StatusOK, echo.Map{
 		"data": userProjects,
 	})
@@ -276,6 +282,7 @@ func ListSystemProject(c echo.Context) (err error) {
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
 	}
+
 	Projects := ListDB("project")
 	params.Project = ""
 	clusters := GetDB("cluster", params.Cluster, "clusterName")
@@ -284,8 +291,12 @@ func ListSystemProject(c echo.Context) (err error) {
 		return
 	}
 	var projects []model.SYSTEMPROJECT
-	getData := GetModelList(params)
-	fmt.Println("getData : ", getData)
+	getData, err := GetModelList(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+
 	for k, _ := range getData {
 		project := model.SYSTEMPROJECT{
 			Name:        common.InterfaceToString(common.FindData(getData[k], "metadata", "name")),
@@ -326,6 +337,7 @@ func difference(slice1 []primitive.M, slice2 []model.SYSTEMPROJECT) []model.SYST
 // @ApiImplicitParam
 // @Accept  json
 // @Produce  json
+// @Success 200 {object} model.PROJECT_DETAIL
 // @Security   Bearer
 // @Param name path string true "name of the userProject"
 // @Router /userProjects/{name} [get]
@@ -340,6 +352,12 @@ func GetUserProject(c echo.Context) (err error) {
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
 	}
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+
 	params.Project = params.Name
 	project := GetDBProject(params)
 	if project.Name == "" {
@@ -387,47 +405,6 @@ func GetUserProject(c echo.Context) (err error) {
 		Detail:    detailList,
 	}
 
-	// var showsProject []bson.M
-	// cdb := GetWorkspaceDB("project")
-	// ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
-	// search_val := c.Param("projectName")
-
-	// findOptions := options.Find()
-
-	// cur, err := cdb.Find(context.TODO(), bson.D{{}}, findOptions)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// for cur.Next(context.TODO()) {
-	// 	lookupCluster := bson.D{{"$lookup", bson.D{{"from", "cluster"}, {"localField", "selectCluster"}, {"foreignField", "_id"}, {"as", "selectCluster"}}}}
-	// 	lookupWorkspace := bson.D{{"$lookup", bson.D{{"from", "workspace"}, {"localField", "workspace"}, {"foreignField", "_id"}, {"as", "workspace"}}}}
-	// 	matchCluster := bson.D{
-	// 		{Key: "$match", Value: bson.D{
-	// 			{Key: "projectName", Value: search_val},
-	// 		}},
-	// 	}
-
-	// 	showLoadedCursor, err := cdb.Aggregate(ctx, mongo.Pipeline{lookupCluster, lookupWorkspace, matchCluster})
-
-	// 	if err = showLoadedCursor.All(ctx, &showsProject); err != nil {
-	// 		panic(err)
-	// 	}
-	// 	fmt.Println(showsProject)
-	// }
-
-	// if err := cur.Err(); err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// cur.Close(context.TODO())
-
-	// if showsProject == nil {
-	// 	common.ErrorMsg(c, http.StatusNotFound, errors.New("Project not found."))
-	// 	return
-	// } else {
-	// 	return c.JSON(http.StatusOK, showsProject)
-	// }
 	return c.JSON(http.StatusOK, echo.Map{
 		"data": userProject,
 	})
@@ -440,6 +417,7 @@ func GetUserProject(c echo.Context) (err error) {
 // @ApiImplicitParam
 // @Accept  json
 // @Produce  json
+// @Success 200 {object} model.PROJECT_DETAIL
 // @Security   Bearer
 // @Param name path string true "name of the systemProject"
 // @Param cluster query string true "cluster Name of the systemProject"
@@ -455,19 +433,25 @@ func GetSystemProject(c echo.Context) (err error) {
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
 	}
-	clusters := GetDB("cluster", params.Cluster, "clusterName")
-	if params.Cluster == "" {
-		msg := common.ErrorMsg2(http.StatusNotFound, common.ErrClusterNotFound)
-		return c.JSON(http.StatusNotFound, echo.Map{
-			"error": msg,
-		})
-	} else if params.Cluster != "" && clusters == nil {
-		msg := common.ErrorMsg2(http.StatusNotFound, common.ErrClusterNotFound)
-		return c.JSON(http.StatusNotFound, echo.Map{
-			"error": msg,
-		})
-	}
 	params.Project = params.Name
+	err = CheckParam(params)
+	if err != nil {
+		common.ErrorMsg(c, http.StatusNotFound, err)
+		return nil
+	}
+	// clusters := GetDB("cluster", params.Cluster, "clusterName")
+	// if params.Cluster == "" {
+	// 	msg := common.ErrorMsg2(http.StatusNotFound, common.ErrClusterNotFound)
+	// 	return c.JSON(http.StatusNotFound, echo.Map{
+	// 		"error": msg,
+	// 	})
+	// } else if params.Cluster != "" && clusters == nil {
+	// 	msg := common.ErrorMsg2(http.StatusNotFound, common.ErrClusterNotFound)
+	// 	return c.JSON(http.StatusNotFound, echo.Map{
+	// 		"error": msg,
+	// 	})
+	// }
+
 	getData, err := common.DataRequest(params)
 	if err != nil || common.InterfaceToString(common.FindData(getData, "status", "")) == "Failure" {
 		msg := common.ErrorMsg2(http.StatusNotFound, common.ErrNotFound)
@@ -507,6 +491,7 @@ func GetSystemProject(c echo.Context) (err error) {
 // @ApiImplicitParam
 // @Accept  json
 // @Produce  json
+// @Success 200 {object} model.Error
 // @Security   Bearer
 // @Param name path string true "name of the userProjects"
 // @Router /userProjects/{name} [delete]
@@ -521,17 +506,22 @@ func DeleteProject(c echo.Context) (err error) {
 		Method:    c.Request().Method,
 		Body:      responseBody(c.Request().Body),
 	}
+	log.Println("params : ", params)
 	cdb := GetProjectDB("project")
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 	search_val := c.Param("name")
 	params.Project = c.Param("name")
 	project := GetDBProject(params)
-	fmt.Println("project : ", project)
+	log.Println("project : ", project)
+	if project.Name == "" {
+		common.ErrorMsg(c, http.StatusNotFound, common.ErrNotFound)
+		return nil
+	}
+	log.Println("project.Selectcluster : ", project.Selectcluster)
 	for _, cluster := range project.Selectcluster {
-		// fmt.Printf("########clusterName : %s", slice[i])
-		// clusters := GetClusterDB(common.InterfaceToString(slice[i]))
 
 		url := "https://" + cluster.Endpoint + ":6443/api/v1/namespaces/" + params.Name
+		log.Println("url : ", url)
 		Token := cluster.Token
 
 		if err != nil {
@@ -604,7 +594,7 @@ func UpdateProject(c echo.Context) (err error) {
 
 	if err = validate.Struct(models); err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 		common.ErrorMsg(c, http.StatusUnprocessableEntity, err)
 		return
@@ -699,7 +689,6 @@ func GetDBProject(params model.PARAMS) model.DBProject {
 
 func DeleteKubeProject(params model.PARAMS, obj primitive.ObjectID) {
 	project := GetDBProject(params)
-	fmt.Println("project : ", project)
 	for _, cluster := range project.Selectcluster {
 		url := "https://" + cluster.Endpoint + ":6443/api/v1/namespaces/" + params.Name
 		Token := cluster.Token
@@ -709,7 +698,7 @@ func DeleteKubeProject(params model.PARAMS, obj primitive.ObjectID) {
 		case 200:
 		case 202:
 		default:
-			fmt.Print("Project Deleted Complete")
+			log.Println("Project Deleted Complete")
 		}
 	}
 }

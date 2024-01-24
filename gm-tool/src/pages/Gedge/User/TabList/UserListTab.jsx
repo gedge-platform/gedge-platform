@@ -11,24 +11,42 @@ import dayjs from "dayjs";
 import { CCreateButton, CDeleteButton } from "@/components/buttons";
 import CreateUser from "../Dialog/CreateUser";
 import { swalUpdate, swalError } from "@/utils/swal-utils";
+import { CEditButton } from "../../../../components/buttons/CEditButton";
+import EditUser from "../Dialog/EditUser";
 
 const UserListTab = observer(() => {
   const [open, setOpen] = useState(false);
-  const [userName, setUserName] = useState("");
+  const [openEdit, setOpenEdit] = useState(false);
+  // const [userName, setUserName] = useState("");
 
-  const { deleteUser, userDetail, loadUserList, loadUserDetail, totalElements, currentPage, totalPages, viewList, goPrevPage, goNextPage } =
-    userStore;
+  const {
+    deleteUser,
+    userDetail,
+    loadUserList,
+    loadUserDetail,
+    totalElements,
+    currentPage,
+    totalPages,
+    viewList,
+    userList,
+    goPrevPage,
+    goNextPage,
+    inputs,
+    setInputs,
+    inputsEdit,
+    setInputsEdit,
+    userName,
+    setUserName,
+  } = userStore;
 
   const [columnDefs] = useState([
     {
-      headerName: "NO",
-      field: "memberNum",
-      filter: false,
-      minWidth: 80,
-      maxWidth: 80,
+      headerName: "아이디",
+      field: "memberId",
+      filter: true,
     },
     {
-      headerName: "사용자 이름",
+      headerName: "닉네임",
       field: "memberName",
       filter: true,
     },
@@ -72,23 +90,40 @@ const UserListTab = observer(() => {
     },
   ]);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     loadUserDetail(e.data.memberId);
     setUserName(e.data.memberId);
+    setInputsEdit(e.data);
   };
 
   const handleOpen = () => {
     setOpen(true);
   };
+
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleOpenEdit = (e) => {
+    if (userName === "") {
+      swalError("사용자를 선택해주세요!");
+      return;
+    }
+    // checkUser(userName);
+    setOpenEdit(true);
+  };
+
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
   };
 
   const handleDelete = () => {
     if (userName === "") {
       swalError("사용자를 선택해주세요!");
     } else {
-      swalUpdate(userName + "를 삭제하시겠습니까?", () => deleteUser(userName, loadUserList));
+      swalUpdate(userName + "를 삭제하시겠습니까?", () =>
+        deleteUser(userName, loadUserList)
+      );
     }
     setUserName("");
   };
@@ -103,11 +138,14 @@ const UserListTab = observer(() => {
         <PanelBox>
           <CommActionBar>
             <CCreateButton onClick={handleOpen}>생성</CCreateButton>
+            &nbsp;&nbsp;
+            <CEditButton onClick={handleOpenEdit}>수정</CEditButton>
+            &nbsp;&nbsp;
             <CDeleteButton onClick={handleDelete}>삭제</CDeleteButton>
           </CommActionBar>
           <div className="grid-height2">
             <AgGrid
-              rowData={viewList}
+              rowData={userList[0]}
               columnDefs={columnDefs}
               totalElements={totalElements}
               isBottom={false}
@@ -118,7 +156,16 @@ const UserListTab = observer(() => {
               goPrevPage={goPrevPage}
             />
           </div>
-          <CreateUser open={open} onClose={handleClose} reloadFunc={loadUserList} />
+          <CreateUser
+            open={open}
+            onClose={handleClose}
+            reloadFunc={loadUserList}
+          />
+          <EditUser
+            openEdit={openEdit}
+            onClose={handleCloseEdit}
+            reloadFunc={loadUserList}
+          />
         </PanelBox>
         <UserDetail user={userDetail} />
       </CReflexBox>

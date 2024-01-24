@@ -44,15 +44,15 @@ const User = () => {
     <Layout currentPageTitle={currentPageTitle}>
       <CTabs type="tab1" value={tabvalue} onChange={handleTabChange}>
         <CTab label="사용자 목록" />
-        <CTab label="사용자 역할 목록" />
+        {/* <CTab label="사용자 역할 목록" /> */}
       </CTabs>
       <div className="tabPanelContainer">
         <CTabPanel value={tabvalue} index={0}>
           <UserListTab />
         </CTabPanel>
-        <CTabPanel value={tabvalue} index={1}>
+        {/* <CTabPanel value={tabvalue} index={1}>
           <RoleListTab />
-        </CTabPanel>
+        </CTabPanel> */}
       </div>
     </Layout>
   );
