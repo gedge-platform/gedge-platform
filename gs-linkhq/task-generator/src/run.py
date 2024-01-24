@@ -76,6 +76,7 @@ def request_assign_task(task: Task):
     data = {'task': {'req_edge': task.req_edge,
                      'resources': {'cpu': task.resources['cpu'],
                                    'memory': task.resources['memory'],
+                                   'disk': task.resources['disk'],
                                    'gpu': task.resources['gpu']
                                    },
                      'deadline': task.deadline}}
@@ -129,6 +130,7 @@ def get_task():
     threading.Thread(target=get_task).start()
     if wait:
         return
+    # junho_logger.critical('q_len: %s', gen.q.qsize())
     
     wait = True
     if not gen.q.empty():

@@ -1,7 +1,8 @@
 # GS-LinkHQ
 
 `GS-LinkHQ` is a reinforcement learning based agent that generates policy for both computation offloading and distributed caching in the [`GEdge-Platform`](https://github.com/gedge-platform/gedge-platform). The policy supports horizontal (between cloud edge and neighbor cloud edge) and vertical (between cloud edge and core cloud) collaboration.
-
+![form](./docs/form.png)
+![result](./docs/result.png)
 ![policy_gen_workflow](./docs/policy_gen_workflow.png)
 
 
@@ -27,27 +28,29 @@ The information considered to decide the policy is as follows.
   2. GPU usage and specification
   3. Storage/cache specification
   4. Service properties (network delay sensitive, availability sensitive, etc.)
-- Cloud edge (include neighbor edge's information) system resource status information
+- Cloud-edge (include neighbor edge's information) system resource status information
   1. CPU usage
   2. GPU usage
   3. Storage/cache usage
-  4. Network quality status (latency) (Bet CEs, Bet CE and CC)
   5. Deployed offloading services quality
 
 
 ## Components
 
-GS-LinkHQ consists of three subprojects
+GS-LinkHQ consists of three components
 
-![development_workflow](./docs/develop_workflow.png)
+![architecture](./docs/architecture.jpg)
+
 
 - [`vedge`](./vedge): Develop proposed methods first with simulator
-  -  Virtual Cluster edge(Single cluster based edge) environment
-    - Include resource map, network performance map, and offloading service(task) definition
-    - Use DQN, PPO with intelligent technology
+  -  Collaborative multi-cluster environment
+  - Include resource map, network performance map, and offloading service(task) definition
 - [`agent`](./agent): Reinforcement learning agent developed with the above two projects
   - Real-world (`GEdge-Platform`) environment
 
+Each componets communicates through RESTful API
+
+![api-flow](./docs/flow.jpg)
 
 ### Requirements
 - Nvidia Docker

@@ -1,15 +1,30 @@
 edges:
-  - name: edge0
-    cpu: 32
-    memory: 64
-    gpu: 16
+  - name: gm-cluster
+    cpu: 576
+    memory: 754.58
+    disk: 397.41
+    gpu: 0
 
-  - name: edge1
-    cpu: 32
-    memory: 64
-    gpu: 16
+  - name: onpremise(dongjak)
+    cpu: 384
+    memory: 1132.61
+    disk: 431.34
+    gpu: 3
   
-  - name: edge2
-    cpu: 32
-    memory: 64
-    gpu: 16
+  - name: mec(ilsan)
+    cpu: 864
+    memory: 1448.33
+    disk: 2343.72
+    gpu: 8
+
+  - name: ai-networklab(pangyo)
+    cpu: 288
+    memory: 1510.6
+    disk: 1406.23
+    gpu: 2
+
+  - name: 5G-opentestlab(Daejeon)
+    cpu: 192
+    memory: 1448.33
+    disk: 937.48
+    gpu: 1

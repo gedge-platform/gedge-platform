@@ -37,7 +37,7 @@ werkzeug_logger.setLevel(logging.WARNING)
 junho_logger = logging.getLogger('Junho')
 
 task_attributes = ['task_id', 'req_edge', 'resources', 'deadline']
-resource_attributes = ['cpu', 'memory', 'gpu']
+resource_attributes = ['cpu', 'memory', 'disk', 'gpu']
 
 env = VEdge(CONFIG_PATH)
 
@@ -58,6 +58,8 @@ class Dims(Resource):
     def get(self):
         len_state = env.get_len_state()
         num_action = env.get_num_actions()
+        junho_logger.info("len_state:", len_state)
+        junho_logger.info("nun_action:", num_action)
 
         ret = {
                 'len_state': len_state,
@@ -93,7 +95,7 @@ class AssignTask(Resource):
                 raise BadRequest
             elif not set(resource_attributes).issubset(data['task']['resources']):
                 raise BadRequest
-
+            
             task = data['task']
             
             task_id = task['task_id']
@@ -101,10 +103,11 @@ class AssignTask(Resource):
             resources = task['resources']
             cpu = resources['cpu']
             memory = resources['memory']
+            disk = resources['disk']
             gpu = resources['gpu']
             deadline = task['deadline']
 
-            task = Task(task_id, req_edge, cpu, memory, gpu, deadline)
+            task = Task(task_id, req_edge, cpu, memory, disk, gpu, deadline)
 
             edge_id = int(edge_id)
 
@@ -152,11 +155,24 @@ class AssignTask(Resource):
 
             return ret, 500
 
+class Reset(Resource):
+    def get(self):
+        env.reset()
+        state = env.state()
+
+        ret = {
+            'edges': state
+        }
+
+        return ret, 200
+        
+
 
 api.add_resource(Alive, '/alive')
 api.add_resource(Dims, '/dims')
 api.add_resource(GetState, '/state')
 api.add_resource(AssignTask, '/<edge_id>/task')
+api.add_resource(Reset, '/reset')
 
 if __name__ == '__main__':
     app.run()

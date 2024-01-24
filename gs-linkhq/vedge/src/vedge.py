@@ -14,7 +14,7 @@ class VEdge:
         self.rewards = []
         self.conf = get_conf(conf_path)
         for edge in self.conf['edges']:
-            self.edges.append(Edge(edge['name'], edge['cpu'], edge['memory'], edge['gpu']))
+            self.edges.append(Edge(edge['name'], edge['cpu'], edge['memory'], edge['disk'], edge['gpu']))
 
     def reset(self):
         self.rewards.append(self.reward)
@@ -25,28 +25,8 @@ class VEdge:
 
         self.space = self.state()
 
-        return np.array(self.space).astype(np.float32)
-
-    # def act(self, task, action):
-    #     if action not in range(len(self.edges)):
-    #         raise ValueError("Received invalid action={} which is not part of the action space".format(action))
-
-    #     self.edges[action].assign(task)
-
-    # def step(self, task, action):
-    #     if task:
-    #         self.act(task, action)
-
-    #     for edge in self.edges:
-    #         edge.update(1)
-
-    #     reward = 0
-    #     done = False
-
-    #     self.t += 1
-
-    #     return self.state(), reward, done
-
+        return True
+    
     def state(self):
         self.space = []
         for edge in self.edges:
@@ -70,6 +50,7 @@ class VEdge:
 
     def get_num_actions(self):
         return len(self.edges)
+        
 
 if __name__ == '__main__':
     ve = VEdge()

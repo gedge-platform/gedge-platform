@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<script src="https://cdn.tailwindcss.com"></script>
+<html>
+
+<body class="bg-gray-800 m-16 mb-0">
+    <h1 class="mb-8 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">GS-LinkHQ</h1>
+    <h2 class="mb-12 text-2xl font-extrabold leading-none tracking-tight text-gray-900 md:text-3xl lg:text-4xl dark:text-white">Offloading&nbsp;Cluster Recommendation&nbsp;System</h2>
+    <h3 class="mb-8 text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-2xl lg:text-3xl dark:text-white">Enter Task Information</h3>
+
+    <form class="w-full max-w-sm" action="/result" method="POST" id="mainform">
+        <div class="md:flex md:items-center mb-6">
+            <div class="md:w-1/3">
+                <label class="block text-gray-200 font-bold md:text-left mb-1 md:mb-0 pr-4">
+                    CPU (Cores)
+                </label>
+            </div>
+            <div class="md:w-2/3">
+                <input
+                    class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
+                    name="CPU" type="number" value="0" min="0" step="any">
+            </div>
+        </div>
+        <div class="md:flex md:items-center mb-6">
+            <div class="md:w-1/3">
+                <label class="block text-gray-200 font-bold md:text-left mb-1 md:mb-0 pr-4">
+                    Memory (GB)
+                </label>
+            </div>
+            <div class="md:w-2/3">
+                <input
+                    class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
+                    name="Memory" type="number" value="0" min="0" step="any">
+            </div>
+        </div>
+        <div class="md:flex md:items-center mb-6">
+            <div class="md:w-1/3">
+                <label class="block text-gray-200 font-bold md:text-left mb-1 md:mb-0 pr-4">
+                    Disk (GB)
+                </label>
+            </div>
+            <div class="md:w-2/3">
+                <input
+                    class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
+                    name="Disk" type="number" value="0" min="0" step="any">
+            </div>
+        </div>
+        <div class="md:flex md:items-center mb-6">
+            <div class="md:w-1/3">
+                <label class="block text-gray-200 font-bold md:text-left mb-1 md:mb-0 pr-4">
+                    GPU (Ea)
+                </label>
+            </div>
+            <div class="md:w-2/3">
+                <input
+                    class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
+                    name="GPU" type="number" value="0" min="0">
+            </div>
+        </div>
+        <div class="md:flex md:items-center mb-6">
+            <div class="md:w-1/3">
+                <label class="block text-gray-200 font-bold md:text-left mb-1 md:mb-0 pr-4">
+                    Time Sensitive
+                </label>
+            </div>
+            <div class="md:w-2/3">
+                <input name="time" type="checkbox" value="1" class="mr-2 leading-tight">
+            </div>
+        </div>
+        <select name="cluster" form="mainform" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            {% for i, edge in edges %}
+            <option value={{i}}>{{edge}}</option>
+            {% endfor %}
+        </select>
+        
+        <div class="md:flex md:items-center mt-8">
+            <!-- <div class="md:w-1/3"></div> -->
+            <div class="md:w-2/3">
+                <button
+                    class="shadow bg-indigo-700 hover:bg-indigo-800 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
+                    type="submit", form="mainform">
+                    Submit
+                </button>
+            </div>
+        </div>
+    </form>
+</body>
+
+</html>

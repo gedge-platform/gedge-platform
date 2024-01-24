@@ -1,9 +1,10 @@
 class Task:
-    def __init__(self, id, req_edge, cpu, memory, gpu, deadline):
+    def __init__(self, id, req_edge, cpu, memory, disk, gpu, deadline):
         self.id = id
         self.req_edge = req_edge
         self.resources = {'cpu': cpu,
                           'memory': memory,
+                          'disk': disk,
                           'gpu': gpu,
                          }
         self.deadline = deadline
@@ -45,11 +46,12 @@ class Resource:
 
 
 class Edge:
-    def __init__(self, name, num_cpu, memory_size, num_gpu):
+    def __init__(self, name, num_cpu, memory_size, disk_size, num_gpu):
         self.name = name
         self.resources = {'cpu': Resource(num_cpu),
                           'memory': Resource(memory_size),
-                          'gpu': Resource(num_gpu),
+                          'disk': Resource(disk_size),
+                          'gpu': Resource(num_gpu)
                          }
         self.task_list = []
 
@@ -77,13 +79,3 @@ class Edge:
         
         return True
 
-
-if __name__ == '__main__':
-    e = Edge('name', 2, 2, 2, 2)
-    print(e.state())
-    print(e.assign(Task(1, 1, 2,3,2,2)))
-    print(e.state())
-    print(e.assign(Task(1, 1, 2,0,2,2)))
-    print(e.state())
-    e.reset()
-    print(e.state())

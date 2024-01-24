@@ -79,23 +79,15 @@ class DQN:
         self.memory = ReplayMemory(self.mem_capacity)
 
     def select_action(self, state):
-        sample = random.random()
-        eps_thresdhold = self.eps_end + (self.eps_start - self.eps_end) \
-            * math.exp(-1. * self.steps_done / self.eps_decay)
-        self.steps_done += 1
-
         state = torch.unsqueeze(torch.tensor(state, dtype=torch.float32, device=device), 0)
-
-        if sample > eps_thresdhold:
-            with torch.no_grad():
-                #junho_logger.critical(self.policy_net(state))
-                return self.policy_net(state).max(1)[1].view(1, 1)
-        else:
-            return torch.tensor([[torch.randint(self.n_actions, (1,))]], device=device, dtype=torch.long)
+        with torch.no_grad():
+            #junho_logger.critical(self.policy_net(state))
+            return self.policy_net(state).max(1)[1].view(1, 1)
 
     def optimize_model(self):
         try:
             if len(self.memory) < self.batch_size:
+                # junho_logger.info('Not enough data. Skipping update\n')
                 return True
 
             transitions = self.memory.sample(self.batch_size)
