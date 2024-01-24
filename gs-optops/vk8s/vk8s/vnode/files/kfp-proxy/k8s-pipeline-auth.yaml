@@ -1,0 +1,13 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+ name: bind-ml-pipeline-nb-username
+ namespace: kubeflow
+spec:
+ selector:
+   matchLabels:
+     app: ml-pipeline
+ rules:
+ - from:
+   - source:
+       principals: ["cluster.local/ns/username/sa/default-editor"]

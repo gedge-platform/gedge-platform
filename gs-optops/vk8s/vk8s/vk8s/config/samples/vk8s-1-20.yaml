@@ -1,0 +1,34 @@
+apiVersion: vk8s.sktelecom.com/v1alpha1
+kind: Vk8s
+metadata:
+  annotations:
+    cluster-network-connection-status: "true"
+    vk8s-1-20-ubuntu-node-0: Tesla_P100-PCIE-16GB
+  name: vk8s-1-20-ubuntu
+spec:
+  nodes:
+  - name: vk8s-1-20-ubuntu-node-0
+    tolerations:
+    - key: scale/node.type
+      operator: Equal
+      effect: NoSchedule
+      value: IAAS
+    image: 223.62.245.134:5001/scale/workflow/vk8s/kink:v1.20-ubuntu-gpu
+    role: master
+    resources:
+      requests:
+        cpu: "1"
+        memory: "1Gi"
+        nvidia.com/gpu: "1"
+      limits:
+        cpu: "8"
+        memory: "10Gi"
+        nvidia.com/gpu: "1"
+  kubeflow:
+    version: v1.4.0
+    email: test@skt.com
+    password: test!!22
+  ports:
+  - name: kubeflow
+    port: 30001
+    targetPort: 30001

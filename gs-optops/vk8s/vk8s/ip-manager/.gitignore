@@ -1,0 +1,32 @@
+# Source for the following rules: https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+# Editors
+.vscode/
+
+# Mac/OSX
+.DS_Store
+
+# package
+build
+dist
+*.egg-info
+
+# document build content
+docs/_build/*
+
+# model file
+*.h5
+
+# edge info
+.edge
+
+# auth info
+.auth
+
+# ignore nohup log file
+*.out

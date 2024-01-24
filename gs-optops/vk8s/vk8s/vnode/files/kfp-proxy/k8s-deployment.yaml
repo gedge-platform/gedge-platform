@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kfp-deploy
+  labels:
+    app: kfp-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kfp-proxy
+  template:
+    metadata:
+      labels:
+        app: kfp-proxy
+      annotations:
+        sidecar.istio.io/inject: 'true'
+    spec:
+      serviceAccountName: default-editor      
+      containers:
+        - name: kfp-proxy-con
+          image: registry/scale/workflow/vk8s/kfp-proxy:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 6996
+            name: proxy
+          env:
+            - name: KF_PIPELINES_ENDPOINT
+              value: "ml-pipeline.kubeflow.svc.cluster.local:8888"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kfp-proxy
+spec:
+  ports:
+    - name: proxy
+      port: 6996
+      protocol: TCP
+      targetPort: 6996
+  selector:
+    app: kfp-proxy
+  sessionAffinity: None
+  type: ClusterIP
+
+

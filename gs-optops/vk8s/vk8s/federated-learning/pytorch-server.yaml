@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pytorch-fl-server
+  name: pytorch-fl-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pytorch-fl-server
+  template:
+    metadata:
+      labels:
+        app: pytorch-fl-server
+    spec:
+      containers:
+      - image: harbor.dudaji.com/vk8s/pytorch-fl-server:latest
+        imagePullPolicy: IfNotPresent
+        name: pytorch-fl-server
+        env:
+        - name: GROUPCODE
+          value: DUD
+        - name: PROJECT
+          value: skin-cancer
+        - name: CLIENT_NUM
+          value: "2"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pytorch-fl-server
+spec:
+  ports:
+  - name: pytorch-fl-server
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: pytorch-fl-server
+  type: NodePort
+
+

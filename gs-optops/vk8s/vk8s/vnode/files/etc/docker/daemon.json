@@ -1,0 +1,9 @@
+{ 
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2",
+  "exec-opts": ["native.cgroupdriver=cgroupfs"],
+  "insecure-registries": ["registry", "223.62.245.134:5001", "192.168.202.201:5001", "192.168.202.201:15001", "223.62.245.138:15001", "223.62.245.138:5001", "10.40.103.111:15001"]
+}

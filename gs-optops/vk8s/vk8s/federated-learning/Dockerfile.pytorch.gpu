@@ -1,0 +1,16 @@
+from nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
+
+RUN apt-get update && \
+    apt-get -y install curl && \
+    apt-get -y install python3.8 && \
+    apt-get -y install python3-pip
+
+RUN python3.8 -m pip install --upgrade pip
+
+COPY pytorch.py main.py
+# COPY tensorflow.py main.py
+COPY requirements.txt requirements.txt
+
+RUN pip install -r requirements.txt
+
+CMD ["python3.8", "main.py"]

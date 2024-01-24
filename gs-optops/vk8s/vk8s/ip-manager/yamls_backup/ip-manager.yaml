@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vk8s-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ip-manager
+  namespace: vk8s-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: ip-manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - crd.projectcalico.org
+  resources:
+  - ipreservations
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ip-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ip-manager-role
+subjects:
+- kind: ServiceAccount
+  namespace: vk8s-system
+  name: ip-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: ip-manager
+  name: ip-manager
+  namespace: vk8s-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ip-manager
+  template:
+    metadata:
+      labels:
+        app: ip-manager
+    spec:
+      tolerations:
+      - key: scale/node.type
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - image: 223.62.245.138:15001/scale/workflow/vk8s/ip-manager:latest
+        imagePullPolicy: IfNotPresent
+        name: ip-manager
+        ports:
+        - containerPort: 5002
+        env:
+        - name: INTERVAL
+          value: "5"
+        - name: PROFILE
+          value: "kube"
+      serviceAccountName: ip-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ip-manager
+  namespace: vk8s-system
+  labels:
+    app: ip-manager
+spec:
+  ports:
+  - port: 5002
+    targetPort: 5002
+    protocol: TCP
+  type: ClusterIP
+  selector:
+    app: ip-manager

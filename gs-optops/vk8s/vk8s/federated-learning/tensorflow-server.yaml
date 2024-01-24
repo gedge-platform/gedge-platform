@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tensorflow-fl-server
+  name: tensorflow-fl-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tensorflow-fl-server
+  template:
+    metadata:
+      labels:
+        app: tensorflow-fl-server
+    spec:
+      containers:
+      - image: harbor.dudaji.com/vk8s/tensorflow-fl-server:latest
+        imagePullPolicy: IfNotPresent
+        name: tensorflow-fl-server
+        env:
+        - name: GROUPCODE
+          value: DUD
+        - name: PROJECT
+          value: face-recognition
+        - name: CLIENT_NUM
+          value: "2"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tensorflow-fl-server
+spec:
+  ports:
+  - name: tensorflow-fl-server
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: tensorflow-fl-server
+  type: NodePort
+
+

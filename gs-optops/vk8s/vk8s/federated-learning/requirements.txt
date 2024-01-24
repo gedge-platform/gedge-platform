@@ -1,0 +1,10 @@
+numpy
+flwr
+torch
+torchvision
+minio
+tensorflow==2.11.0
+scikit-learn
+numpy
+pandas
+matplotlib

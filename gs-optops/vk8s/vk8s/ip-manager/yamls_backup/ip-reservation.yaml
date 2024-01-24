@@ -1,0 +1,7 @@
+apiVersion: crd.projectcalico.org/v1
+kind: IPReservation
+metadata:
+  name: vk8s-reservation
+spec:
+  reservedCIDRs:
+  - 10.244.195.0/24

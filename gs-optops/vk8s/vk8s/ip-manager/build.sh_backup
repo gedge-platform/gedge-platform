@@ -1,0 +1,12 @@
+#!/bin/bash
+if [ $# -ne 1 ]; then
+    echo "Usage: ./build.sh <tag>"
+    exit -1
+fi
+
+registry="223.62.245.138:15001/scale/workflow/vk8s"
+image_tag=$1
+echo "image tag : $image_tag"
+
+sudo docker build -t $registry/ip-manager:$image_tag -f dockerfiles/Dockerfile .
+sudo docker push $registry/ip-manager:$image_tag

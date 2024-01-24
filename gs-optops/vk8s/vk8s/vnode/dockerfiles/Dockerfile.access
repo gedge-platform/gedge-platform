@@ -1,0 +1,19 @@
+FROM ubuntu:18.04
+
+RUN apt-get update; \
+    apt-get install -y vim \
+    curl wget jq git \
+    tmux net-tools iputils-ping openssh-server;
+
+ARG K8S_RELEASE_VERSION="v1.23.0"
+RUN RELEASE=${K8S_RELEASE_VERSION}; \
+    curl -LO https://dl.k8s.io/release/${RELEASE}/bin/linux/amd64/kubectl; \
+    chmod +x kubectl; \
+    mv kubectl /usr/local/bin;
+
+COPY access-pod-entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+RUN echo "root:root" | chpasswd
+
+ENTRYPOINT ["/bin/sh", "-c", "./entrypoint.sh"]

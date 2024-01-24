@@ -1,0 +1,8 @@
+.vscode/
+dockerfiles/
+.gitignore/
+.pylintrc
+
+__pycache__/
+*.py[cod]
+*$py.class

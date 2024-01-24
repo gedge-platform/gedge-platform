@@ -1,0 +1,29 @@
+apiVersion: vk8s.sktelecom.com/v1alpha1
+kind: Vk8s
+metadata:
+  annotations:
+    cluster-network-connection-status: "true"
+    vk8s-1-23-ubuntu-node-0: Tesla_V100-PCIE-32GB
+  name: vk8s-1-23-ubuntu
+spec:
+  nodes:
+  - name: vk8s-1-23-ubuntu-node-0
+    tolerations:
+    - key: scale/node.type
+      operator: Exists
+      effect: NoSchedule
+    image: 223.62.245.134:5001/scale/workflow/vk8s/kink:v1.23-ubuntu-gpu
+    role: master
+    resources:
+      requests:
+        cpu: "1"
+        memory: "1Gi"
+        nvidia.com/gpu: "1"
+      limits:
+        cpu: "8"
+        memory: "10Gi"
+        nvidia.com/gpu: "1"
+  ports:
+  - name: http
+    port: 30004
+    targetPort: 30004

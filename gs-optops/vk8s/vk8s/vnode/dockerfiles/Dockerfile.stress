@@ -1,0 +1,23 @@
+FROM centos:7
+
+RUN yum -y update; \
+    yum install -y systemd;
+
+RUN yum install -y procps \
+    curl \
+    iproute \
+    jq \
+    kmod \
+    net-tools \
+    iputils \
+    ca-certificates \
+    fuse \
+    rsync \
+    redhat-lsb-core
+
+RUN yum install -y epel-release; \
+    yum -y update;
+
+RUN yum install -y stress
+
+ENTRYPOINT ["/bin/sh", "-c", "tail -f /dev/null"]

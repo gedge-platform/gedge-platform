@@ -1,0 +1,13 @@
+quart
+Quart-CORS
+aiohttp
+requests
+aiohttp
+numpy
+werkzeug
+pandas
+bson
+aiomysql
+asyncio
+sqlalchemy
+kubernetes==24.2.0

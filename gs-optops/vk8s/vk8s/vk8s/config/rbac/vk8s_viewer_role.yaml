@@ -1,0 +1,27 @@
+# permissions for end users to view vk8s.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: vk8s-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: vk8s
+    app.kubernetes.io/part-of: vk8s
+    app.kubernetes.io/managed-by: kustomize
+  name: vk8s-viewer-role
+rules:
+- apiGroups:
+  - cache.sktelecom.com
+  resources:
+  - vk8s
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - cache.sktelecom.com
+  resources:
+  - vk8s/status
+  verbs:
+  - get

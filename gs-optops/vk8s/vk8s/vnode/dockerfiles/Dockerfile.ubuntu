@@ -1,0 +1,116 @@
+ARG BASE_IMAGE=ubuntu:20.04
+FROM $BASE_IMAGE
+
+COPY files/usr/local/bin/* /usr/local/bin/
+RUN chmod 0755 -R /usr/local/bin/
+
+RUN DEBIAN_FRONTEND=noninteractive clean-install \
+      systemd \
+      conntrack iptables iproute2 ethtool socat ebtables kmod ebtables util-linux mount \
+      ca-certificates curl \
+      libseccomp2 pigz \
+      nfs-common fuse-overlayfs open-iscsi \
+      jq wget gnupg vim \
+      git apache2-utils uuid-runtime
+
+RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && \
+    chmod +x /usr/bin/yq
+
+# install docker
+RUN install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+    && chmod a+r /etc/apt/keyrings/docker.gpg
+RUN echo \
+    "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+    "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+    tee /etc/apt/sources.list.d/docker.list > /dev/null
+RUN apt-get update
+ENV VERSION_STRING=5:20.10.24~3-0~ubuntu-focal
+RUN DEBIAN_FRONTEND=noninteractive clean-install -y docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin 
+
+
+RUN mkdir -p /etc/docker
+COPY files/etc/docker/daemon.json /etc/docker/daemon.json
+RUN chmod 0644 /etc/docker/daemon.json
+
+# install CNI plugin
+ENV CNI_VERSION="v0.8.2"
+ENV ARCH="amd64"
+RUN mkdir -p /opt/cni/bin \
+    && curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-${ARCH}-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+
+ENV DOWNLOAD_DIR=/usr/local/bin
+RUN mkdir -p ${DOWNLOAD_DIR}
+
+# install kubeadm, kubectl, kubelet
+ARG K8S_RELEASE_VERSION="v1.24.4"
+RUN RELEASE=${K8S_RELEASE_VERSION};\
+    ARCH="amd64"; \
+    cd ${DOWNLOAD_DIR}; \
+    curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${RELEASE}/bin/linux/${ARCH}/{kubeadm,kubelet,kubectl}; \
+    chmod +x kubeadm; \
+    chmod +x kubelet; \
+    chmod +x kubectl;
+
+# install kubelet systemd service
+ENV RELEASE_VERSION="v0.4.0"
+RUN curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" | sed "s:/usr/bin:${DOWNLOAD_DIR}:g" | tee /etc/systemd/system/kubelet.service \
+    && mkdir -p /etc/systemd/system/kubelet.service.d \
+    && curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" | sed "s:/usr/bin:${DOWNLOAD_DIR}:g" | tee /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+RUN systemctl enable kubelet.service
+
+# setting for kubernetes
+RUN mkdir -p /etc/modules-load.d \
+    && printf "overlay\nbr_netfilter" > /etc/modules-load.d/k8s.conf \
+    && mkdir -p /etc/sysctl.d \
+    && printf "net.bridge.bridge-nf-call-iptables = 1\nnet.ipv4.ip_forward=1\nnet.bridge.bridge-nf-call-ip6tables=1\nnet.ipv6.conf.default.disable_ipv6=0\nnet.ipv6.conf.all.disable_ipv6=0" > /etc/sysctl.d/k8s.conf
+
+# install kustomize for building kubeflow
+RUN wget https://github.com/kubernetes-sigs/kustomize/releases/download/v3.2.0/kustomize_3.2.0_linux_amd64; \
+    chmod 755 kustomize_3.2.0_linux_amd64; \
+    mv kustomize_3.2.0_linux_amd64 /usr/local/bin/kustomize; \
+    kustomize version
+
+# install helm for nfs-client-provisioner
+RUN wget https://get.helm.sh/helm-v3.6.2-linux-386.tar.gz; \
+    tar xzvf helm-v3.6.2-linux-386.tar.gz; \
+    mv linux-386/helm /usr/local/bin
+
+# change kubelet cgroup manager to cgroupfs
+# RUN printf '# Note: This dropin only works with kubeadm and kubelet v1.11+\n[Service]\nEnvironment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"\nEnvironment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"\nEnvironment="KUBELET_CGROUP_ARGS=--cgroup-driver=cgroupfs"\n# This is a file that "kubeadm init" and "kubeadm join" generates at runtime, populating the KUBELET_KUBEADM_ARGS variable dynamically\nEnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env\n# This is a file that the user can use for overrides of the kubelet args as a last resort. Preferably, the user should use\n# the .NodeRegistration.KubeletExtraArgs object in the configuration files instead. KUBELET_EXTRA_ARGS should be sourced from this file.\nEnvironmentFile=-/etc/default/kubelet\nExecStart=\nExecStart=/usr/local/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS $KUBELET_CGROUP_ARGS' > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+# set outer and inter prompt color
+RUN sed -i '$aif [[ $KUBE_NODE_TYPE == "OUTER" ]]; then\n  export PS1="\\[\\e[0;32m\\](outer)\\[\\e[m\\] \\[\\e]0;\\u@\\h: \\w\\a\\]${debian_chroot:+($debian_chroot)}\\u@\\h:\\w\\$ "\nelif [[ $KUBE_NODE_TYPE == "INNER" ]]; then\n  export PS1="\\[\\e[0;31m\\](inner)\\[\\e[m\\] \\[\\e]0;\\u@\\h: \\w\\a\\]${debian_chroot:+($debian_chroot)}\\u@\\h:\\w\\$ "\nfi' ~/.bashrc
+
+WORKDIR /
+
+COPY files/init.sh /init.sh 
+COPY files/init-kubernetes.sh /init-kubernetes.sh 
+COPY files/reset-kubernetes.sh /reset-kubernetes.sh 
+COPY files/setting-internet.sh /setting-internet.sh 
+COPY files/post-start.sh /post-start.sh 
+COPY files/install-kubeflow.sh /install-kubeflow.sh
+COPY files/check-running-state.sh /check-running-state.sh
+COPY files/kfp-proxy/ /kfp-proxy
+COPY files/nvidia-device-plugin.yml /nvidia-device-plugin.yml
+COPY files/etc/systemd/system/* /etc/systemd/system/
+COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
+
+RUN chmod 0755 /init.sh
+RUN chmod 0755 /init-kubernetes.sh
+RUN chmod 0755 /reset-kubernetes.sh
+RUN chmod 0755 /setting-internet.sh
+RUN chmod 0755 /post-start.sh
+RUN chmod 0755 /install-kubeflow.sh
+RUN chmod 0755 /check-running-state.sh
+RUN chmod -R 0644 /etc/systemd/system
+RUN chmod -R 0644 /etc/systemd/system/kubelet.service.d
+
+VOLUME /var/lib/docker
+
+# STOPSIGNAL SIGRTMIN+3
+
+RUN ln -s "$(which systemd)" /sbin/init
+
+# ENTRYPOINT ["/sbin/init"]
+ENTRYPOINT ["/usr/local/bin/entrypoint", "/sbin/init"]
