@@ -31,7 +31,13 @@ For the Edge AI service, it provides real-time, distribued, high-reliability and
     - Development of intelligent cloud edge platform technology that supports ultra-low-latency data processing based on collaboration between core cloud-cloud edge-terminal for response speed-sensitive service
 
 ## Advantages
-- TBD
+- Provides an ultra-low latency data processing framework that supports high-speed data processing of less than 10msec
+- Cloud edge SW platform that supports collaboration between core cloud-cloud edge-terminal and edge-edge
+- Framework-based architecture to provide availability and scalability of cloud edge SW platform
+- Provides cloud edge platform compatibility applicable to heterogeneous servers
+- Provides an intelligent service operation optimization framework optimized for the cloud edge
+- Provides management operation orchestration of resources and services specialized for large-scale distributed cloud edge.
+- Intelligent collaboration support, deep learning-based offloading and hierarchical caching placement source technology secured
 
 ## Architecture
 ![image01](https://user-images.githubusercontent.com/29933947/209770011-9954a1f5-2834-4750-b9fa-555ed8272a4d.png)
