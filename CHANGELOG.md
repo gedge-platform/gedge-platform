@@ -77,7 +77,16 @@
   - GSelectCluster for 3LT
 ### GS-Link
 - gs-linkgw 아키텍처 설명 
-- gs-linkgw 다중 클러스터 마이그레이션을 위한 제어기 프로그램 업로드 
+- gs-linkgw 다중 클러스터 마이그레이션을 위한 제어기 프로그램 업로드
+### GS-Optops
+- 설치 가이드 수정 적용
+- vk8s-device-plugin 신규 추가
+  - host-device-plugin
+  - virtual-device-plugin
+- vk8s 버전 업 코드 패치
+  - 예제 코드 Federated Learning 추가
+  - vnode(virtual node) 코드 추가
+- kink-operator의 controller 코드 패치 적용
 ## v3.5 Release
 ### GS-AIFLOW
 - 사용자 기능
