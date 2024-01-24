@@ -45,8 +45,13 @@ For the Edge AI service, it provides real-time, distribued, high-reliability and
 ## Components
 - GS : GEdge Service platform (Ultra low-latency Cloud Edge Service Platform)
     - [GS-Engine](https://github.com/gedge-platform/gs-engine) : Ultra low-latency Data Processing Framework
-    - [GS-Link](https://github.com/gedge-platform/gs-linkhq) : Service Collaboration Framework
-    - [GS-AI](https://github.com/gedge-platform/gs-aiflow) : Intelligent Service Operation Framework
+    - [GS-Linkhq](https://github.com/gedge-platform/gs-linkhq) : Core technology for creating vertical and horizontal service collaboration support policies
+    - [GS-Linkgw](https://github.com/gedge-platform/gs-linkgw) : Service collaboration support Core technologies for cloud-edge and edge-edge interconnection
+    - [GS-AIflow](https://github.com/gedge-platform/gs-aiflow) : Intelligent Service Operation Framework
+    - [GS-Optops](https://github.com/gedge-platform/gs-optops) : Core technologies for providing an AI execution environment optimized for the cloud edge
+    - [GS-Broker](https://github.com/gedge-platform/gs-broker) : A message broker that can integrate and mediate heterogeneous protocols between edge application services running on the GEdge platform and IoT devices
+    - [GS-SCHEDULER](https://github.com/gedge-platform/gs-scheduler) : High-speed and distributed collaboration execution of services Technology
+    - [GS-MSA](https://github.com/gedge-platform/gs-msa) : Microservice structure and execution environment of intelligent services
 - GM : GEdge Management platform (Multi-Cloud Edge Management Platform)
     - [GM-Center](https://github.com/gedge-platform/gm-center) : Platform Management Framework
     - [GM-Tool](https://github.com/gedge-platform/gm-tool) : Platform Management Tool Framework
