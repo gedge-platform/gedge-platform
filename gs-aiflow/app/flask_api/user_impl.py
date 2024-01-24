@@ -40,6 +40,8 @@ def getUsers():
 def getCenterUserName(loginID):
     return config.api_id + "_" + loginID
 
+def getUUIDBySplit(id, full):
+    return full.replace(getCenterUserName(id) + "-", "")
 
 def createUser():
     data = request.json
@@ -123,10 +125,13 @@ def createUser():
     res = flask_api.center_client.workspacesPost(getCenterUserName(data.get("login_id")), config.api_id + "_" + data.get("user_name"), data.get("cluster_list"))
     if res.get('status') is None:
         deleteUserSystem(data.get('login_id'))
-        return jsonify(status='failed', msg='server error : workspace'), 201
+        return jsonify(status='failed', msg='server error : workspace'), 400
     if res.get('status') != 'Created':
         deleteUserSystem(data.get('login_id'))
-        return jsonify(status='failed', msg='server error : workspace duplicated'), 201
+        return jsonify(status='failed', msg='server error : workspace duplicated'), 400
+
+    #get real workspaceName added uuid
+    workspaceName = res.get("data")
 
     #pass
     saltedPW = flask_api.auth_impl.salt(data.get('login_pass'));
@@ -135,7 +140,7 @@ def createUser():
     #insert to db
     try:
         cursor.execute(f'insert into TB_USER (user_uuid, login_id, login_pass, jupyter_pass, jupyter_port, user_name, workspace_name, is_admin) '
-                   f'values("{uuid}", "{data.get("login_id")}", "{encodedPW}", "{jupyterPW}", {port},"{data.get("user_name")}", "{getCenterUserName(data.get("login_id"))}", {data.get("is_admin")});')
+                   f'values("{uuid}", "{data.get("login_id")}", "{encodedPW}", "{jupyterPW}", {port},"{data.get("user_name")}", "{workspaceName}", {data.get("is_admin")});')
         mycon.commit()
     except:
         deleteUserSystem(data.get('login_id'))
@@ -225,7 +230,8 @@ def deleteUser(loginID):
                         if row.get('project_uuid') is not None:
                             projectUUID = row.get('project_uuid')
                             projectName = row.get('project_name')
-                            centerProjectID = getCenterProjectID(projectUUID, projectName)
+                            # centerProjectID = getCenterProjectID(projectUUID, projectName)
+                            centerProjectID = projectName
 
                             if projectUUID is not None:
                                 pvName = getBasicPVName(loginID, projectName)

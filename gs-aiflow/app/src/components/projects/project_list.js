@@ -193,6 +193,12 @@ function ProjectList(props) {
           refetch();
       })
       .catch((error) => {
+        notificationData.message = '프로젝트 생성 실패';
+        notificationData.description ='프로젝트 생성에 실패했습니다.';
+        openNotification();
+        setOpen(false);
+        setConfirmLoading(false);
+        refetch();
         catchError(error, navigate);
       });
 

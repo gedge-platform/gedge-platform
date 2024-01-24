@@ -563,17 +563,64 @@ def getListCreateDeployment(server):
     return ret
 
 
-def getPodLog(result):
-    result = result.to_dict(flat=False)
-    result = json.loads(list(result.keys())[0])
-    cluster=result['cluster']
-    namespace=result['namespace']
-    pod=result['pod']
+def getPodLogForAdmin(loginID, projectName, taskName):
+    user = user_impl.getUser(loginID)
+    if user is None:
+        return jsonify(status='failed'), 404
+    return getPodLog(projectName, taskName, user)
 
-    aApiClient = apiClient(cluster)
-    v1 = client.CoreV1Api(aApiClient)
-    response=v1.read_namespaced_pod_log(name=pod,namespace=namespace)
-    return str(response)
+
+def getPodLog(projectName, taskName, user):
+
+    mycon = get_db_connection()
+    cursor = mycon.cursor(dictionary=True)
+    cursor.execute(f'select yaml from TB_NODE INNER JOIN TB_PROJECT ON TB_PROJECT.project_uuid = TB_NODE.project_uuid where user_uuid = "{user.userUUID}" and node_name = "{taskName}" and project_name = "{projectName}";')
+    rows = cursor.fetchall()
+
+    if rows is not None:
+        if len(rows) != 0:
+            data = flask_api.center_client.getPodLogs('mec(ilsan)', projectName, taskName)
+            try:
+                if data is not None:
+                    if data['data'] is not None:
+                        if data['data']['result'] is not None:
+                            import datetime
+                            time = datetime.datetime(1990, 1,1)
+                            lastest = None
+                            for item in data['data']['result']:
+                                if len(item['values']) > 0:
+                                    resultJson = json.loads(item['values'][0][1])
+                                    temp = resultJson['time'][:-4]
+
+                                    datetime_obj = datetime.datetime.strptime(
+                                        temp, '%Y-%m-%dT%H:%M:%S.%f')
+                                    if time < datetime_obj:
+                                        lastest = item['values']
+                                        time = datetime_obj
+                            if lastest is None:
+                                return jsonify(data=[]), 200
+                            else:
+                                returnItem = []
+                                lastest.reverse()
+                                for item in lastest:
+                                    temp = json.loads(item[1])
+                                    returnItem.append(temp)
+                                return jsonify(data=returnItem), 200
+            except json.decoder.JSONDecodeError as e:
+                return jsonify(status='failed'), 404
+            except RuntimeError as e:
+                return jsonify(status='failed'), 400
+            try:
+                resultJson = json.loads(stringToJsonAvailableStr(rows[0]['yaml']))
+                return jsonify(yaml=resultJson), 200
+            except json.decoder.JSONDecodeError as e:
+                return jsonify(status='failed'), 404
+
+        else:
+            return jsonify(status='failed'), 404
+    else:
+        return jsonify(status='failed'), 400
+
 
 
 def getServerListDB(cluster):
@@ -683,7 +730,7 @@ def getDag(user, projectName, needYaml = False):
         return d
     else:
         projectID = rows[0][5]
-    projectID = getCenterProjectID(projectID, projectName)
+    projectID = projectName
     data = flask_api.center_client.getPods(user.workspaceName, 'mec(ilsan)', projectID)
 
     for row in rows:
@@ -757,7 +804,8 @@ def launchProject(user, projectName):
     projectID = rows[0]['project_uuid']
     dag = getDag(user, projectName, True)
     # return launchTest()
-    dag['id'] = getCenterProjectID(projectID, projectName)
+    # dag['id'] = getCenterProjectID(projectID, projectName)
+    dag['id'] = projectName
     res = monitoringManager.addWorkFlow(monitoringManager.parseFromDAGToWorkFlow(user.workspaceName, dag))
     if res is True:
         return jsonify(status="success"), 200
@@ -778,7 +826,8 @@ def initProject(userUUID, workspaceName, projectName):
 
     cursor.execute(f'select node_name from TB_NODE where project_uuid="{projectID}"')
     rows = cursor.fetchall()
-    projectID = getCenterProjectID(projectID, projectName)
+    # projectID = getCenterProjectID(projectID, projectName)
+    projectID = projectName
     monitoringManager.deleteWorkFlow(projectID)
     for item in rows:
         flask_api.center_client.podsNameDelete(item['node_name'], workspaceName, 'mec(ilsan)', projectID)
@@ -828,7 +877,8 @@ def createProject(userUUID, userLoginID, projectName, projectDesc, clusterName):
 
     import uuid
     projectID = uuid.uuid4().__str__()
-    centerProjectID = getCenterProjectID(projectID, projectName)
+    # centerProjectID = getCenterProjectID(projectID, projectName)
+    centerProjectID = projectName
 
     cursor.execute(f'select workspace_name from TB_USER where user_uuid="{userUUID}"')
     rows = cursor.fetchall()
@@ -844,27 +894,28 @@ def createProject(userUUID, userLoginID, projectName, projectDesc, clusterName):
     if workspaceName is not None:
         status = flask_api.center_client.projectsPost(workspaceName, config.api_id, centerProjectID, projectDesc,
                                                       clusterName=clusterName)
-        if status['status'] != 'failed':
+        if status['status'] != 'failed' and status['status'] != 'Failure' and status['status'] != 'Failed' and status['data'] is not None:
+            realProjectName = status["data"]
             #make folder
-            flask_api.filesystem_impl.makeFolderToNFS('user/' + userLoginID + '/' + projectName)
+            flask_api.filesystem_impl.makeFolderToNFS('user/' + userLoginID + '/' + realProjectName)
 
             for cluster in clusterName:
                 # pv 부터 pvc는 프로젝트 생성후
-                status = flask_api.center_client.pvCreate(flask_api.runtime_helper.getProjectYaml(userLoginID, projectName)['PV'], workspaceName, cluster, centerProjectID)
+                status = flask_api.center_client.pvCreate(flask_api.runtime_helper.getProjectYaml(userLoginID, realProjectName)['PV'], workspaceName, cluster, realProjectName)
                 if (status['code'] != 201 or ast.literal_eval(status['data'])['status'] == 'Failure'):
-                    flask_api.center_client.projectsDelete(centerProjectID)
-                    flask_api.filesystem_impl.removeFolderFromNFS('user/' + userLoginID + '/' + projectName)
+                    flask_api.center_client.projectsDelete(realProjectName)
+                    flask_api.filesystem_impl.removeFolderFromNFS('user/' + userLoginID + '/' + realProjectName)
                     return jsonify(status='failed', msg='pv make failed'), 400
 
-                status = flask_api.center_client.pvcCreate(flask_api.runtime_helper.getProjectYaml(userLoginID, projectName)['PVC'], workspaceName, cluster, centerProjectID)
+                status = flask_api.center_client.pvcCreate(flask_api.runtime_helper.getProjectYaml(userLoginID, realProjectName)['PVC'], workspaceName, cluster, realProjectName)
                 if (status['code'] != 201 or ast.literal_eval(status['data'])['status'] == 'Failure'):
-                    flask_api.center_client.projectsDelete(centerProjectID)
-                    flask_api.filesystem_impl.removeFolderFromNFS('user/' + userLoginID + '/' + projectName)
+                    flask_api.center_client.projectsDelete(realProjectName)
+                    flask_api.filesystem_impl.removeFolderFromNFS('user/' + userLoginID + '/' + realProjectName)
                     # TODO: PV 제거
                     return jsonify(status='failed', msg='pvc make failed'), 400
 
             cursor.execute(
-                f'insert into TB_PROJECT (project_uuid, project_name, user_uuid, pv_name) value ("{projectID}", "{projectName}", "{userUUID}", "testPV");')
+                f'insert into TB_PROJECT (project_uuid, project_name, user_uuid, pv_name) value ("{projectID}", "{realProjectName}", "{userUUID}", "testPV");')
             mycon.commit()
             return jsonify(status='success'), 200
         else:
@@ -887,16 +938,15 @@ def deletePV(userUUID, userLoginID, workspaceName, projectName):
 
     pvName = flask_api.runtime_helper.getBasicPVName(userLoginID, projectName)
     projectUUID = rows[0]['project_uuid']
-    centerProjectID = getCenterProjectID(projectUUID, projectName)
 
-    response = flask_api.center_client.userProjectsNameGet(centerProjectID)
+    response = flask_api.center_client.userProjectsNameGet(projectName)
     if response.get('data') is None:
         return {'status' : 'failed'}
     if response.get('data').get('selectCluster') is None:
         return {'status' : 'failed'}
 
     for cluster in response['data']['selectCluster']:
-        status = flask_api.center_client.pvDelete(pvName, workspaceName, cluster.get('clusterName'), centerProjectID)
+        status = flask_api.center_client.pvDelete(pvName, workspaceName, cluster.get('clusterName'), projectName)
         if status.get('status') == 'failed':
             return {'status' : 'failed', 'msg' : 'cluster is wrong'}
             return jsonify(status='failed', msg='cluster is wrong'), 200
@@ -923,8 +973,7 @@ def deleteProject(userUUID, userLoginID, workspaceName, projectName):
         return jsonify(status = 'failed', msg = 'cant delete pv'), 400
 
     projectUUID = rows[0]['project_uuid']
-    centerProjectID = getCenterProjectID(projectUUID, projectName)
-    status = flask_api.center_client.projectsDelete(centerProjectID)
+    status = flask_api.center_client.projectsDelete(projectName)
 
     if status['status'] != 'failed':
         cursor.execute(
@@ -934,15 +983,24 @@ def deleteProject(userUUID, userLoginID, workspaceName, projectName):
     return jsonify(status='failed'), 400
 
 
-def getProject(userUUID, projectName):
+def getProject(user, projectName):
+    userUUID = user.userUUID
     mycon = get_db_connection()
     cursor = mycon.cursor(dictionary=True)
     cursor.execute(f'select project_uuid from TB_PROJECT where project_name="{projectName}" and user_uuid="{userUUID}"')
     rows = cursor.fetchall()
+
+    if rows is not None:
+        if len(rows) == 0:
+            projectName = projectName + "-" + user_impl.getUUIDBySplit(user.userLoginID, user.workspaceName)
+            cursor.execute(f'select project_uuid from TB_PROJECT where project_name="{projectName}" and user_uuid="{userUUID}"')
+            rows = cursor.fetchall()
+
     if rows is not None:
         if len(rows) != 0:
-            pid = getCenterProjectID(rows[0]['project_uuid'], projectName)
+            pid = projectName
             response = flask_api.center_client.userProjectsNameGet(pid)
+
             if response.get('data') is not None:
                 returnResponse = {}
                 returnResponse['projectName'] = projectName
@@ -1033,7 +1091,7 @@ def postDag(userUUID, userLoginID, userName, workspaceName):
 
     projectUUID = rows[0]['project_uuid']
     projectName = rows[0]['project_name']
-    centerProjectID = getCenterProjectID(projectUUID, projectName)
+    centerProjectID = projectName
 
     #precondition
     preCondition = {}
@@ -1239,7 +1297,7 @@ def getProjectAllListForAdmin():
             data['login_id'] = row['login_id']
             data['user_name'] = row['user_name']
             data['status'] = 'Waiting'
-            if monitoringManager.getIsRunning(getCenterProjectID(row['project_uuid'], row['project_name'])) is True:
+            if monitoringManager.getIsRunning(row['project_name']) is True:
                 data['status'] = 'Launching'
             projectList.append(data)
         return jsonify(project_list=projectList), 200
@@ -1251,11 +1309,10 @@ def getProjectAllListForAdmin():
 def getProjectForAdmin(loginID, projectName):
     mycon = get_db_connection()
     cursor = mycon.cursor(dictionary=True)
-    cursor.execute(f'select user_uuid from TB_USER where login_id="{loginID}"')
-    rows = cursor.fetchall()
-    if rows is not None:
-        if len(rows) != 0:
-            return getProject(rows[0]['user_uuid'], projectName)
+
+    user = user_impl.getUser(loginID)
+    if user is not None:
+            return getProject(user, projectName)
 
     return jsonify(msg='no data'), 200
 
@@ -1283,7 +1340,8 @@ def stopProject(user, projectName):
         return jsonify(status='failed', msg='Project is not found'), 404
 
     projectID = rows[0]['project_uuid']
-    projectID = getCenterProjectID(projectID, projectName)
+    # projectID = getCenterProjectID(projectID, projectName)
+    projectID = projectName
     monitoringManager.deleteWorkFlow(projectID)
     return jsonify(status='success'), 201
 

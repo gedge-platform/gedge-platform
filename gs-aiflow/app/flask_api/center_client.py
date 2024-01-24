@@ -74,6 +74,17 @@ def getPods(workspace: str, cluster: str, project: str):
     except:
         return {}
 
+def getPodLogs(cluster: str, project: str, taskName: str):
+    query = dict()
+    query['cluster'] = cluster
+    query['query'] = f'{{namespace="{project}",pod="{taskName}"}}'
+
+    response, code = send_api(path="/loki", method="GET", params=query)
+    try:
+        return response.json()
+    except:
+        return {}
+
 def getPodDetail(podName : str, workspace: str, cluster: str, project: str):
     query = dict()
     query['workspace'] = workspace

@@ -167,19 +167,25 @@ def getBasicPodArgs(model, task, **args):
         if task == 'train':
             return f' --root_path {pathJoin(args.get("datasetPath") or ".")} ' \
                    f'--dataset_path {pathJoin(args.get("datasetPath") or "/root/volume/dataset", "wider")} ' \
-                   f'--pretrained {args.get("weightsPath") or "model/R50"}  --pretrained_epoch 0 --prefix {args.get("outputPath") or "model/retinaface"} ' \
+                   f'--pretrained {args.get("weightsPath") or "model/resnet-50"}  --pretrained_epoch 0 --prefix {args.get("outputPath") or "model/retinaface"} ' \
                    f'--end_epoch {args.get("epochs") or "1"} '
 
         elif task == 'validation':
-            return f''
+            return (f' --prefix {args.get("modelPath") or "./model/R50"} '
+                    f'--epoch {args.get("epoch") or "0"} '
+                    f'--dataset-path {pathJoin(args.get("datasetPath") or "/root/volume/dataset", "wider")} '
+                    f'--root_path . ')
 
         elif task == 'optimization':
-            return f' --symbol {(args.get("modelPath") or "./model/R50") + "-symbol.json"} ' \
-                   f'--params {(args.get("modelPath") or "./model/R50") + "-0000.params"} ' \
+            return f' --symbol {(args.get("modelPath") or "./model/R50-symbol.json")} ' \
+                   f'--params {(args.get("modelPath") or "./model/R50-0000.params")} ' \
                    f'-b {args.get("batch") or "1"} '
 
         elif task == 'opt_validation':
-            return f''
+            return (f' --input {args.get("modelPath") or "./model/R50-640p-fp16.engine"} '
+                    f'--dataset-path {pathJoin(args.get("datasetPath") or "/root/volume/dataset", "wider")} '
+                    f'--root_path . '
+                    f'--output {args.get("outputPath") or "./wout"} ')
         return ''
 
     return ''
@@ -192,7 +198,7 @@ def makeYamlTrainRuntime(userLoginID, userName, projectName, projectID, node_id,
                                                 + '; ./bin/train.sh'
 
     data['spec']['containers'][0]['args'][0] += getBasicPodArgs(model, 'train', outputPath=outputPath, datasetPath=datasetPath)
-    data['spec']['containers'][0]['args'][0] += ' &>> /root/user/logs/' + node_id + '.log'
+    # data['spec']['containers'][0]['args'][0] += ' &>> /root/user/logs/' + node_id + '.log'
     return data
 
 def makeYamlValidateRuntime(userLoginID, userName, projectName, projectID, node_id, runtime, model, tensorRT, framework, datasetPath, modelPath, outputPath):
@@ -202,7 +208,7 @@ def makeYamlValidateRuntime(userLoginID, userName, projectName, projectID, node_
     data['spec']['containers'][0]['args'][0] += 'rm -rf ' + pathJoin('/root/user/', (outputPath or 'no_path')) \
                                                 + '; ./bin/validation.sh '
     data['spec']['containers'][0]['args'][0] += getBasicPodArgs(model, 'validation', outputPath=outputPath, datasetPath=datasetPath, modelPath=modelPath)
-    data['spec']['containers'][0]['args'][0] += ' &>> /root/user/logs/' + node_id + '.log'
+    # data['spec']['containers'][0]['args'][0] += ' &>> /root/user/logs/' + node_id + '.log'
 
     return data
 def makeYamlOptimizationRuntime(userLoginID, userName, projectName, projectID, node_id, runtime, model, tensorRT, framework, modelPath):
@@ -211,7 +217,7 @@ def makeYamlOptimizationRuntime(userLoginID, userName, projectName, projectID, n
         return None
     data['spec']['containers'][0]['args'][0] += './bin/optimization.sh '
     data['spec']['containers'][0]['args'][0] += getBasicPodArgs(model, 'optimization', modelPath=modelPath)
-    data['spec']['containers'][0]['args'][0] += ' &>> /root/user/logs/' + node_id + '.log'
+    # data['spec']['containers'][0]['args'][0] += ' &>> /root/user/logs/' + node_id + '.log'
     return data
 
 def makeYamlOptValidateRuntime(userLoginID, userName, projectName, projectID, node_id, runtime, model, tensorRT, framework, datasetPath, modelPath, outputPath):
@@ -221,7 +227,7 @@ def makeYamlOptValidateRuntime(userLoginID, userName, projectName, projectID, no
     data['spec']['containers'][0]['args'][0] += 'rm -rf ' + pathJoin('/root/user/', (outputPath or 'no_path')) \
                                                 + '; ./bin/opt_validation.sh '
     data['spec']['containers'][0]['args'][0] += getBasicPodArgs(model, 'opt_validation', outputPath= outputPath, datasetPath=datasetPath, modelPath=modelPath)
-    data['spec']['containers'][0]['args'][0] += ' &>> /root/user/logs/' + node_id + '.log'
+    # data['spec']['containers'][0]['args'][0] += ' &>> /root/user/logs/' + node_id + '.log'
 
     return data
 
@@ -245,7 +251,6 @@ def makeYamlInferenceRuntime(userLoginID, userName, projectName, projectID, node
     elif(model == 'RetinaFace'):
         appLabel = 'retina-test'
         imageName = 'softonnet/retinaface/inference_test:v0.0.1.230616'
-
     data = {'apiVersion': 'v1', 'kind': 'Pod',
             'metadata': {'name': nodeID, 'labels': {'app': appLabel}},
             'spec': {'restartPolicy': 'Never', 'containers': [

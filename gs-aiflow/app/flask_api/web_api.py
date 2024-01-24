@@ -191,6 +191,22 @@ def getTaskYaml(projectName, taskName):
         return flask.jsonify(status='failed', msg = 'auth failed'), 401
     return monitor_impl.getPodYaml(projectName, taskName, user.userUUID)
 
+@app.route('/api/project/<string:projectName>/<string:taskName>/log', methods=['GET'])
+@auth_impl.needLogin()
+def getTaskLog(projectName, taskName):
+    user = user_impl.getUserInSession()
+    if user is None:
+        return flask.jsonify(status='failed', msg = 'auth failed'), 401
+    return monitor_impl.getPodLog(projectName, taskName, user)
+
+@app.route('/api/admin/project/<string:login_id>/<string:projectName>/<string:taskName>/log', methods=['GET'])
+@auth_impl.needLogin()
+def getTaskLogForAdmin(login_id, projectName, taskName):
+    user = user_impl.getUserInSession()
+    if user is None:
+        return flask.jsonify(status='failed', msg = 'auth failed'), 401
+    return monitor_impl.getPodLogForAdmin(login_id, projectName, taskName)
+
 @app.route('/api/pod/<string:podID>/status', methods=['POST'])
 @auth_impl.needLogin()
 def getPodStatus(podID):
@@ -237,7 +253,7 @@ def apiNormalUserProjectName(projectName):
     if request.method == 'DELETE':
         return monitor_impl.deleteProject(user.userUUID, user.userLoginID, user.workspaceName, projectName)
     if request.method == 'GET':
-        return monitor_impl.getProject(user.userUUID, projectName)
+        return monitor_impl.getProject(user, projectName)
 
 @app.route('/api/admin/project', methods=['GET'])
 @auth_impl.needLogin()

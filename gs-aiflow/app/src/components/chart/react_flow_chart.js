@@ -26,6 +26,7 @@ import { CaretRightOutlined, CloseOutlined , FileSearchOutlined} from "@ant-desi
 import DagMonitoringDetail from '../dag/dag_monitoring_detail';
 import { openSuccessNotificationWithIcon, openErrorNotificationWithIcon } from 'utils/notification';
 import { APIGetProjectDag, APIGetProjectList, APIInitProject, APILaunchProject } from 'utils/api';
+import LogModal from 'components/modals/log_modal';
 
 const nodeTypes = { textUpdater: TextUpdaterNode, Pod: PodNode };
 const rfStyle = {
@@ -356,13 +357,14 @@ function Flow(props) {
           onCancel={closeModal}
           onOk={afterOpenModal}
           destroyOnClose={true}
+          style={{width:'800px'}}
         >
           <div
-            style={{ height: '400px' }}>
+            style={{ height: '600px', width:'100%', display:'flex', flexDirection :'column' }}>
 
             <h3 ref={(_subtitle) => (subtitle = _subtitle)}>이름 : {title}</h3>
             {/* <DagModal nodeType={"Pod"} data={selectedNodeData} /> */}
-            "이부분은 로그가 출력될 부분입니다."
+            <LogModal podName={title} projectID={id}></LogModal>
           </div>
         </Modal>
         <Modal

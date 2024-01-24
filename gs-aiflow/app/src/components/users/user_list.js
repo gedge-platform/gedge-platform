@@ -217,7 +217,10 @@ function UserList(props) {
   useEffect(() => {
     if (!isLoading) {
       const filteredData = data.filter((entry) => {
-        return entry[filterSelect].includes(filterInput)
+        if(typeof entry[filterSelect] == 'string'){
+          return entry[filterSelect].includes(filterInput)
+        }
+        return entry[filterSelect] == filterInput
       });
       setDataSource(filteredData);
     }
