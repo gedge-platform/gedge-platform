@@ -14,6 +14,7 @@ Our Community shares technical materials created during GEdge Platform developme
 - [4th Open Conference](https://github.com/gedge-platform/docs/tree/master/conference/4th "docs/conference/4th")
 - [5th Open Conference](https://github.com/gedge-platform/docs/tree/master/conference/5th "docs/conference/5th")
 - [6th Open Conference](https://github.com/gedge-platform/docs/tree/master/conference/6th "docs/conference/6th")
+- [7th Open Conference](https://github.com/gedge-platform/docs/tree/master/conference/7th "docs/conference/7th")
 <BR>
 
 ## Other Event Presentation Materials (PDF files)
