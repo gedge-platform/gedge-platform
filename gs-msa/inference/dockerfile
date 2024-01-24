@@ -1,0 +1,21 @@
+FROM luneberry07/basic_docker_build
+
+# COPY: 현재 경로(.)에 존재하는 파일들을 이미지 /app 경로에 모두 추가 
+COPY . /app
+
+# WORKDIR: 작업 디렉토리 변경. 셸 cd /app 과 같은 기능 
+WORKDIR /app
+
+# ARG DEBIAN_FRONTEND=noninteractive
+
+# RUN apt-get -y update
+# RUN pip install -r ./requirements.txt
+
+RUN ["chmod", "+x", "darknet"]
+
+
+# EXPOSE: 컨테이너 실행 시 노출될 포트
+EXPOSE 5000
+
+CMD [ "python3", "inference.py" ]
+#CMD ["python3", "main.py"]

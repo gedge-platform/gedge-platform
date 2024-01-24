@@ -1,0 +1,68 @@
+  <html>
+    <head>
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+      <!-- Bootstrap CSS -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+      <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+      <style>
+        .formdiv {
+          text-align: center;
+          margin-top : 50px;
+          width: 100%;
+          height: auto;
+        }
+        div {
+          text-align: center;
+        }
+        body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nanum Gothic', cursive; }
+        .navbar-dark {color: #fff;}
+        h3 {font-weight: bold; margin:10px;}
+      </style>
+
+      <script>
+        function goWorkList(){
+          window.location.href = 'http://18.119.120.221:30222/work_list';
+        }
+        function goFinList(){
+          window.location.href = 'http://18.119.120.221:30222/fin_list';
+        }
+        function goCleanDB() {
+          window.location.href = 'http://18.119.120.221:30222/clean_db';
+
+        }
+      </script>
+        <title>upload</title>
+    </head>
+    <body>
+      <nav class="navbar navbar-dark bg-dark">
+        <img src= {{ url_for('static', filename='icon.png') }} class="d-inline-block align-top" width='auto' height='30' alt="">
+        G-Edge Platform AI Service
+      </nav>
+
+      <div>
+        <img src={{ url_for('static', filename='mainPic.png')}} width="80%", height="auto">
+      </div>
+
+      <hr>
+      <div>
+        <h3> 분석할 비디오를 올려주세요 <h3>
+      </div>
+
+
+      <div class="formdiv">
+        <form action = "/insert_request" method = "post" enctype="multipart/form-data">
+            <input type="FILE" name="FileUpload" />
+            <input type = "submit" value="Upload">
+        </form>
+      </div>
+
+      <div>
+          <button type='button' class='btn btn-outline-primary' onclick="goWorkList()"> 분석 진행중인 리스트 보기</button>
+          <button type='button' class='btn btn-outline-success' onclick="goFinList()"> 분석 완료 리스트 보기</button>
+          <button type='button' class='btn btn-outline-dark' onclick="goCleanDB()"> DB 지우기 </button>
+      </div>
+    </body>
+  </html>

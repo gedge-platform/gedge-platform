@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script>
+      function goHome(){
+        window.location.href = '/';
+      }
+      function goFinList(){
+        window.location.href = 'http://18.119.120.221:30222/fin_list';
+      }
+  </script>
+  <title>work_lists</title>
+  <style>
+    html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nanum Gothic', cursive; }
+    .list-table { border-spacing:0px; border-collapse: collapse; width: 100%; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 10px 20px; font-size: 20px; }
+    th { background: #9fd6c2; }
+    td { color: #000000; }
+    tbody td:first-child { text-align: center; }
+    div {
+      text-align: center;
+    }
+    h3 {font-weight: bold; margin:10px;}
+    .navbar-dark {color: #fff;}
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-dark">
+    <img src={{ url_for('static', filename='icon.png')}} class="d-inline-block align-top" width='auto' height='30' alt="">
+    G-Edge Platform AI Service
+  </nav>
+  <div>
+    <h3>모든 DB를 지웠습니다.</h3>
+  </div>
+    <table class='list-table'>
+      <thead>
+        <tr>
+          <th> Name </th>
+          <th> Uuid </th>
+          <th> Path </th>
+          <th> Status </th>
+          <th> Start time </th>
+          <th> End time </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for i in work_list %}
+          <tr>
+            <td> {{i.Name}} </td>
+            <td> {{i.Uuid}} </td>
+            <td> {{i.Path}} </td>
+            <td> {{i.Status}} </td>
+            <td> {{i.Start_Time}} </td>
+            <td> {{i.End_Time}} </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div>
+      <button type='button' class='btn btn-outline-warning' onclick="goHome()"> 메인 화면 </button>
+      <button type='button' class='btn btn-outline-success' onclick="goFinList()"> 분석 완료 리스트 보기 </button>
+    </div>
+</body>
+</html>

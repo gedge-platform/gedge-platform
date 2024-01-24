@@ -1,0 +1,21 @@
+FROM luneberry07/basic_docker_build
+
+# COPY: 현재 경로(.)에 존재하는 파일들을 이미지 /app 경로에 모두 추가 
+COPY . /app
+
+WORKDIR /app
+
+# RUN apt-get -y update
+# RUN ls
+# RUN pip install -r ./requirements.txt
+
+RUN ["chmod", "+x", "postprocessing"]
+
+
+# EXPOSE: 컨테이너 실행 시 노출될 포트
+EXPOSE 5000
+
+# CMD: 컨테이너 시작 시 실행되는 명령어로 위 ENTRYPOINT 명령어 뒤 인자로 실행하게 된다. 
+# 결국 python app.py 명령어 실행 
+CMD [ "python3", "postprocessing.py" ]
+#CMD ["python3", "main.py"]

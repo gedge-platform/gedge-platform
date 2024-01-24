@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script>
+      function goHome(){
+        window.location.href = '/';
+      }
+      function goWorkList(){
+        window.location.href = 'http://18.119.120.221:30222/work_list';
+      }
+      function goCleanDB() {
+        window.location.href = 'http://18.119.120.221:30222/clean_db';
+      }
+
+  </script>
+  <title>fin_lists</title>
+  <style>
+    html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nanum Gothic', cursive; }
+    div {
+      text-align: center;
+    }
+    .navbar-dark {color: #fff;}
+    h3 {font-weight: bold; margin:10px;}
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-dark">
+    <img src={{ url_for('static', filename='icon.png')}} class="d-inline-block align-top" width='auto' height='30' alt="">
+    G-Edge Platform AI Service
+  </nav>
+  <div>
+    <h3>완료목록</h3>
+  </div>
+
+    {% for i in path_list %}
+    <div>
+      <video width="800px" height="600px" controls>
+        <source src={{ url_for('static', filename=i )}} type="video/mp4">
+      </video>
+    </div>
+    {% endfor %}
+
+    <div>
+      <button type='button' class='btn btn-outline-warning' onclick="goHome()"> 메인화면 </button>
+      <button type='button' class='btn btn-outline-primary' onclick="goWorkList()"> 분석 진행중인 리스트 보기 </button>
+      <button type='button' class='btn btn-outline-dark' onclick="goCleanDB()"> DB 지우기 </button>
+    </div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference2
+  labels:
+    app: inference2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inference2
+  template:
+    metadata:
+      labels:
+        app: inference2
+    spec:
+      volumes:
+      - name: www
+        persistentVolumeClaim:
+          claimName: pvc-nfs
+      - name: emptydir
+        emptyDir: {}
+      containers:
+      - name: inference
+        image: luneberry07/inference_v2
+        env:
+        - name: MONGODB_IP
+          value: '101.79.4.10'
+        - name: MONGODB_PORT
+          value: '12002'
+        - name: MOUNT_PATH
+          value: '/mnt/nfs_share'
+        - name: LOG_FILE
+          value: 'inference.log'
+        - name: MONGODB_ID
+          value: 'gedge'
+        - name: MONGODB_PW
+          value: '7W4qsKuUBXywAeA'
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: www
+          mountPath: /app/static
+        - name: emptydir
+          mountPath: /app/htdocs
+        ports:
+        - containerPort: 80

@@ -1,0 +1,8 @@
+classes= 80
+train  = C:\Users\luneb\Desktop\darknet-master\darknet-master\build\darknet\x64\data\coco\train2014.txt
+#valid  = coco_testdev
+valid = C:\Users\luneb\Desktop\darknet-master\darknet-master\build\darknet\x64\data\coco\valid2014.txt
+names = ./coco/coco.names
+backup = /home/pusheen/Desktop/repos/210720_inferencing/build/darknet/x64/backup
+eval=coco
+
