@@ -1,0 +1,13 @@
+apiVersion: gedgemig.gedge.etri.kr/v1
+kind: Livmigration
+metadata:
+  name: checkpointtest 
+  labels:
+    name: checkpointtest 
+spec:
+  replicas: 0
+  operation: checkpoint
+  snapshotPath: /mnt/migration
+  sourcePod: video 
+  selector:
+          gedgemig:  

@@ -1,0 +1,12 @@
+apiVersion: gedgemig.gedge.etri.kr/v1
+kind: Livmigration
+metadata:
+  labels:
+    app.kubernetes.io/name: livmigration
+    app.kubernetes.io/instance: livmigration-sample
+    app.kubernetes.io/part-of: migration-controller
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: migration-controller
+  name: livmigration-sample
+spec:
+  # TODO(user): Add fields here

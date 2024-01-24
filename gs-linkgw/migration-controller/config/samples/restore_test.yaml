@@ -1,0 +1,14 @@
+apiVersion: gedgemig.gedge.etri.kr/v1
+kind: Livmigration
+metadata:
+  name: restoretest 
+  labels:
+    name: restoretest 
+spec:
+  replicas: 0
+  operation: restore 
+  snapshotPath: /mnt/migration
+  sourcePod: video
+  destaddr: etricls2-worker2 
+  selector:
+          gedgemig:  

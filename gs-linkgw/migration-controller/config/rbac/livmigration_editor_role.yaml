@@ -1,0 +1,31 @@
+# permissions for end users to edit livmigrations.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: livmigration-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: migration-controller
+    app.kubernetes.io/part-of: migration-controller
+    app.kubernetes.io/managed-by: kustomize
+  name: livmigration-editor-role
+rules:
+- apiGroups:
+  - gedgemig.gedge.etri.kr
+  resources:
+  - livmigrations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - gedgemig.gedge.etri.kr
+  resources:
+  - livmigrations/status
+  verbs:
+  - get

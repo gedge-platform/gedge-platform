@@ -1,0 +1,33 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - gedgemig.gedge.etri.kr
+  resources:
+  - livmigrations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - gedgemig.gedge.etri.kr
+  resources:
+  - livmigrations/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - gedgemig.gedge.etri.kr
+  resources:
+  - livmigrations/status
+  verbs:
+  - get
+  - patch
+  - update

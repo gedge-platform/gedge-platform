@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: video
+  labels:
+    app: video
+spec:
+  containers:
+  - name: vlc
+    image: docker.io/won226/videotest       
+    ports:
+    - containerPort: 8080 
+    args: ["video.mp4","--loop","--sout", "#transcode{scodec=none}:http{mux=ffmpeg{mux=flv},dst=:8080/}"]  
+  nodeSelector:
+    kubernetes.io/hostname: etricls2-worker1 
+  terminationGracePeriodSeconds: 0 

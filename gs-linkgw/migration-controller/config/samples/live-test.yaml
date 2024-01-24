@@ -1,0 +1,14 @@
+apiVersion: gedgemig.gedge.etri.kr/v1
+kind: Livmigration
+metadata:
+  name: livetest 
+  labels:
+    name: livetest 
+spec:
+  replicas: 0
+  operation: live-migration 
+  snapshotPath: /mnt/migration
+  sourcePod: video
+  destaddr: etricls2-worker2 
+  selector:
+          migPod:  
