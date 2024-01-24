@@ -2,32 +2,32 @@ import sys
 sys.path.append('../gelib')
 sys.path.append('../gedef')
 
-from kafka import KafkaProducer
-from kafka import KafkaConsumer, TopicPartition
-from kafka import KafkaAdminClient
 import json
-from json import dumps
-from json import loads 
-import time 
-import os
+import time,os 
 import requests
 import redis
 import yaml
+import quantity
+import shutil
+import uuid
+import threading
+
+from json import dumps
+from json import loads 
+from operator import itemgetter
+from kubernetes import client, config, utils, watch 
+from kubernetes.client.rest import ApiException
+from flask import Flask, request, abort,jsonify, render_template, redirect, url_for
+
 import GE_define as gDefine
 import GE_GSCH_define_ca as caDefine
 import GE_kubernetes as gKube
-import GE_platform_util as pUtil
+import GE_yaml as gYaml
+import GE_meta_data as gMeta
 
+from GE_kafka import gKafka
 from GE_meta_data import metaData
 from GE_redis import redisController
-
-from   operator import itemgetter
-import quantity
-
-from kubernetes import client, config, utils, watch 
-from kubernetes.client.rest import ApiException
-import shutil
-import uuid
 
 try :
     config.load_incluster_config()
@@ -46,7 +46,7 @@ def init_gsch_cluster_agent():
             KAFKA MESSAGE
     ------------------------------------------------'''
     while 1:     
-        r = pUtil.find_platform_namespaced_service_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE, gDefine.KAFKA_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE, gDefine.KAFKA_SERVICE_NAME)
         if r : 
             gDefine.KAFKA_ENDPOINT_IP   = r['access_host']
             gDefine.KAFKA_ENDPOINT_PORT = r['access_port']
@@ -62,7 +62,7 @@ def init_gsch_cluster_agent():
             REDIS
     -----------------------------------------------'''
     while 1:
-        r = pUtil.find_platform_namespaced_service_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.REDIS_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.REDIS_SERVICE_NAME)
         if r : 
             gDefine.REDIS_ENDPOINT_IP   = r['access_host']
             gDefine.REDIS_ENDPOINT_PORT = r['access_port']
@@ -77,12 +77,11 @@ def init_gsch_cluster_agent():
             MONGO DB 
     -----------------------------------------------'''
     while 1:        
-        r = pUtil.find_platform_namespaced_service_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.MONGO_DB_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.MONGO_DB_SERVICE_NAME)
         if r : 
             gDefine.MONGO_DB_ENDPOINT_IP   = r['access_host']
             gDefine.MONGO_DB_ENDPOINT_PORT = r['access_port']
             print(gDefine.MONGO_DB_ENDPOINT_IP,gDefine.MONGO_DB_ENDPOINT_PORT)    
-            print('3')
             break
         else :
             print('wait for running platform service',)
@@ -175,39 +174,40 @@ def get_cluster_resource_status(t_GPUFilter):
     else :
         return  None 
 
-def get_end_offsets(consumer, topic) -> dict:
-    t_end_offsets = None
-    print('--1consumer', consumer)
-    partitions_for_topic = consumer.partitions_for_topic(topic)
-    print('--2partitions_for_topic', partitions_for_topic)
-    if partitions_for_topic:
-        print('--3')
-        partitions = []
-        for partition in consumer.partitions_for_topic(topic):
-            partitions.append(TopicPartition(topic, partition))
-            print('--4')
-        # https://kafka-python.readthedocs.io/en/master/apidoc/KafkaConsumer.html#kafka.KafkaConsumer.end_offsets
-        # Get the last offset for the given partitions. The last offset of a partition is the offset of the upcoming message, i.e. the offset of the last available message + 1.
-        print('--5')
-        if len(partitions) > 0 :
-            print('--6',partitions)
-            t_end_offsets = consumer.end_offsets(partitions)
-            print('--7')
-    print('--8t_end_offsets', t_end_offsets)
-    return t_end_offsets
+app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
+@app.route('/test', methods=['GET','POST'])
+def test():
+    #print(request.get_json())
+    response_data = {}
+    response_data['result'] = "test" 
+
+    response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
+    gDefine.logger.info('test')
+    return response
+
+def rest_API_service():
+    app.run(host='0.0.0.0', port=8787, threaded=True)
+
+'''===================================================================
+                          ClusterAgent
+==================================================================='''
 class ClusterAgent:
     apply_yaml_list = []
     def __init__(self, cluster_name, cluster_type, apply_yaml_path):
-        self.apply_yaml_path = apply_yaml_path
-        self.cluster_name = cluster_name
-        self.cluster_type = cluster_type
-        self.kafka_group_id = cluster_name + str(uuid.uuid4())
-        self.CAredis = redisController()
-        self.CAredis.connect_redis_server(gDefine.REDIS_ENDPOINT_IP,gDefine.REDIS_ENDPOINT_PORT)
-        self.redis_conn = self.CAredis.redisConn   
+        self.apply_yaml_path  = apply_yaml_path
+        self.cluster_name     = cluster_name
+        self.cluster_type     = cluster_type
         
-        self.cluster_info_dic = pUtil.get_cluster_info_dic_with_k8s(self.cluster_name,self.cluster_type)
+        self.kafka_for_API    = gKafka([gDefine.KAFKA_SERVER_URL])
+        self.Kafka_for_GSCH   = gKafka([gDefine.KAFKA_SERVER_URL])
+        
+        self.cRedis           = redisController()
+        self.cRedis.connect_redis_server(gDefine.REDIS_ENDPOINT_IP,gDefine.REDIS_ENDPOINT_PORT)
+        self.redis_conn       = self.cRedis.redisConn   
+        
+        self.cluster_info_dic = gMeta.get_gCluster_with_k8s(self.cluster_name,self.cluster_type)
         self.apply_yaml_files_for_clustr_agent_daemonset()
         '''
         agentsInfo = {
@@ -218,6 +218,29 @@ class ClusterAgent:
         self.agentsInfo = {}
         self.set_worker_agents_info()
         self.set_cluster_info_and_node_info()
+    
+    def set_cluster_info_and_node_info(self):
+        #write clustser information to mongo db
+        print('===============================================================')
+        print('write clustser information to mongo db')
+        print('cluster_info_dic',self.cluster_info_dic)
+        print('===============================================================')
+        
+        GE_metaData.set_cluster_info(self.cluster_info_dic)
+        print('===============================================================')
+        print('get_cluster_info_list')
+        GE_metaData.get_cluster_info_list()
+
+        t_node_info_dic_list = gMeta.get_gNode_with_k8s(caDefine.SELF_CLUSTER_NAME)
+        for t_node_info_dic in t_node_info_dic_list :
+            print('===============================================================')
+            print('write node information to mongo db')
+            print('t_node_info_dic',t_node_info_dic)
+            print('===============================================================')
+            GE_metaData.set_node_info(t_node_info_dic)
+            print('===============================================================')
+            print('get_node_info_list')
+        GE_metaData.get_node_info_list()
     
     def apply_yaml_files_for_clustr_agent_daemonset(self) :
         import glob
@@ -282,11 +305,11 @@ class ClusterAgent:
     
     def create_pod(self, name, namespace, pod_manifest):
         print('start create_pod')
+        print('pod name:',name)
+        print('namespace:',namespace)
         #print('pod_manifest:',pod_manifest)
         try:
-            print('1')
             r = v1.read_namespaced_pod(name=name, namespace=namespace)
-            print('2')
             #print('result:',r)
             return 'cancel'
         except ApiException as e:
@@ -294,17 +317,12 @@ class ClusterAgent:
                 print("Error: %s" % e.body)
                 return 'fail'
         try:
-            print('3')
             r = v1.create_namespaced_pod(body=pod_manifest, namespace=namespace)
-            print('4')
             time.sleep(caDefine.APPLY_AFTER_DELAY_SECOND_TIME)
             try_count=caDefine.APPLY_RESULT_CHECK_RETRY_COUNT
             while True:
-                print('5')
                 r2 = v1.read_namespaced_pod(name=name, namespace=namespace)
-                print('6')
-                if r2.status.phase != 'Pending' :
-                    print('7')
+                if r2.status.phase == 'Running' :
                     break
                 time.sleep(caDefine.APPLY_RESULT_CHECK_DELAY_SECOND_TIME)
                 if try_count < 1:
@@ -365,30 +383,31 @@ class ClusterAgent:
         print('apply_yaml end :',return_list)
         return return_list
     
-    def transfer_with_GLowLatencyPriority_yaml(self,yaml_dic,requestData_dic):
+    def transfer_with_GLowLatencyPriority_yaml(self,yaml_dic_list,request_data_dic):
         #with open('nginx_dep.yaml') as f:
-        #    yaml_dic = yaml.load(f,Loader=yaml.FullLoader)
-                
+        #    yaml_dic_list = yaml.load(f,Loader=yaml.FullLoader)
+        print('--------------------------------')
+        print('request_data_dic',request_data_dic)                  
+        print('--------------------------------')
         transfered_yaml_dic_list = []
-        for single_yaml_dic in yaml_dic :
+        for single_yaml_dic in yaml_dic_list :
             if single_yaml_dic == None :
                 continue
             # print('=========single_yaml_dic==============',single_yaml_dic)
             try :
-                t_priority      = requestData_dic['env']['priority']
-                t_sourceCluster = requestData_dic['env']['option']['sourceCluster']
-                
-                if t_sourceCluster == caDefine.SELF_CLUSTER_NAME :
-                    t_sourceNode = requestData_dic['env']['option']['sourceNode']
+                t_priority      = request_data_dic['env']['priority']
+                t_source_cluster = request_data_dic['env']['option']['parameters']['source_cluster']
+                if t_source_cluster == caDefine.SELF_CLUSTER_NAME :
+                    t_source_node = request_data_dic['env']['option']['parameters']['source_node']
                 else :
                     # get master node 
                     r_master_node=GE_metaData.get_node_info_by_node_type(caDefine.SELF_CLUSTER_NAME,'master')
                     if r_master_node != None :
-                        t_sourceNode = r_master_node['node_name']
+                        t_source_node = r_master_node['node_name']
                     else :
                         print('error: get_node_info_by_node_type')
                         return None
-                adding_env={'type':'local','priority':t_priority,'option':{'sourceNode':t_sourceNode}}
+                adding_env={'scope':'local','priority':t_priority,'option':{'source_node':t_source_node}}
                 adding_env_json = json.dumps(adding_env)
                 
                 if single_yaml_dic['kind'] == 'Deployment':
@@ -407,21 +426,22 @@ class ClusterAgent:
                         print('<===========================================================================================================================')
                     with open('deployment_GLowLatencyPriority.yaml', 'w') as z:
                         yaml.dump(single_yaml_dic, z)
-                    print('e-1')                        
                     transfered_yaml_dic_list.append(single_yaml_dic)
-                    print('e-2')   
 
                 elif single_yaml_dic['kind'] == 'Pod':
                     containers = single_yaml_dic['spec']['containers']
+                    print('containers:',containers)
                     print('--------------------------------')
                     spec = single_yaml_dic['spec']
-                    print('1-')
                     # insert gedge scheduler name 
                     spec['schedulerName']=caDefine.GEDGE_SCHEDULER_NAME
-                    print('2-')
                     for i in range(0,len(containers)):
                         #single_yaml_dic['spec']['containers'][i]['env']=[{'name':caDefine.GEDGE_SCHEDULER_CONFIG_NAME,'value':adding_env_json}]
-                        single_yaml_dic['spec']['containers'][i]['env'].append({'name':caDefine.GEDGE_SCHEDULER_CONFIG_NAME,'value':adding_env_json})
+                        print('single_yaml_dic[spec][containers][0]',single_yaml_dic['spec']['containers'][0])
+                        if 'env' not in single_yaml_dic['spec']['containers'][i]:
+                            single_yaml_dic['spec']['containers'][i]['env']=[{'name':caDefine.GEDGE_SCHEDULER_CONFIG_NAME,'value':adding_env_json}]
+                        else :
+                            single_yaml_dic['spec']['containers'][i]['env'].append({'name':caDefine.GEDGE_SCHEDULER_CONFIG_NAME,'value':adding_env_json})    
                         print('===========================================================================================================================>')
                         print('**env**:',single_yaml_dic['spec']['containers'][i]['env'])
                         print('<===========================================================================================================================')
@@ -432,12 +452,11 @@ class ClusterAgent:
                     print('this yaml is not deployment or pod ')
                     transfered_yaml_dic_list.append(single_yaml_dic)
             except Exception as e:
-                print('!!!!!!!!!!except!!!!!!! ',e)
                 return None
-        #print('==========transfered_yaml_dic_list=============',transfered_yaml_dic_list)    
+        #print('==========transfered_yaml_dic_list=============',transfered_yaml_dic_list)   
         return transfered_yaml_dic_list
     
-    def transfer_with_GMostRequestedPriority_yaml(self,yaml_dic,requestData_dic):
+    def transfer_with_GMostRequestedPriority_yaml(self,yaml_dic,request_data_dic):
         #with open('nginx_dep.yaml') as f:
         #    yaml_dic = yaml.load(f,Loader=yaml.FullLoader)
         print('=========transfer_with_GMostRequestedPriority_yaml==============')
@@ -445,8 +464,8 @@ class ClusterAgent:
         for single_yaml_dic in yaml_dic :
             #print('=========single_yaml_dic==============',single_yaml_dic)
             try :
-                t_priority   = requestData_dic['env']['priority']
-                adding_env={'type':'local','priority':t_priority}
+                t_priority   = request_data_dic['env']['priority']
+                adding_env={'scope':'local','priority':t_priority}
                 adding_env_json = json.dumps(adding_env)
                 
                 if single_yaml_dic['kind'] == 'Deployment':
@@ -465,18 +484,14 @@ class ClusterAgent:
                         print('<===========================================================================================================================')
                     with open('deployment_GMostRequestedPriority.yaml', 'w') as z:
                         yaml.dump(single_yaml_dic, z)
-                    print('e-1')                        
                     transfered_yaml_dic_list.append(single_yaml_dic)
-                    print('e-2')   
                     
                 elif single_yaml_dic['kind'] == 'Pod':
                     containers = single_yaml_dic['spec']['containers']
                     print('--------------------------------')
                     spec = single_yaml_dic['spec']
-                    print('1-')
                     # insert gedge scheduler name 
                     spec['schedulerName']=caDefine.GEDGE_SCHEDULER_NAME
-                    print('2-')
                     for i in range(0,len(containers)):
                         #single_yaml_dic['spec']['containers'][i]['env']=[{'name':caDefine.GEDGE_SCHEDULER_CONFIG_NAME,'value':adding_env_json}]
                         single_yaml_dic['spec']['containers'][i]['env'].append({'name':caDefine.GEDGE_SCHEDULER_CONFIG_NAME,'value':adding_env_json})
@@ -495,79 +510,117 @@ class ClusterAgent:
             except:
                 print('!!!!!!!!!!except!!!!!!! ')
                 return None
+        #print('==========transfered_yaml_dic_list=============')    
         print('==========transfered_yaml_dic_list=============')    
-        # print('==========transfered_yaml_dic_list=============',transfered_yaml_dic_list)    
+        print(transfered_yaml_dic_list)    
+        print('===============================================')    
         return transfered_yaml_dic_list
     
-    def send_error(self,request_id, message):
-        d = {'source': {'type':'cluster', 'object': self.cluster_name},
+    def send_error(self, kafka_instance, request_id, error_msg):
+        msg_data = {'source': {'type':'cluster', 'object': self.cluster_name},
                 'target':{'type':'none'},
                 'hcode':900,
                 'lcode':2,
-                'msg': {'result': 'error', 'message': message }
+                'msg': {'result': 'error', 'message': error_msg }
         }
-        producer = KafkaProducer(acks=0, 
-                    compression_type='gzip', 
-                    bootstrap_servers=[gDefine.KAFKA_SERVER_URL], 
-                    value_serializer=lambda x: dumps(x).encode('utf-8')) 
-        producer.send(request_id, value=d)
-        producer.flush()
+        if kafka_instance == 'API' :
+            self.kafka_for_API.kafka_msg_send(request_id,msg_data)
+        elif kafka_instance == 'GSCH' :
+            self.Kafka_for_GSCH.kafka_msg_send(request_id,msg_data)
+        else :
+            print(kafka_instance,'is not defined')
 
-    def send_result(self,request_id, topicData):
-        producer = KafkaProducer(acks=0, 
-                            compression_type='gzip', 
-                            bootstrap_servers=[gDefine.KAFKA_SERVER_URL], 
-                            value_serializer=lambda x: dumps(x).encode('utf-8')) 
-
-        print('send_result topic : ', request_id, topicData)
-        producer.send(request_id, value=topicData)
-        producer.flush()
+    def send_result(self,kafka_instance, request_id, msg_data):
+        if kafka_instance == 'API' :
+            self.kafka_for_API.kafka_msg_send(request_id,msg_data)
+        elif kafka_instance == 'GSCH' :
+            self.Kafka_for_GSCH.kafka_msg_send(request_id,msg_data)
+        else :
+            print(kafka_instance,'is not defined')
+        
     
     '''-----------------------------------
          HCODE : 210  LCODE :1
     --------------------------------------'''
-    def apply_GLowLatencyPriority_yaml(self, topicData):
+    def apply_GLowLatencyPriority_yaml(self, topic_data):
+        print('start-----------------apply_GLowLatencyPriority_yaml')
+        print('topic_data[''msg'']',topic_data['msg'])
         '''
-        from kubernetes import client, config, utils
-        config.load_kube_config()
-        k8s_client = client.ApiClient()
-        yaml_file = '<location to your multi-resource file>'
-        utils.create_from_yaml(k8s_client, yaml_file)
-        create_from_dict(k8s_client, data, verbose=False, namespace='default',**kwargs):
+        topic_data['msg']
+        {
+           'request_id': 'req-b9494ca5-6e9a-4ab3-8392-8795f0b5eb3e',
+           'file_id': 'b2ab5fbe-e7bf-44dc-84d7-b969ad62f104',  
+           'cdate': '2021-10-21 12:05:54',
+           'callback_url': 'url1', 
+           'method': 'create', 
+           'fail_count': 0, 
+           'env': {
+               'priority': 'GLowLatencyPriority'
+               'scope': 'global', 
+               'option': {
+                    'user_name': 'u1', 
+                    'workspace_name': 'w1', 
+                    'project_name': 'p1', 
+                    'mode': 'fromnode', 
+                    'parameters': {
+                        'select_clusters': ['c1']
+                    }
+                }
+           }
+        }
+        topic_data['work_info']
+        { 
+            user_name : user1,
+            workspace_name: w1,
+            project_name: p1, 
+            namespace_name: p1-w1uid
+        }
         '''
-        print('start------------------------------------apply_yaml')
-        if 'requestID' not in topicData['msg']:
-            print('requestID not in topicData[msg]')
+        if 'request_id' not in topic_data['msg']:
+            print('request_id not in topic_data[msg]')
             return
-        requestID = topicData['msg']['requestID']
-        if 'fileID' not in topicData['msg']:
-            print('fileID not in topicData[msg]')
+        request_id = topic_data['msg']['request_id']
+        if 'file_id' not in topic_data['msg']:
+            print('file_id not in topic_data[msg]')
             return
-        fileID = topicData['msg']['fileID']
-        if 'type' not in topicData['target']:
-            self.send_error(requestID, 'type not in topicData[target]')
+        file_id = topic_data['msg']['file_id']
+        if 'type' not in topic_data['target']:
+            self.send_error('GSCH',request_id, 'type not in topic_data[target]')
             return
-        if 'object' not in topicData['target']:
-            self.send_error(requestID, 'object not in topicData[target]')
+        if 'object' not in topic_data['target']:
+            self.send_error('GSCH',request_id, 'object not in topic_data[target]')
             return
-        if 'requestData' not in topicData['msg']:
-            self.send_error(requestID, 'requestData not in topicData[msg]')
+        if 'request_data' not in topic_data['msg']:
+            self.send_error('GSCH',request_id, 'request_data not in topic_data[msg]')
             return
-        print('end------------------------------------apply_yaml')
+        print('end-------------------apply_GLowLatencyPriority_yaml')
 
-        yaml_file = self.get_yaml_file_from_redis(fileID)
+        yaml_file_bytes = self.get_yaml_file_from_redis(file_id)
         
-        print('topicData[''msg''][''requestData'']',topicData['msg']['requestData'])
-        '''
-        {'requestID': 'req-b9494ca5-6e9a-4ab3-8392-8795f0b5eb3e', 'date': '2021-10-21 12:05:54', 'status': 'create', 
-        'fileID': 'b2ab5fbe-e7bf-44dc-84d7-b969ad62f104', 'failCnt': 0, 'env': {'type': 'global', 'targetClusters': ['c1', ['c2', 'c3'], 'c4'], 
-        'priority': 'GLowLatencyPriority', 'option': {'sourceCluster': 'c1', 'sourceNode': 'a-worker-node01'}}}
-        '''
+        print('type of retrieved_data which is read from redis',type(yaml_file_bytes))
+        if yaml_file_bytes is not None:
+            yaml_file_dic_list = list(yaml.safe_load_all(yaml_file_bytes.decode('utf-8')))        
+        
+        print('type of yaml_file_list',type(yaml_file_dic_list))
+        
+        new_annotation_dic = topic_data['work_info']
+        desired_namespace  = topic_data['work_info']['namespace_name']
+        # mode = topic_data['msg']['env']['option']['mode']
+        updated_yaml_dic_list=[]
+                
         result = 'cancel'
-
-        if yaml_file != None :
+        for yaml_file_dic in yaml_file_dic_list :
+            print('type of yaml_file_dic', type(yaml_file_dic))
+            print('yaml_file_dic', yaml_file_dic)
+            updated_yaml_dic = gYaml.add_annotation_to_yaml_file_dic(yaml_file_dic,new_annotation_dic) 
+            print('updated_yaml_dic 1:', updated_yaml_dic)
+            updated_yaml_dic = gYaml.add_namespace_to_yaml_file_dic(updated_yaml_dic,desired_namespace)
+            print('updated_yaml_dic 2:', updated_yaml_dic)
+            updated_yaml_dic_list.append(updated_yaml_dic)
+        print('updated_yaml_dic_list:', updated_yaml_dic_list)    
+        if updated_yaml_dic_list != None :
             #transter normal yaml file to gedge yaml file 
-            transfered_yaml_dic_list=self.transfer_with_GLowLatencyPriority_yaml(yaml.load_all(yaml_file,Loader=yaml.FullLoader),topicData['msg']['requestData'])
+            transfered_yaml_dic_list=self.transfer_with_GLowLatencyPriority_yaml(updated_yaml_dic_list,topic_data['msg']['request_data'])
             if len(transfered_yaml_dic_list) > 0 :
                 result_list = self.apply_yaml(transfered_yaml_dic_list)
                 for r in result_list :
@@ -585,59 +638,63 @@ class ClusterAgent:
             print('error : yaml file read ')
             result = 'cancel'
         print('result:',result)
-        
-        temp_msg = {'source': {'type':'cluster', 'object': self.cluster_name},
-                'target':{'type':'none'},
-                'hcode':210,
-                'lcode':2,
-                'msg':{'result': result}
+        error_msg='None'
+        temp_msg = {
+           'source' : {'type':'cluster', 'object': self.cluster_name},
+           'target' : {'type':'none'},
+           'hcode'  : 210,
+           'lcode'  : 2,
+           'msg'    : { 
+                'request_id': request_id,
+                'method': 'read',
+                'result': {
+                    'status'    : result,
+                    'error_msg' : error_msg    
+                }
+            }
         }
-        self.send_result(requestID, temp_msg)
+        self.send_result('GSCH',request_id, temp_msg)
     
     '''-----------------------------------
          HCODE : 200  LCODE :1
     --------------------------------------'''
-    def request_clusters_latency(self,topicData):
+    def request_clusters_latency(self,topic_data):
 
         print('------------------------------------request_clusters_latency')
-        print('------------------------------------topicData', topicData)
+        print('------------------------------------topic_data', topic_data)
         '''
-        topicData {'source': {'type': 'none'}, 'target': {'type': 'cluster', 'object': 'c1'}, 'hcode': 200, 'lcode': 1, 'msg': {'requestID': 'req-7092d391-e4a3-4f2f-8e50-0acd4a35189a', 'sourceNode': 'a-worker-node01', 'targetClusters': ['c2', 'c3']}}
+        topic_data {'source': {'type': 'none'}, 'target': {'type': 'cluster', 'object': 'c1'}, 'hcode': 200, 'lcode': 1, 'msg': {'request_id': 'req-7092d391-e4a3-4f2f-8e50-0acd4a35189a', 'source_node': 'a-worker-node01', 'select_clusters': ['c2', 'c3']}}
         '''
-        if 'requestID' not in topicData['msg']:
-            print('requestID not in topicData[msg]')
+        if 'request_id' not in topic_data['msg']:
+            print('request_id not in topic_data[msg]')
             return
-        requestID = topicData['msg']['requestID']
-        if 'sourceNode' not in topicData['msg']:
-            print('sourceNode not in topicData[msg]')
+        request_id = topic_data['msg']['request_id']
+        if 'source_node' not in topic_data['msg']:
+            print('source_node not in topic_data[msg]')
             return
-        t_sourceNode = topicData['msg']['sourceNode']
-        if 'targetClusters' not in topicData['msg'] :
-            print('targetClusters not in topicData[msg]')
+        t_source_node = topic_data['msg']['source_node']
+        if 'select_clusters' not in topic_data['msg'] :
+            print('select_clusters not in topic_data[msg]')
             return
-        t_targetClusters = topicData['msg']['targetClusters']
+        t_select_clusters = topic_data['msg']['select_clusters']
 
         result_list=[]
-        print('t_targetClusters:',t_targetClusters)
-        for cluster in t_targetClusters :
+        print('t_select_clusters:',t_select_clusters)
+        for cluster in t_select_clusters :
             print('cluster', cluster)
-            print('t_sourceNode', t_sourceNode)
-            # print('self.agentsInfo', self.agentsInfo)
-            agent_pod_ip = self.agentsInfo[t_sourceNode]['pod_ip']
+            print('t_source_node', t_source_node)
+            print('self.agentsInfo', self.agentsInfo)
+            agent_pod_ip = self.agentsInfo[t_source_node]['pod_ip']
             # call rest api
             url = 'http://'+str(agent_pod_ip)+':8787'+'/monitoring/clusters/'+str(cluster)+'/latency'
 
             print("url=", url)
             headers = {'Content-type': 'application/json'}
-            print("<<1-1>>")
             try:
-                print("<<1>>")
                 response = requests.get(url, headers=headers )
                 response_dic=response.json()
-                print('response_dic[Result]',response_dic['Result'] )
-                print("<<2>>")
-                result_list.append({'cluster':cluster, 'latency':response_dic['Result']})
-                print("<<3>>")
+                print('response_dic[Result]',response_dic['result'] )
+                result_list.append({'cluster':cluster, 'latency':response_dic['result']})
             except:
                 print("Error: can not request worker agent")
                 return -1
@@ -654,44 +711,45 @@ class ClusterAgent:
                 'lcode':2,
                 'msg':{'result': sorted_result_list}
         }
-        self.send_result(requestID, temp_msg)
+        self.send_result('GSCH',request_id, temp_msg)
     
     '''-----------------------------------
          HCODE : 300  LCODE :1
     --------------------------------------'''
-    def request_clusters_available_resource(self,topicData):
+    def request_clusters_available_resource(self,topic_data):
         print('------------------------------------request_clusters_available_resource')
-        print('------------------------------------topicData', topicData)
+        print('------------------------------------topic_data', topic_data)
         '''
-        topicData {'source': {'type': 'none'}, 'target': {'type': 'cluster', 'object': 'c1'}, 'hcode': 300, 'lcode': 1, 
-                   'msg': {'requestID': 'req-7092d391-e4a3-4f2f-8e50-0acd4a35189a','GPUFilter': 'necessary'/'unnecessary'}}
+        topic_data {'source': {'type': 'none'}, 'target': {'type': 'cluster', 'object': 'c1'}, 'hcode': 300, 'lcode': 1, 
+                   'msg': {'request_id': 'req-7092d391-e4a3-4f2f-8e50-0acd4a35189a','GPUFilter': 'necessary'/'unnecessary'}}
         '''
-        if 'requestID' not in topicData['msg']:
-            print('requestID not in topicData[msg]')
+        if 'request_id' not in topic_data['msg']:
+            print('request_id not in topic_data[msg]')
             return
-        if 'GPUFilter' not in topicData['msg']:
-            print('GPUFilter not in topicData[msg]')
+        if 'GPUFilter' not in topic_data['msg']:
+            print('GPUFilter not in topic_data[msg]')
             return
-        requestID = topicData['msg']['requestID']
-        GPUFilter = topicData['msg']['GPUFilter']
+        request_id = topic_data['msg']['request_id']
+        GPUFilter = topic_data['msg']['GPUFilter']
         # get cluster resource data
         '''
         result: { 'cluster_name': 'c1','node_name': 'cswnode2', 'cpu': 0.20833333333333334, 'memory': 0.025937689523708434, 'nvidia.com/gpu': 1, 'score': 399.76572897714294 }
         '''
         result = get_cluster_resource_status(GPUFilter)
         
-        temp_msg = {'source': {'type':'cluster', 'object': self.cluster_name},
-                'target':{'type':'none'},
-                'hcode':300,
-                'lcode':2,
-                'msg':{'result': result}
+        temp_msg = {
+          'source': {'type':'cluster', 'object': self.cluster_name},
+          'target':{'type':'none'},
+          'hcode':300,
+          'lcode':2,
+          'msg':{'result': result}
         }
-        self.send_result(requestID, temp_msg)
+        self.send_result('GSCH',request_id, temp_msg)
     
     '''-----------------------------------
          HCODE : 310  LCODE :1
     --------------------------------------'''
-    def apply_GMostRequestedPriority_yaml(self, topicData):
+    def apply_GMostRequestedPriority_yaml(self, topic_data):
         '''
         from kubernetes import client, config, utils
         config.load_kube_config()
@@ -701,43 +759,38 @@ class ClusterAgent:
         create_from_dict(k8s_client, data, verbose=False, namespace='default',**kwargs):
         '''
         print('start------------------------------------apply_yaml')
-        if 'requestID' not in topicData['msg']:
-            print('requestID not in topicData[msg]')
+        if 'request_id' not in topic_data['msg']:
+            print('request_id not in topic_data[msg]')
             return
-        print('1-1')
-        requestID = topicData['msg']['requestID']
-        if 'fileID' not in topicData['msg']:
-            print('fileID not in topicData[msg]')
+        request_id = topic_data['msg']['request_id']
+        if 'file_id' not in topic_data['msg']:
+            print('file_id not in topic_data[msg]')
             return
-        print('1')
-        fileID = topicData['msg']['fileID']
-        print('2')
-        if 'type' not in topicData['target']:
-            self.send_error(requestID, 'type not in topicData[target]')
+        file_id = topic_data['msg']['file_id']
+        if 'type' not in topic_data['target']:
+            self.send_error('GSCH',request_id, 'type not in topic_data[target]')
             return
-        print('3')
-        if 'object' not in topicData['target']:
-            self.send_error(requestID, 'object not in topicData[target]')
+        if 'object' not in topic_data['target']:
+            self.send_error('GSCH',request_id, 'object not in topic_data[target]')
             return
-        print('4')
-        if 'requestData' not in topicData['msg']:
-            self.send_error(requestID, 'requestData not in topicData[msg]')
+        if 'request_data' not in topic_data['msg']:
+            self.send_error('GSCH',request_id, 'request_data not in topic_data[msg]')
             return
         print('end------------------------------------apply_yaml')
 
-        yaml_file = self.get_yaml_file_from_redis(fileID)
+        yaml_file = self.get_yaml_file_from_redis(file_id)
         
-        print('topicData[''msg''][''requestData'']',topicData['msg']['requestData'])
+        print('topic_data[''msg''][''request_data'']',topic_data['msg']['request_data'])
         '''
-        {'requestID': 'req-b9494ca5-6e9a-4ab3-8392-8795f0b5eb3e', 'date': '2021-10-21 12:05:54', 'status': 'create', 
-        'fileID': 'b2ab5fbe-e7bf-44dc-84d7-b969ad62f104', 'failCnt': 0, 'env': {'type': 'global', 'targetClusters': ['c1', ['c2', 'c3'], 'c4'], 
+        {'request_id': 'req-b9494ca5-6e9a-4ab3-8392-8795f0b5eb3e', 'cdate': '2021-10-21 12:05:54', 'status': 'create', 
+        'file_id': 'b2ab5fbe-e7bf-44dc-84d7-b969ad62f104', 'fail_count': 0, 'env': {'scope': 'global', 'select_clusters': ['c1', ['c2', 'c3'], 'c4'], 
         'priority': 'GMostRequestedPriority'}}
         '''
         result = 'cancel'
 
         if yaml_file != None:
             #transter normal yaml file to gedge yaml file 
-            transfered_yaml_dic_list=self.transfer_with_GMostRequestedPriority_yaml(yaml.load_all(yaml_file,Loader=yaml.FullLoader),topicData['msg']['requestData'])
+            transfered_yaml_dic_list=self.transfer_with_GMostRequestedPriority_yaml(yaml.load_all(yaml_file,Loader=yaml.FullLoader),topic_data['msg']['request_data'])
             if len(transfered_yaml_dic_list) > 0 :
                 result_list = self.apply_yaml(transfered_yaml_dic_list)
                 for r in result_list :
@@ -755,210 +808,421 @@ class ClusterAgent:
             print('error : yaml file read ')
             result = 'cancel'
 
-        temp_msg = {'source': {'type':'cluster', 'object': self.cluster_name},
-                'target':{'type':'none'},
-                'hcode':310,
-                'lcode':2,
-                'msg':{'result': result}
+        temp_msg = {
+          'source': {'type':'cluster', 'object': self.cluster_name},
+          'target':{'type':'none'},
+          'hcode':310,
+          'lcode':2,
+          'msg':{'result': result}
         }
-        self.send_result(requestID, temp_msg)
+        self.send_result('GSCH',request_id, temp_msg)
     
     '''-----------------------------------
          HCODE : 400  LCODE :1
     --------------------------------------'''
-    def apply_GSelectedCluster_yaml(self, topicData):
+    def apply_GSelectedCluster_yaml(self, topic_data):
         
         print('start-----------------apply_GSelectedCluster_yaml')
-        if 'requestID' not in topicData['msg']:
-            print('requestID not in topicData[msg]')
-            return
-        print('1')
-        requestID = topicData['msg']['requestID']
-        if 'fileID' not in topicData['msg']:
-            print('fileID not in topicData[msg]')
-            return
-        print('1')
-        fileID = topicData['msg']['fileID']
-        print('2')
-        if 'type' not in topicData['target']:
-            self.send_error(requestID, 'type not in topicData[target]')
-            return
-        print('3')
-        if 'object' not in topicData['target']:
-            self.send_error(requestID, 'object not in topicData[target]')
-            return
-        print('4')
-        if 'requestData' not in topicData['msg']:
-            self.send_error(requestID, 'requestData not in topicData[msg]')
-            return
-        print('end---------------------apply_GSelectedCluster_yaml')
-
-        yaml_file = self.get_yaml_file_from_redis(fileID)
-
-        print('5')
-        print('topicData[''msg''][''requestData'']',topicData['msg']['requestData'])
+        print('topic_data[''msg'']',topic_data['msg'])
+        error_msg='None'
+        result = 'fail'
         '''
-        {'requestID': 'req-b9494ca5-6e9a-4ab3-8392-8795f0b5eb3e', 'date': '2021-10-21 12:05:54', 'status': 'create', 
-        'fileID': 'b2ab5fbe-e7bf-44dc-84d7-b969ad62f104', 'failCnt': 0, 'env': {'type': 'global', 'targetClusters': ['c1', 'c2', 'c3'], 
-        'priority': 'GSelectedCluster'}}
-        '''
-        
-        if yaml_file != None:
-            uploads_dir = str(caDefine.CLUSTER_AGENT_SAVE_PATH)+str('/')+str(fileID)
-            print("o-3")
-            print("dir:",uploads_dir)
-            os.makedirs(uploads_dir,exist_ok=True)
-            print("o-4")
-            full_filename = uploads_dir+str('/')+str(fileID)
-            print("o-5")
-            ff = open(full_filename, "wb")
-            print("o-6")
-            ff.write(yaml_file)
-            print("o-7")
-            ff.close()
-            print("o-8")
-            try :
-                resp = utils.create_from_yaml(k8s_client, full_filename)
-                #print('resp of utils.create_from_yaml ====>',resp)
-                result = 'success'
-            except utils.FailToCreateError as failure:
-                print('failure.api_exceptions',failure)
-                result = 'fail'
-            finally:
-                try:
-                    shutil.rmtree(uploads_dir)
-                    print('deleted temp directory',uploads_dir)
-                except OSError as e:
-                    print ("Error: %s - %s." % (e.filename, e.strerror))
-        else:
-            print('--error : yaml file read ')
-            result = 'cancel'
-        print('--create_from_yaml is completed :',result)
-        temp_msg = {'source': {'type':'cluster', 'object': self.cluster_name},
-                'target':{'type':'none'},
-                'hcode':400,
-                'lcode':2,
-                'msg':{'result': result}
+        topic_data['msg']
+        {
+           'request_id': 'req-b9494ca5-6e9a-4ab3-8392-8795f0b5eb3e',
+           'file_id': 'b2ab5fbe-e7bf-44dc-84d7-b969ad62f104',  
+           'cdate': '2021-10-21 12:05:54',
+           'callback_url': 'url1', 
+           'status': 'create', 
+           'fail_count': 0, 
+           'env': {
+               'priority': 'GSelectClusterPriority'
+               'scope': 'global', 
+               'option': {
+                    'user_name': 'u1', 
+                    'workspace_name': 'w1', 
+                    'project_name': 'p1', 
+                    'mode': 'cluster', 
+                    'parameters': {
+                        'select_clusters': ['c1']
+                    }
+                }
+           }
         }
-        print('11')
-        self.send_result(requestID, temp_msg)
-        print('12')
+        topic_data['work_info']
+        { 
+            user_name : user1,
+            workspace_name: w1,
+            project_name: p1, 
+            namespace_name: p1-w1uid
+        }
+        '''
+        if 'request_id' not in topic_data['msg']:
+            print('request_id not in topic_data[msg]')
+            return
+        request_id = topic_data['msg']['request_id']
+        
+        if 'file_id' not in topic_data['msg']:
+            print('file_id not in topic_data[msg]')
+            return
+        file_id = topic_data['msg']['file_id']
+        
+        if 'type' not in topic_data['target']:
+            self.send_error('GSCH',request_id, 'type not in topic_data[target]')
+            return
+        if 'object' not in topic_data['target']:
+            self.send_error('GSCH',request_id, 'object not in topic_data[target]')
+            return
+        try :
+            yaml_file_bytes  = self.get_yaml_file_from_redis(file_id)
+            print('type of retrieved_data which is read from redis',type(yaml_file_bytes))
+            if yaml_file_bytes is not None:
+                yaml_file_dic_list = list(yaml.safe_load_all(yaml_file_bytes.decode('utf-8')))        
+            
+            print('type of yaml_file_list',type(yaml_file_dic_list))
+            new_annotation_dic = topic_data['work_info']
+            desired_namespace  = topic_data['work_info']['namespace_name']
+            mode = topic_data['msg']['env']['option']['mode']
 
+            # 다중 yaml 파일 고려 필요 
+            updated_yaml_dic_list=[]
+            for yaml_file_dic in yaml_file_dic_list :
+                print('type of yaml_file_dic', type(yaml_file_dic))
+                print('yaml_file_dic', yaml_file_dic)
+                updated_yaml_dic = gYaml.add_annotation_to_yaml_file_dic(yaml_file_dic,new_annotation_dic) 
+                print('updated_yaml_dic 1:', updated_yaml_dic)
+                updated_yaml_dic = gYaml.add_namespace_to_yaml_file_dic(updated_yaml_dic,desired_namespace)
+                print('updated_yaml_dic 2:', updated_yaml_dic)
+                if  mode == 'node' :
+                    node_name = topic_data['msg']['env']['option']['parameters']['select_node']
+                    print('node_name:', node_name)
+                    updated_yaml_dic = gYaml.add_nodeselector_to_yaml_file_dic(updated_yaml_dic,node_name)
+                    print('updated_yaml_dic 3:', updated_yaml_dic)
+                #namespace 지정 필요 
+                updated_yaml_dic_list.append(updated_yaml_dic)
+            print('updated_yaml_dic_list:', updated_yaml_dic_list)
+            if updated_yaml_dic_list != None:
+                uploads_dir = str(caDefine.CLUSTER_AGENT_SAVE_PATH)+str('/')+str(file_id)
+                print("dir:",uploads_dir)
+                os.makedirs(uploads_dir,exist_ok=True)
+                full_filename = uploads_dir+str('/')+str(file_id)
+                with open(full_filename, 'w') as yaml_file:
+                    yaml.dump_all(updated_yaml_dic_list, yaml_file)
+                try :
+                    resp = utils.create_from_yaml(k8s_client, full_filename)
+                    #print('resp of utils.create_from_yaml ====>',resp)
+                    result = 'success'
+                except utils.FailToCreateError as failure:
+                    print('failure.api_exceptions',failure)
+                    result = 'fail'
+                finally:
+                    try:
+                        shutil.rmtree(uploads_dir)
+                        print('deleted temp directory',uploads_dir)
+                    except OSError as e:
+                        print ("Error: %s - %s." % (e.filename, e.strerror))
+            else:
+                print('--error : create added_annotation_node_yaml_dic_list')
+                result = 'cancel'
+            print('--apply_GSelectedCluster_yaml :',result)
+            temp_msg = {
+                'source' : {'type':'cluster', 'object': self.cluster_name},
+                'target' : {'type':'none'},
+                'hcode'  : 400,
+                'lcode'  : 2,
+                'msg'    : {
+                    'request_id': request_id,
+                    'result'    : { 
+                        'status'    : result,
+                        'error_msg' : error_msg
+                    }
+                }
+            }
+            self.send_result('GSCH',request_id, temp_msg)
+        except :
+            print('Error: apply_GSelectedCluster_yaml')
+            temp_msg['msg']['result']['status'] = 'cancel'
+            self.send_result('GSCH',request_id, temp_msg)
+
+    '''-----------------------------------
+         HCODE : 520  LCODE :1
+    --------------------------------------'''
+    def project_GAPI_handler(self, topic_data):
+        
+        print('start-----------------project_GAPI_handler')
+        if 'request_id' not in topic_data['msg']:
+            print('request_id not in topic_data[msg]')
+            return
+        request_id = topic_data['msg']['request_id']
+        
+        if 'method' not in topic_data['msg']:
+            print('method not in topic_data[msg]')
+            return
+        method = topic_data['msg']['method']
+        
+        if 'mode' not in topic_data['msg']:
+            print('mode not in topic_data[msg]')
+            return
+        mode = topic_data['msg']['mode']
+        
+        if 'parameters' not in topic_data['msg']:
+            print('data not in topic_data[msg]')
+            return
+        GAPI_data = topic_data['msg']['parameters']
+        
+        if 'workspace_uid' not in  topic_data['msg']['parameters'] :
+            print('workspace_uid not in topic_data[msg]')
+            return
+        workspace_uid=GAPI_data['workspace_uid']
+        
+        if 'project_name' not in  topic_data['msg']['parameters'] :
+            print('project_name not in topic_data[msg]')
+            return
+        project_name = GAPI_data['project_name']
+        namespace_name = str(project_name)+'-'+str(workspace_uid)
+        print('namespace_name',namespace_name)
+        if method == 'create' :
+            try :
+                resp = gKube.create_namespace(namespace_name)
+                if resp == 'exist' :
+                    result = 'fail' 
+                    error_msg= 'exist'
+                else :
+                    result = 'success'
+                    error_msg= None
+            except :
+                print('failure of create_namespace')
+                result = 'fail'
+                error_msg= 'internal error'
+            temp_msg = {
+                'request_id': request_id,
+                'method'    : method,
+                'result'    : { 'status':result,
+                                'error_msg' : error_msg
+                }
+            }
+            self.send_result('API',request_id, temp_msg)
+        elif method == 'delete' :
+            try :
+                resp = gKube.delete_namespace(namespace_name)
+                if resp == 'empty' or resp == 'error' :
+                    result = 'fail' 
+                    error_msg= resp
+                else :
+                    result = 'success'
+                    error_msg= None
+            except :
+                print('failure of delete_namespace')
+                result = 'fail'
+                error_msg= 'internal error'
+            temp_msg = {
+                'request_id': request_id,
+                'method'    : method,
+                'result'    : { 'status':result,
+                                'error_msg' : error_msg
+                }
+            }
+            self.send_result('API',request_id, temp_msg)
+        else :
+            result = 'fail'
+            temp_msg = {
+                'request_id': request_id,
+                'method'    : method,
+                'result'    : { 'status':result,
+                                'error_msg' : 'not support method'
+                }
+            }
+            self.send_result('API',request_id, temp_msg)
+    
+    '''-----------------------------------
+         HCODE : 530  LCODE :1
+    --------------------------------------'''
+    def request_source_node_by_pod_name(self, topic_data):
+        
+        print('start-----------------request_source_node_by_pod_name')
+        print('topic_data',topic_data)
+        if 'request_id' not in topic_data['msg']:
+            print('request_id not in topic_data[msg]')
+            return
+        request_id = topic_data['msg']['request_id']
+        
+        if 'method' not in topic_data['msg']:
+            print('method not in topic_data[msg]')
+            return
+        method = topic_data['msg']['method']
+        
+        if 'mode' not in topic_data['msg']:
+            print('mode not in topic_data[msg]')
+            return
+        mode = topic_data['msg']['mode']
+        
+        if 'parameters' not in topic_data['msg']:
+            print('data not in topic_data[msg]')
+            return
+        parameters_data = topic_data['msg']['parameters']
+        
+        error_msg   = None
+        source_node = None
+        if method == 'read' :
+            try :
+                
+                r = gKube.get_hostname_by_namespaced_pod_name(parameters_data['namespace_name'],parameters_data['pod_name'])
+                if r == None :
+                    result = 'fail'
+                    error_msg= 'is not exist podd' 
+                else :
+                    result = 'success'
+                    source_node = r
+                    print('source_node',source_node)
+            except :
+                print('failure of create_namespace')
+                result = 'fail'
+                error_msg= 'internal error'
+            temp_msg = {
+                'request_id': request_id,
+                'method'    : method,
+                'result'    : { 
+                    'status'     : result,
+                    'source_node': source_node,
+                    'error_msg'  : error_msg
+                }
+            }
+            self.send_result('API',request_id, temp_msg)
+        else :
+            result = 'fail'
+            temp_msg = {
+                'request_id': request_id,
+                'method'    : method,
+                'result'    : { 'status':result,
+                                'error_msg' : 'not support method'
+                }
+            }
+            self.send_result('API',request_id, temp_msg)
+            
     '''-----------------------------------
          CLUSTER AGENT FUNCTIONS POINTER
     --------------------------------------'''
-    functions={ 200:{ 1:request_clusters_latency },
-                210:{ 1:apply_GLowLatencyPriority_yaml },
-                300:{ 1:request_clusters_available_resource },
-                310:{ 1:apply_GMostRequestedPriority_yaml },
-                400:{ 1:apply_GSelectedCluster_yaml }
-              }   
-
-    def proccess_request(self, topicData):
-        print('start : proccess_request')
-        if 'requestID' not in topicData['msg']:
-            print('requestID not in topicData[msg]')
+    cluster_agent_functions = { 
+        200:{ 1:request_clusters_latency },
+        210:{ 1:apply_GLowLatencyPriority_yaml },
+        300:{ 1:request_clusters_available_resource },
+        310:{ 1:apply_GMostRequestedPriority_yaml },
+        400:{ 1:apply_GSelectedCluster_yaml },
+        520:{ 1:project_GAPI_handler },
+        530:{ 1:request_source_node_by_pod_name}
+    }   
+    
+    def call_cluster_agent_function(self, topic_data):
+        print('start : proccess_request',topic_data)
+        if 'request_id' not in topic_data['msg']:
+            print('request_id not in topic_data[msg]')
             return
         
-        requestID = topicData['msg']['requestID']
+        request_id = topic_data['msg']['request_id']
         
-        if 'target' not in topicData:
-            print('target not in topicData')
+        if 'target' not in topic_data:
+            print('target not in topic_data')
             return
 
-        if 'type' not in topicData['target']:
-            self.send_error(requestID, 'type not in topicData[target]')
+        if 'type' not in topic_data['target']:
+            self.send_error('GSCH',request_id, 'type not in topic_data[target]')
             return
 
-        if 'object' not in topicData['target']:
-            self.send_error(requestID, 'object not in topicData[target]')
+        if 'object' not in topic_data['target']:
+            self.send_error('GSCH',request_id, 'object not in topic_data[target]')
             return
         
-        target_type   = topicData['target']['type']
-        target_object = topicData['target']['object']
+        target_type   = topic_data['target']['type']
+        target_object = topic_data['target']['object']
         print('target_object',target_object)
-        target_clusters=[]
+        select_clusters=[]
         if type(target_object).__name__ == 'str':
-            target_clusters.append(target_object)
+            select_clusters.append(target_object)
         elif type(target_object).__name__ == 'list': 
-            target_clusters.extend(target_object)
+            select_clusters.extend(target_object)
         else :
-            self.send_error(requestID, 'This object is not a supported form'+str(type(target_object)))
+            self.send_error('GSCH',request_id, 'This object is not a supported form'+str(type(target_object)))
             return
 
-        if target_type != 'cluster' or (self.cluster_name not in target_clusters):
+        if target_type != 'cluster' or (self.cluster_name not in select_clusters):
             print('This message is not needed for this cluster.')
             print('self.cluster_name',self.cluster_name)
-            print('target_clusters',target_clusters)
+            print('select_clusters',select_clusters)
             return  
-        if 'hcode' not in topicData:
-            print('hcode not in topicData')
+        if 'hcode' not in topic_data:
+            print('hcode not in topic_data')
             return
-        if 'lcode' not in topicData:
-            print('lcode not in topicData')
+        if 'lcode' not in topic_data:
+            print('lcode not in topic_data')
             return
         
-        hcode = int(topicData['hcode'])
-        lcode = int(topicData['lcode'])
+        hcode = int(topic_data['hcode'])
+        lcode = int(topic_data['lcode'])
         try :
-            print('111',self.functions)
-            self.functions[hcode][lcode](self,topicData)
-            print('222')
+            self.cluster_agent_functions[hcode][lcode](self,topic_data)
         except Exception as e: 
             print('===============================================================')
             print('====> unspporeted protocol :',hcode,lcode,e)
             print('===============================================================')
 
-    def set_cluster_info_and_node_info(self):
-        #write clustser information to mongo db
-        print('===============================================================')
-        print('write clustser information to mongo db')
-        print('cluster_info_dic',self.cluster_info_dic)
-        print('===============================================================')
-        
-        GE_metaData.set_cluster_info(self.cluster_info_dic)
-        print('===============================================================')
-        print('get_cluster_info_list')
-        GE_metaData.get_cluster_info_list()
-
-        t_node_info_dic_list = pUtil.get_nodes_info_dic_with_k8s(caDefine.SELF_CLUSTER_NAME)
-        for t_node_info_dic in t_node_info_dic_list :
+    def processing_kafka_message_for_GSCH_request_job(self): 
+        group_id_GSCH = self.cluster_name + str(uuid.uuid4())
+        self.Kafka_for_GSCH.set_consumer(gDefine.GEDGE_GLOBAL_GSCH_TOPIC_NAME,group_id_GSCH)
+        try :   
+            self.Kafka_for_GSCH.set_consumer_offset_to_end(gDefine.GEDGE_GLOBAL_GSCH_TOPIC_NAME,0)
+        except Exception as e: 
             print('===============================================================')
-            print('write node information to mongo db')
-            print('t_node_info_dic',t_node_info_dic)
+            print('====> warning set_consumer_offset_to_end for GSCH_TOPIC error:',e)
             print('===============================================================')
-            GE_metaData.set_node_info(t_node_info_dic)
-            print('===============================================================')
-            print('get_node_info_list')
-        GE_metaData.get_node_info_list()
-    
-    def processing_for_GSCH_request_job(self):    
-        consumer = KafkaConsumer(
-                            bootstrap_servers = [gDefine.KAFKA_SERVER_URL], 
-                            auto_offset_reset = 'latest', 
-                            enable_auto_commit = True, 
-                            group_id = self.kafka_group_id, 
-                            value_deserializer = lambda x: loads(x.decode('utf-8'))
-        )
-        end_offsets = get_end_offsets(consumer, gDefine.GEDGE_GLOBAL_GSCH_TOPIC_NAME)
-        consumer.assign([*end_offsets])
-
-        for key_partition, value_end_offset in end_offsets.items():
-            new_calculated_offset = value_end_offset - 0
-            new_offset = new_calculated_offset if new_calculated_offset >= 0 else 0
-            consumer.seek(key_partition, new_offset)
-
-        print('Begin listening Global topic messages of kafka')
-
+            
+        print('Begin listening GSCH topic messages of kafka')        
         while True:
-            time.sleep(1)
-            msg_pack = consumer.poll()
+            time.sleep(2)
+            #print('GSCH-1')
+            msg_pack = self.Kafka_for_GSCH.consumer.poll()
+            #print('GSCH-2')
             for tp, messages in msg_pack.items():
                 for message in messages: 
                     print("Topic: %s, Partition: %d, Offset: %d, Key: %s, Value: %s" % ( message.topic, message.partition, message.offset, message.key, message.value ))
                     print('tp',tp)
-                    self.proccess_request(message.value)
+                    self.call_cluster_agent_function(message.value)
+    
+    def processing_kafka_message_for_API_request_job(self):
+        
+        group_id_API = self.cluster_name + str(uuid.uuid4())
+        self.kafka_for_API.set_consumer(gDefine.GEDGE_GLOBAL_API_TOPIC_NAME,group_id_API)
+        try :   
+            self.kafka_for_API.set_consumer_offset_to_end(gDefine.GEDGE_GLOBAL_API_TOPIC_NAME,0)  
+        except Exception as e: 
+            print('===============================================================')
+            print('====> warning set_consumer_offset_to_end for API_TOPIC')
+            print('===============================================================')
+        print('Begin listening API topic messages of kafka')
+        while True:
+            time.sleep(2)
+            #print('API-1')
+            msg_pack = self.kafka_for_API.consumer.poll()
+            #print('API-2')
+            for tp, messages in msg_pack.items():
+                for message in messages: 
+                    print("Topic: %s, Partition: %d, Offset: %d, Key: %s, Value: %s" % ( message.topic, message.partition, message.offset, message.key, message.value ))
+                    print('tp',tp)
+                    self.call_cluster_agent_function(message.value)
 
 if __name__ == '__main__':
+    
     GE_ClusterAgent = ClusterAgent(caDefine.SELF_CLUSTER_NAME,caDefine.SELF_CLUSTER_TYPE,caDefine.APPLY_YAMLS_PATH)
-    GE_ClusterAgent.processing_for_GSCH_request_job()
+    '''-------------------------------------------------------------------------------------------------------
+           GLOBAL CLUSTER GSCH THREAD 
+    -------------------------------------------------------------------------------------------------------'''
+    t1 = threading.Thread(target=GE_ClusterAgent.processing_kafka_message_for_GSCH_request_job)
+    t1.daemon = True 
+    t1.start()
+    '''-------------------------------------------------------------------------------------------------------
+           GLOBAL CLUSTER API THREAD 
+    -------------------------------------------------------------------------------------------------------'''
+    t2 = threading.Thread(target=GE_ClusterAgent.processing_kafka_message_for_API_request_job)
+    t2.daemon = True 
+    t2.start()
+    
+    rest_API_service()  

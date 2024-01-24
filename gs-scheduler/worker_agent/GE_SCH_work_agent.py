@@ -1,23 +1,25 @@
 #!/usr/bin/env python
-from __future__ import print_function
+#from __future__ import print_function
 import sys
 sys.path.append('../gelib')
 sys.path.append('../gedef')
 
-from kubernetes import client, config
-from pythonping import ping
 import redis
 import json
+import time 
+
+from kubernetes import client, config
+from pythonping import ping
 from operator import itemgetter
 from flask import Flask, request, render_template, redirect, url_for
-
+from   GE_meta_data import metaData
+from json import loads 
+from werkzeug.security import generate_password_hash, check_password_hash
 
 import GE_define as gDefine
 import GE_LSCH_define_wa as waDefine
-
-import GE_platform_util as pUtil
-from   GE_meta_data import metaData
-from   GE_redis import redisController
+import GE_util as gUtil
+import GE_meta_data as gMeta
 
 app = Flask(__name__)
 
@@ -29,6 +31,8 @@ except:
 
 v1 = client.CoreV1Api()
 
+GE_metaData = metaData() 
+
 def init_gsch_worker_agent():
     
     # set global define data
@@ -36,7 +40,7 @@ def init_gsch_worker_agent():
             KAFKA MESSAGE
     ------------------------------------------------'''
     while 1:     
-        r = pUtil.find_platform_namespaced_service_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.KAFKA_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.KAFKA_SERVICE_NAME)
         if r : 
             gDefine.KAFKA_ENDPOINT_IP   = r['access_host']
             gDefine.KAFKA_ENDPOINT_PORT = r['access_port']
@@ -52,7 +56,7 @@ def init_gsch_worker_agent():
             REDIS
     -----------------------------------------------'''
     while 1:
-        r = pUtil.find_platform_namespaced_service_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.REDIS_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.REDIS_SERVICE_NAME)
         if r : 
             gDefine.REDIS_ENDPOINT_IP   = r['access_host']
             gDefine.REDIS_ENDPOINT_PORT = r['access_port']
@@ -67,19 +71,16 @@ def init_gsch_worker_agent():
             MONGO DB 
     -----------------------------------------------'''
     while 1:        
-        r = pUtil.find_platform_namespaced_service_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.MONGO_DB_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list_with_rest_api(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.MONGO_DB_SERVICE_NAME)
         if r : 
             gDefine.MONGO_DB_ENDPOINT_IP   = r['access_host']
             gDefine.MONGO_DB_ENDPOINT_PORT = r['access_port']
             print(gDefine.MONGO_DB_ENDPOINT_IP,gDefine.MONGO_DB_ENDPOINT_PORT)    
-            print('3')
             break
         else :
             print('wait for running platform service',)
             time.sleep(gDefine.WAIT_RUNNING_PLATFORM_SERVICES_SECOND_TIME) 
             continue
-
-GE_metaData = metaData() 
 
 init_gsch_worker_agent()
 
@@ -100,25 +101,19 @@ def get_nearnodes_latency_from_hostnode(ping_size,ping_count,worker_nodes):
         print("error: worker_nodes is empty")
         return None
 
-    temp_hostnode_info = pUtil.get_hostnode_info()
+    temp_hostnode_info = gUtil.get_hostname_and_ip()
     print('temp_hostnode_info',temp_hostnode_info)
 
     if temp_hostnode_info == None:
-        print("error: get_hostnode_info")
+        print("error: get_hostname_and_ip")
         return None
-    print('1')
     list_nearnode_latency = []
     for temp in worker_nodes:
-        print('2')
         temp_dic = temp
-        print('2-2')
         response_list = []
-        print('2-3')
         response_list = ping(temp["node_ip"],size=ping_size, count=ping_count)
-        print('3')
         temp_dic["latency"] = response_list.rtt_avg_ms
         list_nearnode_latency.append(temp_dic)
-    print('4')
     if response_list == None :
         return None
     print('list_nearnode_latency',list_nearnode_latency)
@@ -133,11 +128,11 @@ def get_near_clusters_latency_from_hostnode(ping_size,ping_count,near_clusters):
         print("error: near_clusters is empty")
         return None
 
-    temp_hostnode_info = pUtil.get_hostnode_info()
+    temp_hostnode_info = gUtil.get_hostname_and_ip()
     print(temp_hostnode_info)
 
     if temp_hostnode_info == None:
-        print("error: get_hostnode_info")
+        print("error: get_hostname_and_ip")
         return None
 
     list_nearclusters_latency = []
@@ -189,7 +184,7 @@ def getLatencyNearNodesFromHostNode():
         if ping_count == None:
             return GE_SCH_response_wihterror('InvalidRequestContentException', 'error: pingCount is empty')
 
-        worker_nodes = pUtil.get_worker_nodes_dic()
+        worker_nodes = gMeta.get_gWorkerNode_list()
         print('worker_nodes',worker_nodes)
         if worker_nodes == None:
             return GE_SCH_response_wihterror('ServiceInternalException', 'error: get_list_worker_node')
@@ -201,7 +196,7 @@ def getLatencyNearNodesFromHostNode():
     except:
         return GE_SCH_response_wihterror('ServiceInternalException', 'error: getLatencyNearNodesFromHostNode')
     response_data = {}
-    response_data['Result'] = latency_data
+    response_data['result'] = latency_data
     response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
     gDefine.logger.info('getLatencyNearNodesFromHostNode')
     return response
@@ -240,7 +235,7 @@ def getLatencyClusterFromHostNode(cluster):
     if latency_data == None:
         return GE_SCH_response_wihterror('ServiceInternalException', 'error: get_cluster_latency_from_hostnode')
     response_data = {}
-    response_data['Result'] = latency_data
+    response_data['result'] = latency_data
     response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
     gDefine.logger.info('getLatencyClusterFromHostNode')
     print(response)

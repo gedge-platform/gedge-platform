@@ -96,8 +96,14 @@ spec:
         image: dockereyes/gedge-custom-local-scheduler
         env:
         - name: API_GATEWAY_HOST
-          value: '129.254.202.42'
+          valueFrom:
+            configMapKeyRef:
+              name: gedge-system-scheduler-configmap
+              key: api-gateway-host
         - name: API_GATEWAY_PORT
-          value: '31414'            
+          valueFrom:
+            configMapKeyRef:
+              name: gedge-system-scheduler-configmap
+              key: api-gateway-port            
         ports:
         - containerPort: 5000

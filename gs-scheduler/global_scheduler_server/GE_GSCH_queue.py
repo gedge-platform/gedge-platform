@@ -32,26 +32,26 @@ class RequestQueue:
 
     def dispatch_RequestJob(self):
         if self.get_total_queue_size() <= 0 :
-            print('empty queue')
+            #print('empty queue')
             return -1
         dispatch_size = gschDefine.GLOBAL_SCHEDULER_QUEUE_SLICE_SIZE * 3 
 
         while self.firstQueue.qsize() !=0 and dispatch_size > (gschDefine.GLOBAL_SCHEDULER_QUEUE_SLICE_SIZE * 2)  :
             temp_RequestJob = self.firstQueue.get()
             temp_RequestJob.status = 'dispatched'
-            self.dispatchedQueue[temp_RequestJob.requestID] = temp_RequestJob
+            self.dispatchedQueue[temp_RequestJob.request_id] = temp_RequestJob
             dispatch_size = dispatch_size - 1
 
         while self.fastQueue.qsize() !=0 and dispatch_size > gschDefine.GLOBAL_SCHEDULER_QUEUE_SLICE_SIZE :
             temp_RequestJob = self.fastQueue.get()
             temp_RequestJob.status = 'dispatched'
-            self.dispatchedQueue[temp_RequestJob.requestID] = temp_RequestJob
+            self.dispatchedQueue[temp_RequestJob.request_id] = temp_RequestJob
             dispatch_size = dispatch_size - 1
 
         while self.baseQueue.qsize() !=0 and dispatch_size > 0 :
             temp_RequestJob = self.baseQueue.get()
             temp_RequestJob.status = 'dispatched'
-            self.dispatchedQueue[temp_RequestJob.requestID] = temp_RequestJob
+            self.dispatchedQueue[temp_RequestJob.request_id] = temp_RequestJob
             dispatch_size = dispatch_size - 1
 
     def pop_dispatched_queue(self,request_id):
@@ -59,15 +59,15 @@ class RequestQueue:
             del self.dispatchedQueue[request_id]
             return return_data
 
-    def return_RequestJob(self, requestID, status='completed'):
+    def return_RequestJob(self, request_id, status='completed'):
         if status == 'completed' :
-            self.dispatchedQueue.pop(requestID) 
+            self.dispatchedQueue.pop(request_id) 
         elif status == 'failed' :
-            self.dispatchedQueue[requestID].increaseFailCnt()
-            if self.dispatchedQueue[requestID].failCnt > gschDefine.GLOBAL_SCHEDULER_MAX_FAIL_CNT :
-                self.dispatchedQueue.pop(requestID) 
+            self.dispatchedQueue[request_id].increaseFailCnt()
+            if self.dispatchedQueue[request_id].fail_count > gschDefine.GLOBAL_SCHEDULER_MAX_FAIL_CNT :
+                self.dispatchedQueue.pop(request_id) 
                 print("delete Job")
-            elif self.dispatchedQueue[requestID].failCnt > gschDefine.GLOBAL_SCHEDULER_FIRST_FAIL_CNT :
-                self.firstQueue.put(self.dispatchedQueue.pop(requestID))
+            elif self.dispatchedQueue[request_id].fail_count > gschDefine.GLOBAL_SCHEDULER_FIRST_FAIL_CNT :
+                self.firstQueue.put(self.dispatchedQueue.pop(request_id))
             else :
-                self.baseQueue.put(self.dispatchedQueue.pop(requestID))
+                self.baseQueue.put(self.dispatchedQueue.pop(request_id))

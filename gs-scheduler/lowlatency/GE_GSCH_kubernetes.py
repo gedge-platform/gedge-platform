@@ -35,6 +35,15 @@ def find_external_ip_by_service_name(service_name):
                 return i.status.load_balancer.ingress[0].ip
     return None
 
+def get_hostname_by_namespaced_pod_name(namespace_name,pod_name):
+    res_pods = v1.list_namespaced_pod(namespace = namespace_name)
+    for i in res_pods.items:
+        if i.metadata.name == pod_name:
+            print("get_hostname_by_pod_name", i.status)
+            if i.spec.node_name:
+                print("get_hostname_by_pod_name :node_name= ", i.spec.node_name)
+                return i.spec.node_name
+    return None
 
 def find_host_ip_by_pod_name(pod_name):
     res_pods = v1.list_pod_for_all_namespaces(pretty=True)

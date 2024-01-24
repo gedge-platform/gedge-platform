@@ -1,30 +1,32 @@
 
 #from __future__ import print_function
 import sys
-sys.path.append('../gelib')
-sys.path.append('../gedef')
-from kubernetes import client, config
 import json
-from operator import itemgetter
-from flask import Flask, request, render_template, redirect, url_for
-from werkzeug.utils import secure_filename
-from flask import send_from_directory
 import os
 import threading, time
 import uuid 
+
+sys.path.append('../gelib')
+sys.path.append('../gedef')
+
+from kubernetes import client, config
+from operator import itemgetter
+from flask import Flask, request,jsonify, render_template, redirect, url_for
+from werkzeug.utils import secure_filename
+from json import loads 
+
 import GE_define as gDefine
 import GE_GSCH_define as gschDefine
 import GE_kubernetes as gKube
-import GE_platform_util as pUtil
+import GE_meta_data as gMeta
+
+from GE_kafka import gKafka
 from GE_GSCH_request_job import RequestJob
 from GE_redis import redisController
 from GE_GSCH_queue import RequestQueue
 from GE_GSCH_policy_scale_controller import policyScaleController
 from GE_meta_data import metaData
-from kafka import KafkaProducer
-from kafka import KafkaConsumer
-from kafka.admin import KafkaAdminClient, NewTopic
-from json import loads 
+
 import shutil
 import yaml
 import ast
@@ -43,6 +45,7 @@ GE_metaData               = metaData()
 GE_RequestQueue           = RequestQueue()
 GE_policyScaleController  = policyScaleController(gschDefine.GLOBAL_SCHEDULER_POLICY_YAML_PATH)
 gRedis                    = redisController()
+
 PREFIX = '/GEP/GSCH'
 '''-------------------------------------------------------------------------------------------------------
             INIT GSCH SERVER
@@ -54,7 +57,7 @@ def init_gsch_gsch_server():
             KAFKA MESSAGE
     ------------------------------------------------'''
     while 1:     
-        r = pUtil.find_service_from_platform_service_list_with_k8s(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.KAFKA_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.KAFKA_SERVICE_NAME)
         if r : 
             gDefine.KAFKA_ENDPOINT_IP   = r['access_host']
             gDefine.KAFKA_ENDPOINT_PORT = r['access_port']
@@ -70,7 +73,7 @@ def init_gsch_gsch_server():
             REDIS
     -----------------------------------------------'''
     while 1:
-        r = pUtil.find_service_from_platform_service_list_with_k8s(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.REDIS_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.REDIS_SERVICE_NAME)
         if r : 
             gDefine.REDIS_ENDPOINT_IP   = r['access_host']
             gDefine.REDIS_ENDPOINT_PORT = r['access_port']
@@ -85,7 +88,7 @@ def init_gsch_gsch_server():
             MONGO DB 
     -----------------------------------------------'''
     while 1:        
-        r = pUtil.find_service_from_platform_service_list_with_k8s(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.MONGO_DB_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.MONGO_DB_SERVICE_NAME)
         if r : 
             gDefine.MONGO_DB_ENDPOINT_IP   = r['access_host']
             gDefine.MONGO_DB_ENDPOINT_PORT = r['access_port']
@@ -96,24 +99,8 @@ def init_gsch_gsch_server():
             print('wait for running platform service',)
             time.sleep(gDefine.WAIT_RUNNING_PLATFORM_SERVICES_SECOND_TIME) 
             continue
-    '''-----------------------------------------------
-            KAFKA
-    -----------------------------------------------''' 
-    # make KafkaAdminClient
-    kafka_admin_client = KafkaAdminClient( bootstrap_servers=gDefine.KAFKA_SERVER_URL, client_id='test')
     
-    # create topic of GEDGE_GLOBAL_GSCH_TOPIC_NAME
-    try :  
-        topic_list = []
-        print('1')
-        topic_list.append(NewTopic(name=gDefine.GEDGE_GLOBAL_GSCH_TOPIC_NAME, num_partitions=1, replication_factor=1))
-        print('2')
-        kafka_admin_client.create_topics(new_topics=topic_list, validate_only=False)
-        print('3')
-        print('topic is created:', gDefine.GEDGE_GLOBAL_GSCH_TOPIC_NAME)
-    except:
-        print('topic is exist',gDefine.GEDGE_GLOBAL_GSCH_TOPIC_NAME)
-
+    
 '''-------------------------------------------------------------------------------------------------------
             INIT GSCH SERVER
 -------------------------------------------------------------------------------------------------------'''
@@ -147,7 +134,7 @@ def list_pod():
 def test():
     #print(request.get_json())
     response_data = {}
-    response_data['Result'] = "test" 
+    response_data['result'] = "test" 
     response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
     gDefine.logger.info('test')
     return response
@@ -175,14 +162,14 @@ def create_scheduling_job_low():
     try :
         if request.method == "POST":
             f = request.files['yaml_file']
-            fileID = uuid.uuid4()
-            uuid_dir = fileID
-
+            file_id = uuid.uuid4()
+            uuid_dir = file_id
+            
             uploads_dir = str(gschDefine.GLOBAL_SCHEDULER_UPLOAD_PATH)+str('/')+str(uuid_dir)
             print("dir:",uploads_dir)
             os.makedirs(uploads_dir,exist_ok=True)
             f.save(os.path.join(uploads_dir, secure_filename(f.filename)))
-            ff = open(uploads_dir+str('/')+str(f.filename), "rb")
+            ff = open(uploads_dir+str('/')+str(f.filename), "r")
             file_data = ff.read()
             ff.close()
             # save yaml file with key at Redis Server
@@ -195,35 +182,76 @@ def create_scheduling_job_low():
                     print('deleted temp directory',uploads_dir)
                 except OSError as e:
                     print ("Error: %s - %s." % (e.filename, e.strerror))
-
-            selected_clusters_data = request.values.get("selected_clusters")
-
-            print("type selected_clusters:",type(selected_clusters_data))
-            print("selected_clusters:",selected_clusters_data)
-            selected_clusters_list = ast.literal_eval(selected_clusters_data)
-            print("type selected_clusters_list:",type(selected_clusters_list))
-            print("selected_clusters_list:",selected_clusters_list)
+            
+            user_name = request.values.get('user_name')
+            print('user_name:',user_name)
+            callback_url = request.values.get('callback_url')
+            print('callback_url:',callback_url)
+            workspace_name = request.values.get('workspace_name')
+            print('workspace_name:',workspace_name)
+            project_name = request.values.get('project_name')
+            print('project_name:',project_name)
+            select_clusters = request.values.get("select_clusters")
+            select_cluster_list = eval(select_clusters)
+            print("select_cluster_list:",select_cluster_list)
+            print("type select_cluster_list:",type(select_cluster_list))
+            
+            mode = request.values.get('mode')
+            print('mode:',mode)
+            if mode == 'default' or  mode == 'fromnode' :
+                source_cluster = request.values.get('source_cluster')
+                print("source_cluster:",source_cluster)
+                source_node = request.values.get('source_node')
+                print("source_node:",source_node)
+                
+                temp_env={
+                    'scope':'global',
+                    'priority':'GLowLatencyPriority', 
+                    'option' : {
+                        'user_name': user_name,
+                        'workspace_name': workspace_name,
+                        'project_name': project_name,
+                        'mode': mode, 
+                        'parameters': {  
+                            'source_cluster' : source_cluster,
+                            'source_node'    : source_node,                     
+                            'select_clusters': select_cluster_list 
+                        }
+                    }
+                }
+            elif mode == 'frompod' :
+                source_cluster = request.values.get('source_cluster')
+                print("source_cluster:",source_cluster)
+                pod_name = request.values.get('pod_name')
+                print("pod_name:",pod_name)
+                temp_env={
+                    'scope':'global',
+                    'priority':'GLowLatencyPriority',
+                    'option' : {
+                        'user_name': user_name,
+                        'workspace_name': workspace_name,
+                        'project_name': project_name,
+                        'mode': mode, 
+                        'parameters': {                      
+                            'source_cluster': source_cluster,
+                            'pod_name': pod_name,
+                            'select_clusters': select_cluster_list  
+                        }
+                    }
+                }
+            else:
+                return response_wihterror('ServiceInternalException', 'error: create_scheduling_job') 
 
             fast_option = request.values.get("fast_option")
             print("fast_option:",fast_option)
-            source_cluster = request.values.get("source_cluster")
-            print("source_cluster:",source_cluster)
-            source_node = request.values.get("source_node")
-            print("source_node:",source_node)
-            temp_env={'type':'##global','targetClusters':selected_clusters_list ,'priority':'GLowLatencyPriority',
-                    'option': {'sourceCluster':source_cluster,'sourceNode':source_node}
-            }
             print("temp_env:",temp_env)
-          
-            temp_RequestJob=RequestJob(fileID=result[1],env=temp_env) 
-          
+            temp_RequestJob=RequestJob(file_id=result[1],callback_url=callback_url,env=temp_env) 
             if fast_option == 'fast' :
                 GE_RequestQueue.insert_RequestJob(request_job=temp_RequestJob,option='fast')
             else :
                 GE_RequestQueue.insert_RequestJob(request_job=temp_RequestJob)
-          
             response_data = {}
-            response_data['Result'] = "requestID:" + str(temp_RequestJob.requestID)
+            response_data['result'] = "request_id:" + str(temp_RequestJob.request_id)
             response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
             gDefine.logger.info('Success : create_scheduling_job ')
             return response
@@ -237,21 +265,16 @@ def create_scheduling_job_most():
     try :
         if request.method == "POST":
             f = request.files['yaml_file']
-            print("o-1")
-            fileID = uuid.uuid4()
-            uuid_dir = fileID
-            print("o-2")
+            file_id = uuid.uuid4()
+            uuid_dir = file_id
 
             uploads_dir = str(gschDefine.GLOBAL_SCHEDULER_UPLOAD_PATH)+str('/')+str(uuid_dir)
-            print("o-3")
             print("dir:",uploads_dir)
             os.makedirs(uploads_dir,exist_ok=True)
-            print("o-4")
             f.save(os.path.join(uploads_dir, secure_filename(f.filename)))
-            ff = open(uploads_dir+str('/')+str(f.filename), "rb")
+            ff = open(uploads_dir+str('/')+str(f.filename), 'r')
             file_data = ff.read()
             ff.close()
-            print("o-5")  
             # save yaml file with key at Redis Server
             result = gRedis.hset_data_to_redis(file_data, gDefine.REDIS_YAML_KEY)
             print('hset_data_to_redis',result)
@@ -263,30 +286,24 @@ def create_scheduling_job_most():
                 except OSError as e:
                     print ("Error: %s - %s." % (e.filename, e.strerror))
 
-            selected_clusters_data = request.values.get("selected_clusters")
-            print("type selected_clusters:",type(selected_clusters_data))
-            print("selected_clusters:",selected_clusters_data)
-            selected_clusters_list = ast.literal_eval(selected_clusters_data)
-            print("type selected_clusters_list:",type(selected_clusters_list))
-            print("selected_clusters_list:",selected_clusters_list)
+            select_clusters_data = request.values.get("select_clusters")
+            print("type select_clusters:",type(select_clusters_data))
+            print("select_clusters:",select_clusters_data)
+            select_clusters_list = ast.literal_eval(select_clusters_data)
+            print("type select_clusters_list:",type(select_clusters_list))
+            print("select_clusters_list:",select_clusters_list)
             
             fast_option = request.values.get("fast_option")
             print("fast_option:",fast_option)
             
-            temp_env={'type':'##global','targetClusters': selected_clusters_list,'priority':'GMostRequestedPriority' }
-            
-                
-            print("o-6")                  
-            temp_RequestJob=RequestJob(fileID=result[1],env=temp_env) 
-            print("o-7")
+            temp_env={'scope':'##global','select_clusters': select_clusters_list,'priority':'GMostRequestedPriority' }
+            temp_RequestJob=RequestJob(file_id=result[1],env=temp_env) 
             if fast_option == 'fast' :
                 GE_RequestQueue.insert_RequestJob(request_job=temp_RequestJob,option='fast')
             else :
                 GE_RequestQueue.insert_RequestJob(request_job=temp_RequestJob)
-            
-            print("o-8")
             response_data = {}
-            response_data['Result'] = "requestID:" + str(temp_RequestJob.requestID)
+            response_data['result'] = "request_id:" + str(temp_RequestJob.request_id)
             response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
             gDefine.logger.info('Success : create_scheduling_job ')
             return response
@@ -295,27 +312,21 @@ def create_scheduling_job_most():
     except:
         return response_wihterror('ServiceInternalException', 'error: create_scheduling_job')
 
-
 @app.route(f'{PREFIX}/test/select', methods=['POST'])
 def create_scheduling_job_select():
     try :
         if request.method == "POST":
             f = request.files['yaml_file']
-            print("o-1")
-            fileID = uuid.uuid4()
-            uuid_dir = fileID
-            print("o-2")
+            file_id = uuid.uuid4()
+            uuid_dir = file_id
 
             uploads_dir = str(gschDefine.GLOBAL_SCHEDULER_UPLOAD_PATH)+str('/')+str(uuid_dir)
-            print("o-3")
             print("dir:",uploads_dir)
             os.makedirs(uploads_dir,exist_ok=True)
-            print("o-4")
             f.save(os.path.join(uploads_dir, secure_filename(f.filename)))
-            ff = open(uploads_dir+str('/')+str(f.filename), "rb")
+            ff = open(uploads_dir+str('/')+str(f.filename), 'r')
             file_data = ff.read()
             ff.close()
-            print("o-5")  
             # save yaml file with key at Redis Server
             result = gRedis.hset_data_to_redis(file_data, gDefine.REDIS_YAML_KEY)
             print('hset_data_to_redis',result)
@@ -327,30 +338,69 @@ def create_scheduling_job_select():
                 except OSError as e:
                     print ("Error: %s - %s." % (e.filename, e.strerror))
 
-            selected_clusters_data = request.values.get("selected_clusters")
-            print("type selected_clusters:",type(selected_clusters_data))
-            print("selected_clusters:",selected_clusters_data)
-            selected_clusters_list = ast.literal_eval(selected_clusters_data)
-            print("type selected_clusters_list:",type(selected_clusters_list))
-            print("selected_clusters_list:",selected_clusters_list)
+            user_name = request.values.get('user_name')
+            print('user_name:',user_name)
+            callback_url = request.values.get('callback_url')
+            print('callback_url:',callback_url)
+            workspace_name = request.values.get('workspace_name')
+            print('workspace_name:',workspace_name)
+            project_name = request.values.get('project_name')
+            print('project_name:',project_name)
+            
+            mode = request.values.get('mode')
+            print('mode:',mode)
+            if mode == 'default' or  mode == 'cluster' :
+                select_clusters = request.values.get('select_clusters')
+                print("select_clusters:",select_clusters)
+                print("type select_clusters:",type(select_clusters))
+                select_cluster_list = eval(select_clusters)
+                print("select_cluster_list:",select_cluster_list)
+                print("type select_cluster_list:",type(select_cluster_list))
+                temp_env={
+                    'scope':'global',
+                    'priority':'GSelectedCluster', 
+                    'option' : {
+                        'user_name': user_name,
+                        'workspace_name': workspace_name,
+                        'project_name': project_name,
+                        'mode': mode, 
+                        'parameters': {                      
+                            'select_clusters': select_cluster_list 
+                        }
+                    }
+                }
+            elif mode == 'node' :
+                select_cluster = request.values.get('select_cluster')
+                print("select_cluster:",select_cluster)
+                select_node = request.values.get('select_node')
+                print("select_node:",select_node)
+                temp_env={
+                    'scope':'global',
+                    'priority':'GSelectedCluster',
+                    'option' : {
+                        'user_name': user_name,
+                        'workspace_name': workspace_name,
+                        'project_name': project_name,
+                        'mode': mode, 
+                        'parameters': {                      
+                            'select_cluster': select_cluster,
+                            'select_node': select_node  
+                        }
+                    }
+                }
+            else:
+                return response_wihterror('ServiceInternalException', 'error: create_scheduling_job') 
 
             fast_option = request.values.get("fast_option")
             print("fast_option:",fast_option)
-    
-            temp_env={'type':'##global','targetClusters': selected_clusters_list,'priority':'GSelectedCluster' }
             print("temp_env:",temp_env)
-            
-            print("o-6")                  
-            temp_RequestJob=RequestJob(fileID=result[1],env=temp_env) 
-            print("o-7")
+            temp_RequestJob=RequestJob(file_id=result[1],callback_url=callback_url,env=temp_env) 
             if fast_option == 'fast' :
                 GE_RequestQueue.insert_RequestJob(request_job=temp_RequestJob,option='fast')
             else :
                 GE_RequestQueue.insert_RequestJob(request_job=temp_RequestJob)
-            
-            print("o-8")
             response_data = {}
-            response_data['Result'] = "requestID:" + str(temp_RequestJob.requestID)
+            response_data['result'] = "request_id:" + str(temp_RequestJob.request_id)
             response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
             gDefine.logger.info('Success : create_scheduling_job ')
             return response
@@ -358,7 +408,6 @@ def create_scheduling_job_select():
             return response_wihterror('ServiceInternalException', 'error: create_scheduling_job') 
     except:
         return response_wihterror('ServiceInternalException', 'error: create_scheduling_job') 
-
 
 '''-------------------------------------------------------------------------------------------------------
             DISPATCH REQUEST
@@ -373,7 +422,6 @@ def schedule_dispatched_request(policy):
        if age == search_age:
           print(name)
     ---------------------------------'''
-    
     if GE_RequestQueue.get_dispatched_queue_size() <= 0 :
         return response_wihterror('ServiceInternalException', 'error: pull_dispatched_request: empty') 
     print('dispatchedQueue-----------------------------------------')            
@@ -401,7 +449,7 @@ def dispatched_queue_status(request_id):
     print('start dispatched_queue_status')
     response_data = {}
     if request.method == 'GET':
-       response_data['Result'] = GE_RequestQueue.dispatchedQueue[request_id].status
+       response_data['result'] = GE_RequestQueue.dispatchedQueue[request_id].status
        response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
        gDefine.logger.info('get : dispatched_queue_status')
        return response
@@ -412,11 +460,11 @@ def dispatched_queue_status(request_id):
              return response_wihterror('InvalidRequestContentException', 'error: update : dispatched_queue_status')
         if changed_status == 'failed':
             GE_RequestQueue.dispatchedQueue[request_id].increaseFailCnt()
-            if GE_RequestQueue.dispatchedQueue[request_id].failCnt > gschDefine.GLOBAL_SCHEDULER_MAX_FAIL_CNT :
+            if GE_RequestQueue.dispatchedQueue[request_id].fail_count > gschDefine.GLOBAL_SCHEDULER_MAX_FAIL_CNT :
                 GE_RequestQueue.pop_dispatched_queue(request_id) 
                 print("delete Job")
-                result_str='failCnt is over GLOBAL_SCHEDULER_MAX_FAIL_CNT'
-            elif GE_RequestQueue.dispatchedQueue[request_id].failCnt > gschDefine.GLOBAL_SCHEDULER_FIRST_FAIL_CNT :
+                result_str='fail_count is over GLOBAL_SCHEDULER_MAX_FAIL_CNT'
+            elif GE_RequestQueue.dispatchedQueue[request_id].fail_count > gschDefine.GLOBAL_SCHEDULER_FIRST_FAIL_CNT :
                 GE_RequestQueue.firstQueue.put(GE_RequestQueue.pop_dispatched_queue(request_id))
                 result_str='instert job into first Queue'
             else :
@@ -433,7 +481,7 @@ def dispatched_queue_status(request_id):
             print('end update_dispatched_queue_status',result_str)
             return response_wihterror('InvalidRequestContentException', 'error: update : dispatched_queue_status') 
         
-        response_data['Result'] = result_str
+        response_data['result'] = result_str
         response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
         gDefine.logger.info('update : dispatched_queue_status')
         return response
@@ -450,14 +498,14 @@ def policy_scale(policy_name):
         replicas = request.args.get('replicas_size')
         result   = GE_policyScaleController.set_policy_scale_by_update_deployment(policy_name,replicas)
         if result :
-            response_data['Result'] = result
+            response_data['result'] = result
             response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
             gDefine.logger.info('update_policy_scale')
             return response
         else :
             return response_wihterror('ServiceInternalException', 'error: update_policy_scale:'+str(policy_name)) 
     elif request.method == 'GET':
-        response_data['Result'] = GE_policyScaleController.get_replica_size_by_policy_name(policy_name)
+        response_data['result'] = GE_policyScaleController.get_replica_size_by_policy_name(policy_name)
         response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
         gDefine.logger.info('get_policy_scale_size')
         return response
@@ -472,7 +520,7 @@ def get_policy_name_list():
     if request.method == 'GET':
         result = GE_policyScaleController.get_policy_name_list()
         if result :
-            response_data['Result'] = result
+            response_data['result'] = result
             response = app.response_class(response=json.dumps(response_data), status=200, mimetype='application/json')
             gDefine.logger.info('get_policy_name_list')
             return response
@@ -512,7 +560,7 @@ def policy_scale_controller_service():
 
     # init policy_metrics
     for p in GE_policyScaleController.support_policy_list :
-        policy_metrics[p] =0
+        policy_metrics[p] = 0
 
     while True: 
         # monitor get_total_queue_size / policy count 
@@ -520,14 +568,30 @@ def policy_scale_controller_service():
         for p in GE_policyScaleController.support_policy_list :
             policy_metrics[p] = 0
         for request_id, request_job in GE_RequestQueue.dispatchedQueue.items():
-            print( request_id,request_job.env['priority'],request_job.status) 
+            #print( request_id,request_job.env['priority'],request_job.status) 
             if request_job.status == 'dispatched' :
                policy_metrics[request_job.env['priority']] += 1
-        print('policy_metrics',policy_metrics)
+        #print('policy_metrics',policy_metrics)
         time.sleep(5)
 
 if __name__ == '__main__':
+    
     init_gsch_gsch_server()
+    
+    if gDefine.KAFKA_SERVER_URL != None :
+        GS_kafka = gKafka([gDefine.KAFKA_SERVER_URL])
+        # !!!!!!!need delete garbage topics 
+        GS_kafka.delete_all_topics()
+        # view topics 
+        GS_kafka.get_all_topics_info()
+        # create topic for GEDGE_GLOBAL_API_TOPIC_NAME
+        GS_kafka.newly_create_topic(gDefine.GEDGE_GLOBAL_API_TOPIC_NAME,1,1)
+        # create topic for GEDGE_GLOBAL_GSCH_TOPIC_NAME
+        GS_kafka.newly_create_topic(gDefine.GEDGE_GLOBAL_GSCH_TOPIC_NAME,1,1)
+    else :
+        print('error : init_gsch_gsch_server')
+        exit(1)
+    
     #support_policy_list = ['GLowLatencyPriority','GMostRequestedPriority','GSelectedCluster']
     GE_metaData.init_platform_metadata_from_mongodb(ip=gDefine.MONGO_DB_ENDPOINT_IP,port=int(gDefine.MONGO_DB_ENDPOINT_PORT))
     set_platform_gsch_policy_list_by_support_policy_dic(GE_metaData,GE_policyScaleController.support_policy_list, GE_policyScaleController.support_policy_dic)
@@ -555,8 +619,8 @@ if __name__ == '__main__':
     while True: 
         if len(GE_RequestQueue.dispatchedQueue) < gschDefine.GLOBAL_SCHEDULER_MAX_DISPATCH_SIZE :
             GE_RequestQueue.dispatch_RequestJob()
-            print("dispatch_RequestJob:",cnt)
-            print(GE_RequestQueue.dispatchedQueue)
+            #print("dispatch_RequestJob:",cnt)
+            #print(GE_RequestQueue.dispatchedQueue)
         else :
             print("dispatch_RequestJob buffer is fulled")
         cnt=cnt+1

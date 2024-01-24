@@ -212,9 +212,7 @@ def scheduler(t_name, t_node, t_namespace="default"):
     meta = client.V1ObjectMeta()
     meta.name = t_name
     body = client.V1Binding(target=target, metadata=meta)
-    print('11')
     res  = v1.create_namespaced_binding(namespace=t_namespace, body=body, _preload_content=False)
-    print('22')
     print('status',res.status)
     res_data = json.loads(res.data)
     print('res_data',res_data)
@@ -246,9 +244,7 @@ def scheduler_new_version(filter,t_object, t_node, t_namespace="default"):
         meta.name = t_object.metadata.name
         body = client.V1Binding(target=target, metadata=meta)
         try: 
-            #print('11')
             res  = v1.create_namespaced_binding(namespace=t_namespace, body=body, _preload_content=False)
-            #print('22')
             if res:
                 # print 'POD '+name+' scheduled and placed on '+node
                 return True
@@ -276,7 +272,7 @@ def get_near_nodes_latency_from_worker_agent(ip,port,path,pingsize,pingcount) :
         response_dic=response.json()
         print('get_near_nodes_latency_from_worker_agent3')
         print('response_dic',response_dic )
-        return response_dic['Result']
+        return response_dic['result']
     except :
         print("Error: can not request worker agent")
         return None
@@ -308,7 +304,6 @@ def get_request_filter_from_pending_object(event_object):
     return_filter['node_selector']           = event_object.spec.node_selector
     return_filter['persistent_volume_claim'] = []
     for v in event_object.spec.volumes :
-        #print('v=',v)
         print('type(v)=',type(v))
         v_dic = v.to_dict()
         print('v_dic=',v_dic)
@@ -343,7 +338,7 @@ def get_request_filter_from_pending_object(event_object):
 def local_lowlatency_schduler(event, sch_config_dic, temp_namespace):
     global agentsInfo
     print('sch_config_dic :', sch_config_dic)
-    print("sourceNode : ", sch_config_dic['option']['sourceNode'])
+    print("source_node : ", sch_config_dic['option']['source_node'])
 
     #print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')    
     #print('event[object] => ',event['object'])    
@@ -367,8 +362,8 @@ def local_lowlatency_schduler(event, sch_config_dic, temp_namespace):
     print('available_nodes : ', available_nodes)
     # call request network data  to worker_agent  
     #print('sch_config_dic=======================', sch_config_dic)
-    t_sourceNode = sch_config_dic['option']['sourceNode']
-    request_worker_ip = agentsInfo[t_sourceNode]['pod_ip']
+    t_source_node = sch_config_dic['option']['source_node']
+    request_worker_ip = agentsInfo[t_source_node]['pod_ip']
 
     if request_worker_ip == None :
         return -1
@@ -392,9 +387,7 @@ def local_lowlatency_schduler(event, sch_config_dic, temp_namespace):
         print('t_node : ', t_node)
         print('temp_namespace : ', temp_namespace)
         try:
-            print('1',t_filter)
             result = scheduler_new_version(t_filter, event['object'], t_node, t_namespace=temp_namespace)
-            print('2')
             print('result :',result)
             if result :
                 print("local_lowlatency_schduler completed")
@@ -482,9 +475,7 @@ def local_most_requested_schduler(event, sch_config_dic, temp_namespace):
     temp_dic={}
     print('available_nodes :', available_nodes)
     #get resource data 
-    print('11')
     sorted_availe_nodes = get_sorted_available_nodes_most_requested(t_filter, available_nodes)
-    print('22')
     print('sorted_availe_nodes :', sorted_availe_nodes)
     if len(sorted_availe_nodes) <= 0 :
         #time.sleep(5)
@@ -495,9 +486,7 @@ def local_most_requested_schduler(event, sch_config_dic, temp_namespace):
         print('t_node : ', t_node)
         print('temp_namespace :', temp_namespace)
         try:
-            print('33')
             result = scheduler_new_version(t_filter, event['object'], t_node, t_namespace=temp_namespace)
-            print('44')
             print('result :',result)
             if result :
                 print("local_most_requested_schduler completed")
@@ -526,9 +515,7 @@ def schduler_loop():
         pending_count = 0
         for event in w.stream(v1.list_pod_for_all_namespaces):    
             if event['object'].status.phase == "Pending" and event['object'].status.conditions == None and event['object'].spec.scheduler_name == gDefine.LOCAL_SCHEDULER_NAME:
-                print('=1')
                 try:
-                    print('=2')
                     print('metadata.name', event['object'].metadata.name)
                     #print("event['object']=", event['object'])
                     temp_env = event['object'].spec.containers[0].env
@@ -538,10 +525,10 @@ def schduler_loop():
                         print("warning : env config data was not setted")
                         continue
                     sch_config_dic = get_schduler_config(temp_env)
-                    if sch_config_dic['type'] == 'local' :
+                    if sch_config_dic['scope'] == 'local' :
                         print('local')
                         policy_functions[sch_config_dic['priority']](event, sch_config_dic, temp_namespace)
-                    elif sch_config_dic['type'] == 'global':
+                    elif sch_config_dic['scope'] == 'global':
                         print('global')
                     else :
                         print('not defined schedulering')

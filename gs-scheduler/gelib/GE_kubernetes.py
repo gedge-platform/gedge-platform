@@ -2,9 +2,11 @@ import sys
 sys.path.append('../gelib')
 sys.path.append('../gedef')
 import GE_define as gDefine
-import GE_platform_util as pUtil
+import GE_util as gUtil
 from kubernetes import client, config, watch
 from kubernetes.client.rest import ApiException
+
+import ast
 
 try :
     config.load_incluster_config()
@@ -59,6 +61,16 @@ def get_hostname_by_pod_name(pod_name):
                 return i.spec.node_name
     return None
 
+def get_hostname_by_namespaced_pod_name(namespace_name,pod_name):
+    res_pods = v1.list_namespaced_pod(namespace = namespace_name)
+    for i in res_pods.items:
+        if i.metadata.name == pod_name:
+            print("get_hostname_by_pod_name", i.status)
+            if i.spec.node_name:
+                print("get_hostname_by_pod_name :node_name= ", i.spec.node_name)
+                return i.spec.node_name
+    return None
+
 def get_hostname_by_host_ip(host_ip):
     print("get_hostname_by_host_ip host_ip: ", host_ip)
     ret = v1.list_node(watch=False)
@@ -103,26 +115,64 @@ def ge_delete_namespaced_pod(name, namespace) :
         print("Exception when calling CoreV1Api->delete_namespaced_pod: %s\n" % e)
         
 def isexist_namespace(namespace_name):
-    # Namespace 목록을 조회합니다.
-    namespace_list = v1.list_namespace().items
-
-    # 중복된 Namespace 이름이 있는지 확인합니다.
+    try:
+        namespace_list = v1.list_namespace().items
+    except ApiException as e:
+        print("Exception when calling list_namespace: %s\n" % e)
+        return False
     for namespace in namespace_list:
         if namespace.metadata.name == namespace_name:
+            print('found namespace:',namespace_name )
             return True
     else:
+        print('can not find namespace:',namespace_name )
         return False
 
 def create_namespace(namespace_name):
      
     if isexist_namespace(namespace_name):
-        return None
-    else :    
-        namespace = client.V1Namespace()
-        metadata = client.V1ObjectMeta(name=namespace_name)
-        namespace.metadata = metadata
-        # Namespace를 생성합니다.
-        created_namespace=v1.create_namespace(namespace)
-        print("Created Namespace name:", created_namespace.metadata.name)
+        print(namespace_name,'is exist')
+        return 'exist'
+    else : 
+        try :
+            namespace = client.V1Namespace()
+            metadata = client.V1ObjectMeta(name=namespace_name)
+            namespace.metadata = metadata
+            # Namespace를 생성합니다.
+            created_namespace=v1.create_namespace(namespace)
+            print("Created Namespace name:", created_namespace.metadata.name)
+        except ApiException as e:
+            print("Exception when create_namespace: %s\n" % e)
+            return 'error'
         return namespace_name
 
+def delete_namespace(namespace_name): 
+    print('*1') 
+    if isexist_namespace(namespace_name):
+        print('*2')
+        try :
+            print('*3')
+            response = v1.delete_namespace(name=namespace_name, grace_period_seconds=0)
+            print('*4')
+            if response is not None:
+                print('*4')
+                status_dic = response.to_dict()
+                print('*5',status_dic)
+                status = status_dic['status']
+                print('*6',status, type(status))
+                status_dic = ast.literal_eval(status)
+                print('*7',status_dic, type(status_dic))
+                phase = status_dic['phase']
+                print('*8')
+                if phase == "Terminating" or phase == "Terminated" :
+                    print("Namespace is deleted")
+                    return namespace_name
+            else:
+                print('*9')
+                return 'error'
+        except ApiException as e:
+            print("Exception when delete_namespace: %s\n" % e)
+            return 'error'
+    else :
+        print(namespace_name,'is empty')
+        return 'empty' 

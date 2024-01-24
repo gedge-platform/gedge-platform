@@ -1,35 +1,33 @@
 import sys
 sys.path.append('../gelib')
 sys.path.append('../gedef')
-import GE_define as gDefine
-
-import GE_kubernetes as gKube
-import GE_platform_util as pUtil
-
-from kafka import KafkaProducer
-from kafka import KafkaConsumer
-from kafka import KafkaAdminClient
-from operator import itemgetter
 import json
-from json import dumps
-from json import loads 
 import time 
 import requests
-import GE_GSCH_most_define as mostDefine
 import yaml
-import urllib
+from urllib.parse import urlencode
+
+import GE_GSCH_most_define as mostDefine
+import GE_define as gDefine
+import GE_kubernetes as gKube
+import GE_meta_data as gMeta
+
+from GE_kafka import gKafka
+from operator import itemgetter
 from GE_redis import redisController
 
+from json import dumps
+from json import loads 
 
 PREFIX = '/GEP/GSCH'
 
 '''
-{'requestID': 'req-f6720a0e-e3df-455a-825d-f8c80cedc2d9', 
- 'date': '2021-10-18 13:46:30', 'status': 'create', 
- 'fileID': 'b469e54a-721f-4c55-b43e-d09088556031', 'failCnt': 0, 
+{'request_id': 'req-f6720a0e-e3df-455a-825d-f8c80cedc2d9', 
+ 'cdate': '2021-10-18 13:46:30', 'status': 'create', 
+ 'file_id': 'b469e54a-721f-4c55-b43e-d09088556031', 'fail_count': 0, 
  'env': {
-         'type': 'global', 
-         'targetClusters': ['c1', ['c2', 'c3'], 'c4'], 
+         'scope': 'global', 
+         'select_clusters': ['c1', ['c2', 'c3'], 'c4'], 
          'priority': 'GMostRequestedPriority', 
         }
 }
@@ -39,7 +37,7 @@ def init_gsch_most_policy():
             KAFKA MESSAGE
     ------------------------------------------------'''
     while 1:     
-        r = pUtil.find_service_from_platform_service_list_with_k8s(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.KAFKA_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.KAFKA_SERVICE_NAME)
         if r : 
             gDefine.KAFKA_ENDPOINT_IP   = r['access_host']
             gDefine.KAFKA_ENDPOINT_PORT = r['access_port']
@@ -55,7 +53,7 @@ def init_gsch_most_policy():
             REDIS
     -----------------------------------------------'''
     while 1:
-        r = pUtil.find_service_from_platform_service_list_with_k8s(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.REDIS_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.REDIS_SERVICE_NAME)
         if r : 
             gDefine.REDIS_ENDPOINT_IP   = r['access_host']
             gDefine.REDIS_ENDPOINT_PORT = r['access_port']
@@ -70,7 +68,7 @@ def init_gsch_most_policy():
             MONGO DB 
     -----------------------------------------------'''
     while 1:        
-        r = pUtil.find_service_from_platform_service_list_with_k8s(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.MONGO_DB_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.MONGO_DB_SERVICE_NAME)
         if r : 
             gDefine.MONGO_DB_ENDPOINT_IP   = r['access_host']
             gDefine.MONGO_DB_ENDPOINT_PORT = r['access_port']
@@ -85,7 +83,7 @@ def init_gsch_most_policy():
                 GSCH SERVER
     -----------------------------------------------'''
     while(1) :
-        r = pUtil.find_service_from_platform_service_list_with_k8s(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.GSCH_SERVER_SERVICE_NAME)
+        r = gMeta.find_service_from_gService_list(gDefine.GEDGE_SYSTEM_NAMESPACE,gDefine.GSCH_SERVER_SERVICE_NAME)
         if r : 
             mostDefine.GSCH_SERVER_ENDPOINT_IP   = r['access_host']
             mostDefine.GSCH_SERVER_ENDPOINT_PORT = r['access_port']
@@ -103,28 +101,28 @@ GE_request_job = None
 
 class GMostRequestedPriority_Job:
     def __init__(self,request_data_dic):
-        self.job_name = mostDefine.SELF_POLICY_NAME
-        self.requestDataDic = request_data_dic
-        self.requestID=request_data_dic['requestID']
-        self.fileID=request_data_dic['fileID']
-        self.failCnt=request_data_dic['failCnt']
+        self.priority_name = mostDefine.SELF_POLICY_NAME
+        self.request_data_dic = request_data_dic
+        self.request_id=request_data_dic['request_id']
+        self.file_id=request_data_dic['file_id']
+        self.fail_count=request_data_dic['fail_count']
    
         self.env=request_data_dic['env']
-        self.targetClusters=self.env['targetClusters'] 
+        self.select_clusters=self.env['select_clusters'] 
         
-        self.producer= KafkaProducer(acks=0,compression_type='gzip', 
-                       bootstrap_servers=[gDefine.KAFKA_SERVER_URL], 
-                       value_serializer=lambda x: dumps(x).encode('utf-8')) 
         self.redis = redisController()
         self.redis.connect_redis_server(gDefine.REDIS_ENDPOINT_IP,gDefine.REDIS_ENDPOINT_PORT)
         self.redis_conn = self.redis.redisConn   
-        self.yamlfile = self.get_yaml_file_from_redis(self.fileID)
+        self.yamlfile = self.get_yaml_file_from_redis(self.file_id)
         self.yaml_dic_list = yaml.load_all(self.yamlfile,Loader=yaml.FullLoader)
         
         self.GPUFilter = self.is_necessary_GPU_filter()
         
+        self.most_kafka = gKafka([gDefine.KAFKA_SERVER_URL])
+        
+        
     def get_yaml_file_from_redis(self,yaml_key):
-        if self.redis_conn.hexists(gDefine.REDIS_YAML_KEY, self.fileID) == 0:
+        if self.redis_conn.hexists(gDefine.REDIS_YAML_KEY, self.file_id) == 0:
             return None
         return self.redis_conn.hget(gDefine.REDIS_YAML_KEY, yaml_key)
     
@@ -165,10 +163,9 @@ class GMostRequestedPriority_Job:
                 'target':{'type':'cluster', 'object':clusters},
                 'hcode':300,
                 'lcode':1,
-                'msg':{'requestID': self.requestID, 'GPUFilter':self.GPUFilter}
+                'msg':{'request_id': self.request_id, 'GPUFilter':self.GPUFilter}
                 }
-            self.producer.send(gDefine.GEDGE_GLOBAL_GSCH_TOPIC_NAME,value=temp_msg)
-            self.producer.flush()
+            self.most_kafka.kafka_msg_send(gDefine.GEDGE_GLOBAL_GSCH_TOPIC_NAME, temp_msg)
         except :
             return 'process_fail'
         return 'process_success'
@@ -217,10 +214,9 @@ class GMostRequestedPriority_Job:
                 'target':{'type':'cluster', 'object':cluster},
                 'hcode':310,
                 'lcode':1,
-                'msg':{'requestID': self.requestID,'fileID':self.fileID,'requestData':self.requestDataDic }
+                'msg':{'request_id': self.request_id,'file_id':self.file_id,'request_data':self.request_data_dic }
             }
-            self.producer.send(gDefine.GEDGE_GLOBAL_GSCH_TOPIC_NAME,value=apply_yaml_msg)
-            self.producer.flush()
+            self.most_kafka.kafka_msg_send(gDefine.GEDGE_GLOBAL_GSCH_TOPIC_NAME,apply_yaml_msg)
         except:
             return 'process_fail'
         return 'process_success'
@@ -256,22 +252,13 @@ class GMostRequestedPriority_Job:
 
     def wait_response_msg_from_request_id_topic(self):
         print('wait_response_msg_from_request_id_topic')
-        consumer = KafkaConsumer( 
-                self.requestID, 
-                bootstrap_servers=[gDefine.KAFKA_SERVER_URL], 
-                auto_offset_reset='earliest', 
-                enable_auto_commit=True, 
-                group_id=self.requestID, 
-                value_deserializer=lambda x: loads(x.decode('utf-8')), 
-                consumer_timeout_ms=mostDefine.CONSUMER_TIMEOUT_MS_TIME
-        )
-        print('w-1')
+        self.most_kafka.set_consumer(self.request_id, self.request_id)
         res = None
-        for message in consumer: 
+        for message in self.most_kafka.consumer: 
             print("Topic: %s, Partition: %d, Offset: %d, Key: %s, Value: %s" % ( message.topic, message.partition, message.offset, message.key, message.value )) 
             res = message.value
             break
-        consumer.close()
+        self.most_kafka.consumer.close()
         return res
 
 def read_dispatched_queue():
@@ -288,11 +275,9 @@ def read_dispatched_queue():
             time.sleep(mostDefine.REQUEST_DISPATCH_RETRY_DELAY_SECOND_TIME) 
             continue
         if res.status_code == 200 :
-            print('2')
             request_data_dic = json.loads(res.json())
             print('request_data_dic',request_data_dic)
             t_GE_request_job = GMostRequestedPriority_Job(request_data_dic) 
-            print('3')
             break 
         else :
             print('despatched queue is empty')
@@ -314,7 +299,7 @@ def request_job_processor():
             'apply_fail' : apply is fail 
         '''
         is_whole_process_status = None
-        for t_cluster in GE_request_job.targetClusters :
+        for t_cluster in GE_request_job.select_clusters :
             print('type(t_cluster)',type(t_cluster),t_cluster)
             if type(t_cluster).__name__ == 'list' and len(t_cluster) > 1 :
                 r = GE_request_job.send_clusters_available_resource_from_cluster_agents(t_cluster)
@@ -363,7 +348,7 @@ def request_job_processor():
                     continue
         print('==============')
 
-        UPDATE_STATUS_OF_REQUEST_JOB_URL = mostDefine.GSCH_SERVER_URL+f'{PREFIX}/dispatchedqueue/requestjobs/'+GE_request_job.requestID+'/status'
+        UPDATE_STATUS_OF_REQUEST_JOB_URL = mostDefine.GSCH_SERVER_URL+f'{PREFIX}/dispatchedqueue/requestjobs/'+GE_request_job.request_id+'/status'
 
         if is_whole_process_status == 'apply_fail' :
             params = {'changed_status': 'failed'}
@@ -373,7 +358,7 @@ def request_job_processor():
             params = {'changed_status': 'canceled'}
         else :
             params = {'changed_status': 'canceled'}                
-        query_string = urllib.urlencode(params)
+        query_string = urlencode(params)
         full_url = "{}?{}".format(UPDATE_STATUS_OF_REQUEST_JOB_URL, query_string)
         print(full_url)
         requests.put(full_url)     

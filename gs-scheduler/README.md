@@ -1,4 +1,4 @@
-# GE-Global Scheduler 3.5
+# GE-Global Scheduler 4.0
 
 ## For Multiple Edge Clusters and Cloud Cluster
 

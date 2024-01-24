@@ -76,6 +76,8 @@ KAFKA_SERVER_URL      = None # will be set with rest api
 GEDGE_GLOBAL_GSCH_TOPIC_NAME = "gedge-global-gsch-topic"
 GEDGE_GLOBAL_API_TOPIC_NAME  = "gedge-global-api-topic"
 
+CONSUMER_TIMEOUT_MS_TIME = 10000
+CONSUMER_MAX_RETRY_COUNT = 10
 '''-----------------------------------------------
               REDIS
 -----------------------------------------------'''
@@ -124,6 +126,14 @@ MOST_REQUEST_POLICY_GPU_COST_WEIGHT = 200
 LOCAL_SCHEDULER_NAME  = "griffin_scheduler"
 
 '''-----------------------------------------------
-      ADMIN USER 
+       USER 
 -----------------------------------------------'''
-ADMIN_DEFAULT_PASSWD  = '1234'
+USER_TYPE_SUPER  = 'super'
+USER_TYPE_NORMAL = 'normal'
+SUPER_USER_DEFAULT_NAME   = 'admin'
+SUPER_USER_DEFAULT_PASSWD  = '1234'
+
+'''------------------------------------------------
+              PLATFORM SERVICES
+------------------------------------------------'''
+WAIT_RUNNING_PLATFORM_SERVICES_SECOND_TIME   = 5
