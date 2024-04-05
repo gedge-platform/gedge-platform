@@ -27,7 +27,9 @@
 - 버그 수정 및 안정화
 ### GM-Center
 - gm-center 기능 고도화
-  - GS-Scheduler 연동
+  - GS-Scheduler API 연동
+  - 로그모니터링 API 추가
+  - 워크스페이스 및 사용자 생성 프로젝트 uuid 기능 추가
   - 버그 수정 및 안정성 개선
 ### GM-Tool
 - gm-tool 고도화
