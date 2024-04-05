@@ -10,74 +10,51 @@
 
 ## v4.0 Release
 ### GS-AIFLOW
-- 사용자 기능
-  - 프로젝트 관리
-  - 스토리지 관리
-  - DAG 구성 
-  - Task 런칭, 모니터링
-- 관리자 기능
-  - 사용자 관리
-  - 프로젝트 관리
-- backend
-  - GM-Center 연동
+- 사용자 메뉴얼 업로드
+- 버그 수정 및 기능 안정화- 
 ### GS-LinkHQ
-- 성능 테스트용 코드 Dockerfile 마이그레이션
-  - [vedge](https://github.com/gedge-platform/gs-linkhq/tree/main/vedge)
-  - [agent](https://github.com/gedge-platform/gs-linkhq/tree/main/agent)
-  - [task-generator](https://github.com/gedge-platform/gs-linkhq/tree/main/task-generator)
-- Compose 파일 수정
-- 강화학습 모델 다양화
-  - DQN
-  - PPO
-- 컨테이너간 통신을 위한 API 작성
-- 정책 생성용 리소스 요구사항 추가
-  - CPU
-  - Memory
-  - GPU
-  - Deadline
+- 에이전트 학습 시스템 구성 요성 안정화 및 업로드
+- 학습 시스템 웹서비스 안정화 및 업로드 
+- 도커파일 수정 및 업로드
+- 실행파일 안정화
+- README.md 내용 추가
+### GS-Optops
+- vk8s 제어 기능 추가
+- 도커파일 수정 및 업로드
+- K8s 기반 GPU 자원 조회 모듈 추가
+- vk8s 환경 구성 모듈 추가
+- README.md 내용 추가
+- 버그 수정 및 안정화
 ### GM-Center
 - gm-center 기능 고도화
-  - GS-Scheduler 연동
+  - GS-Scheduler API 연동
+  - 로그모니터링 API 추가
+  - 워크스페이스 및 사용자 생성 프로젝트 uuid 기능 추가
   - 버그 수정 및 안정성 개선
 ### GM-Tool
 - gm-tool 고도화
-  - Deployment 생성 기능 업데이트
-  - Pod 생성 기능 업데이트
-  - FasS 기능 추가
-### GM-Center
-- gm-center 기능 고도화
-  - GS-Scheduler 연동
-  - 버그 수정 및 안정성 개선
+  - Deployment Template 추가
+  - Scheduler 연동
+  - FasS 연동
 ### GM-Scheduler
-- 다중 엣지 클러스터와 클라우드 클러스터 고려
-  - 3L Clusters (Edge Cluster / Near Edge Cluster / Cloud Cluster)에 대한 yaml 파일 적용 기능 업데이트
-  - Center Management Cluster 업데이트
-- 플랫폼 서비스를 위한 Gedge Configmap 추가
-  - gedge-system-scheduler-configmap.yaml 추가
-  - platform service server ip 추가
-  - platform service port 추가
-- Gedge Scheduler 코어 업데이트
-  - Center Management Cluster에 새로운 Platform info Pod 추가
-  - kafka message module 코드 수정
-  - 멀티 클러스터 환경의 리소스에 대한 Rest API 처리 추가
-  - Front Server Pod와 GEdge Scheduler Policy Pod의 동시 실행 업데이트
-- 다중 유저, 워크스페이스, 프로젝트를 위한 코드 업데이트
-  - 다중 유저 기능 추가
-    - 관리자 계정 / 일반 유저 분리
-    - 로그인 관리 추가
-  - 사용자가 선택한 클러스터에 워크스페이스 생성
-  - 프로젝트 단위의 유저 어플리케이션 분리
-- 개발 시스템을 위한 클러스터 버전
-  - K8s의 버전을 1.22.x로 고정
-  - docker와 containerd를 런타임 환경에서 지원
-- 새로운 스케쥴러 정책 추가
-  - (G)MostRequestedPriority for 3LT
-  - (G)LowLatencyPriority for 3LT
-  - GSetClusters for 3LT
-  - GSelectCluster for 3LT
-### GS-Link
-- gs-linkgw 아키텍처 설명 
-- gs-linkgw 다중 클러스터 마이그레이션을 위한 제어기 프로그램 업로드 
+- 글로벌 스케줄러 기능 안정화
+- 로컬 스케줄러 기능 안정화
+- GEdge Configmap의 수정
+- GEdge 스케줄러 메인엔진 안정화
+- 다중 사용자 및 다중 워크스페이스 지원 스케줄러 기능 안정화
+- GM-Center 연동 및 안정
+### GS-Linkgw
+- gs-linkgw 마이그레이션 컨트롤러 기능업데이트 / 안정화
+- gedge-starter 신규 기능 코드 업로드 및 README.md 신규작성
+### GS-Broker
+- 신규 코드 업데이트(기능 추가 및 버그 수정)
+- 시뮬레이터 프로톸콜 기능 추가 및 안정화
+- 메시지 브로커 기능 추가 및 안정화
+- README.md 수정
+### GS-Msa
+- 신규 저장소 생성/ 코드 업로드
+- MSA 구조 및 관련 성능 이슈 설명 자료 업로드
+- 요구사항 및 설치 방법 업로드 
 ## v3.5 Release
 ### GS-AIFLOW
 - 사용자 기능
