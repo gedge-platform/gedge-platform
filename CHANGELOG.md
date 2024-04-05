@@ -1,6 +1,6 @@
 # Changelog
 
-- __[v4.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v35-release)__
+- __[v4.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v40-release)__
 - __[v3.5 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v35-release)__
 - __[v3.0 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v30-release)__
 - __[v2.5 Release](https://github.com/gedge-platform/gedge-platform/blob/master/CHANGELOG.md#v25-release)__
@@ -114,10 +114,6 @@
   - Deployment 생성 기능 업데이트
   - Pod 생성 기능 업데이트
   - FasS 기능 추가
-### GM-Center
-- gm-center 기능 고도화
-  - GS-Scheduler 연동
-  - 버그 수정 및 안정성 개선
 ### GM-Scheduler
 - 다중 엣지 클러스터와 클라우드 클러스터 고려
   - 3L Clusters (Edge Cluster / Near Edge Cluster / Cloud Cluster)에 대한 yaml 파일 적용 기능 업데이트
