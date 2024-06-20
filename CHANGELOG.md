@@ -121,7 +121,13 @@
 ### GS-Link
 - gs-linkgw 아키텍처 설명 
 - gs-linkgw 다중 클러스터 마이그레이션을 위한 제어기 프로그램 업로드 
-
+### GS-Optops
+- gs-optops 설치 가이드 추가
+- device-plugin 추가 반영
+  - host device plugin
+  - virtual device plugin
+- vk8s 코드 디버깅 및 ip-manager 코드 수정 반영
+- 예제 코드 : federated learning 추가 반영
 
 ## v3.0 Release
 
